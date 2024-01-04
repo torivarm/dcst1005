@@ -1,4 +1,12 @@
 # THIS SCRIPT MUST BE RUN AS ADMINISTRATOR ON DC1
+<# Checklist: 
+    - Windows Update is up to date
+    - Time zone is correct
+    - Computer name is correct
+    - IP address is correct (non relevant for this lab)
+    - Keyboard layout is correct (Norwegian)
+#>
+
 # variable containing the computer name
 $env:COMPUTERNAME
 # If you want to change the computer name, you can use the Rename-Computer cmdlet
