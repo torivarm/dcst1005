@@ -2,6 +2,7 @@
 <# CHECKLIST:
     - Windows Update is up to date
     - Time zone is correct
+        -  Set-TimeZone -id 'W. Europe Standard Time' 
     - Computer name is correct
     - IP address is correct (non relevant for this lab)
     - Keyboard layout is correct (Norwegian)
