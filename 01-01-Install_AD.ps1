@@ -25,8 +25,8 @@ Set-LocalUser -Password $Password Administrator
 
 $Params = @{
     DomainMode = 'WinThreshold'
-    DomainName = 'core.sec'
-    DomainNetbiosName = 'core'
+    DomainName = 'InfraIT.sec'
+    DomainNetbiosName = 'InfraIT'
     ForestMode = 'WinThreshold'
     InstallDns = $true
     NoRebootOnCompletion = $true
