@@ -11,3 +11,4 @@ choco install -y vscode
 # Konfigurer Git
 git config --global user.name "NAVN"
 git config --global user.email "EPOST@EPOST.EPOST"
+#
