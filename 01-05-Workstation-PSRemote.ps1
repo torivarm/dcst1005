@@ -5,12 +5,12 @@ Enter-PSSession -ComputerName cl1
 
 # Install PowerShell 7.x on remote machine.
 Enable-PSRemoting -Force
-$session = New-PSSession -ComputerName dc1
+$session = New-PSSession -ComputerName dc1 -ConfigurationName PowerShell.7
 Copy-Item -Path "C:\install\PowerShell-7.4.0-win-x64.msi" -Destination "C:\install" -ToSession $session
 Invoke-Command -Session $session -ScriptBlock {
     Start-Process "msiexec.exe" -ArgumentList "/i C:\install\PowerShell-7.4.0-win-x64.msi /quiet /norestart" -Wait
 }
-Invoke-Command -Session $session -ScriptBlock { $PSVersionTable.PSVersion }
+Invoke-Command -Session $session -ScriptBlock { $PSVersionTable }
 
 
 # IF PSREMOTE DONT WORK, THIS COMMANDS MUST BE RUN AS ADMINISTRATOR ON VM'S WITH WINDOWS 10/11 
