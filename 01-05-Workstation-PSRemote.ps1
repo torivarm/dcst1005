@@ -4,7 +4,7 @@ Enter-PSSession -ComputerName srv1
 Enter-PSSession -ComputerName cl1
 
 # Install PowerShell 7.x on remote machine.
-Enable-PSRemoting -Force
+# Enable-PSRemoting -Force <- This command must be run as administrator on remote machine if PSRemote dont work.
 $session = New-PSSession -ComputerName dc1 -ConfigurationName PowerShell.7
 Copy-Item -Path "C:\install\PowerShell-7.4.0-win-x64.msi" -Destination "C:\install" -ToSession $session
 Invoke-Command -Session $session -ScriptBlock {
