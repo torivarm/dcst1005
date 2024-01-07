@@ -1,0 +1,211 @@
+heat_template_version: 2013-05-23
+
+description: >
+  HOT template to create a new neutron network plus a router to the public
+  network, and for deploying one Windows 10 (hostname cl1) and two Windows
+  Servers (hostnames dc1 and srv1) without any configuration (only cl1 has
+  a boot script to set correct hostname).
+
+parameters:
+  key_name:
+    type: string
+    description: Name of keypair to assign to servers
+
+resources:
+  private_net:
+    type: OS::Neutron::Net
+
+  private_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: private_net }
+      cidr: 192.168.111.0/24
+      gateway_ip: 192.168.111.1
+      allocation_pools:
+        - start: 192.168.111.101
+          end: 192.168.111.200
+
+  router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info:
+        network: ntnu-internal
+
+  router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: router }
+      subnet_id: { get_resource: private_subnet }
+
+  sec_core:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Security group rules for all
+      name: sec_core
+      rules:
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: icmp
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 80
+          port_range_max: 80
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 443
+          port_range_max: 443
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 3389
+          port_range_max: 3389
+
+  mgr:
+    type: OS::Nova::Server
+    properties:
+      name: mgr
+      image: 'Windows 11 22H2 Enterprise [Evaluation]'
+      flavor: gx3.4c8r
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: mgr_port }
+      user_data_format: RAW
+      user_data: |
+        #ps1_sysnative
+        #
+        # Windows 10 doesn't set hostname correctly
+        #
+        $name = (New-Object System.Net.WebClient).DownloadString("http://169.254.169.254/latest/meta-data/hostname")
+        $shortname = $name.split('.',2)[0]
+        if ( $env:computername -ne $shortname ) {
+          Rename-Computer $shortname
+          exit 1003 # 1003 - reboot and run the plugin again on next boot
+                    # https://cloudbase-init.readthedocs.io/en/latest/tutorial.html#file-execution
+        }
+  mgr_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      security_groups:
+        - default
+        - { get_resource: sec_core }
+      fixed_ips:
+        - subnet_id: { get_resource: private_subnet }
+  mgr_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ntnu-internal
+      port_id: { get_resource: mgr_port }
+
+  cl1:
+    type: OS::Nova::Server
+    properties:
+      name: cl1
+      image: 'Windows 11 22H2 Enterprise [Evaluation]'
+      flavor: gx1.2c6r
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: cl1_port }
+      user_data_format: RAW
+      user_data: |
+        #ps1_sysnative
+        #
+        # Windows 10 doesn't set hostname correctly
+        #
+        $name = (New-Object System.Net.WebClient).DownloadString("http://169.254.169.254/latest/meta-data/hostname")
+        $shortname = $name.split('.',2)[0]
+        if ( $env:computername -ne $shortname ) {
+          Rename-Computer $shortname
+          exit 1003 # 1003 - reboot and run the plugin again on next boot
+                    # https://cloudbase-init.readthedocs.io/en/latest/tutorial.html#file-execution
+        }
+  cl1_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      security_groups: 
+        - default
+        - { get_resource: sec_core }
+      fixed_ips:
+        - subnet_id: { get_resource: private_subnet }
+  cl1_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ntnu-internal
+      port_id: { get_resource: cl1_port }
+
+  dc1:
+    type: OS::Nova::Server
+    properties:
+      name: dc1
+      image: 'Windows Server 2022 Standard [Evaluation]'
+      flavor: gx1.2c6r
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: dc1_port }
+  dc1_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      security_groups: 
+        - default
+        - { get_resource: sec_core }
+      fixed_ips:
+        - subnet_id: { get_resource: private_subnet }
+  dc1_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ntnu-internal
+      port_id: { get_resource: dc1_port }
+
+  srv1:
+    type: OS::Nova::Server
+    properties:
+      name: srv1
+      image: 'Windows Server 2022 Standard [Evaluation]'
+      flavor: gx1.2c4r
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: srv1_port }
+  srv1_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      security_groups: 
+        - default
+        - { get_resource: sec_core }
+      fixed_ips:
+        - subnet_id: { get_resource: private_subnet }
+  srv1_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ntnu-internal
+      port_id: { get_resource: srv1_port }
+
+outputs:
+  srv1_private_ip:
+    description: IP address of srv1 in private network
+    value: { get_attr: [ srv1, first_address ] }
+  srv1_public_ip:
+    description: Floating IP address of srv1 in public network
+    value: { get_attr: [ srv1_floating_ip, floating_ip_address ] }
+  dc1_private_ip:
+    description: IP address of dc1 in private network
+    value: { get_attr: [ dc1, first_address ] }
+  dc1_public_ip:
+    description: Floating IP address of dc1 in public network
+    value: { get_attr: [ dc1_floating_ip, floating_ip_address ] }
+  cl1_private_ip:
+    description: IP address of cl1 in private network
+    value: { get_attr: [ cl1, first_address ] }
+  cl1_public_ip:
+    description: Floating IP address of cl1 in public network
+    value: { get_attr: [ cl1_floating_ip, floating_ip_address ] }
+  mgr_private_ip:
+    description: IP address of mgr in private network
+    value: { get_attr: [ mgr, first_address ] }
+  mgr_public_ip:
+    description: Floating IP address of mgr in public network
+    value: { get_attr: [ mgr_floating_ip, floating_ip_address ] }
