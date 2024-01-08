@@ -9,14 +9,15 @@ $description = "" # Change this to a suitable description
 $path = "OU=,DC=,DC=" # Change the path to the appropriate OU in your AD structure
 
 # Create the new user
-New-ADUser -Name $displayName ´
+New-ADUser -Name $displayName `
             -GivenName $username `
             -UserPrincipalName $userPrincipalName `
             -SamAccountName $username `
             -AccountPassword $password `
             -DisplayName $displayName `
             -Description $description `
-            -Path $path -Enabled $true
+            -Path $path `
+            -Enabled $true
 
 # Add the new user to the Domain Admins group
 Add-ADGroupMember -Identity "Domain Admins" -Members $username
