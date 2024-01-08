@@ -14,8 +14,9 @@ Invoke-Command -Session $session -ScriptBlock { $PSVersionTable }
 
 
 # IF PSREMOTE DONT WORK, THIS COMMANDS MUST BE RUN AS ADMINISTRATOR ON VM'S WITH WINDOWS 10/11 
+# Enable PSRemote: Enable-PSRemoting -Force
+Enable-PSRemoting -Force
 winrm set winrm/config/service/auth '@{Kerberos="true"}' 
 # List auth: 
 winrm get winrm/config/service/auth
-# Enable PSRemote: Enable-PSRemoting -Force
-Enable-PSRemoting -Force
+
