@@ -13,7 +13,7 @@ git config --global user.name "NAVN"
 git config --global user.email "EPOST@EPOST.EPOST"
 #
 
-# Check if computer is domain joined 
+# Check if computer is domain joined (CIM (Common Information Model))
 Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -Property Name, Domain, PartOfDomain
 
 # Remote Server Administrative Tools (RSAT)
