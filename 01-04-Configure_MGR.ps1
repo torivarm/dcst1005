@@ -13,5 +13,6 @@ git config --global user.name "NAVN"
 git config --global user.email "EPOST@EPOST.EPOST"
 #
 
+# Remote Server Administrative Tools (RSAT)
 # Installere RSAT - RSAT is a tool that allows you to manage roles and features in Windows Server remotely from a Windows 10/11 machine.
 Add-WindowsCapability -Name Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0 -Online
