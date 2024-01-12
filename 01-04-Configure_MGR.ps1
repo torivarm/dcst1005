@@ -18,4 +18,4 @@ Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -Property Name, 
 
 # Remote Server Administrative Tools (RSAT)
 # Installere RSAT - RSAT is a tool that allows you to manage roles and features in Windows Server remotely from a Windows 10/11 machine.
-Add-WindowsCapability -Name Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0 -Online
+Add-WindowsCapability -Name Rsat.ActiveDirectory.DS-LDS.Tools -Online
