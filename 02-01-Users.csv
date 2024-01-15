@@ -1,0 +1,11 @@
+Username;GivenName;SurName;UserPrincipalName;DisplayName;Password;Department;Path
+olanor;Ola;Nordmann;Ola.Nordmann@core.sec;Ola Nordmann;sr_2!sdffdf32ad;HR;"OU=hr,OU=learnIT_users,DC=core,DC=sec"
+karnor;Kari;Nordmann;Kari.Nordmann@core.sec;Kari Nordmann;sr_2!fdfgsg32ad;IT;"OU=it,OU=learnIT_users,DC=core,DC=sec"
+hasjoh;Hans;Johansen;Hans.Johansen@core.sec;Hans Johansen;sr_2!fdfgsg32ad;Sale;"OU=sale,OU=learnIT_users,DC=core,DC=sec"
+perhen;Pernille;Hansen;Pernille.Hansen@core.sec;Pernille Hansen;sr_2!fdfgsg32ad;Sale;"OU=sale,OU=learnIT_users,DC=core,DC=sec"
+svenil;Svein;Nilsen;Svein.Nilsen@core.sec;Svein Nilsen;sr_2!fdfgsg32ad;Dev;"OU=dev,OU=learnIT_users,DC=core,DC=sec"
+frapet;Frank;Pettersen;Frank.Pettersen@core.sec;Frank Pettersen;sr_2!fdfgsg32ad;Dev;"OU=dev,OU=learnIT_users,DC=core,DC=sec"
+stihen;Stine;Henriksen;Stine.Henriksen@core.sec;Stine Henriksen;sr_2!fdfgsg32ad;Dev;"OU=dev,OU=learnIT_users,DC=core,DC=sec"
+larsve;Lars;Svendsen;Lars.Svendsen@core.sec;Lars Svendsend;sr_2!fdfgsg32ad;Dev;"OU=dev,OU=learnIT_users,DC=core,DC=sec"
+nilbo;Nils;Bo;Nils.Bo@core.sec;Nils Bo;sr_2!fdfgsg32ad;Dev;"OU=dev,OU=learnIT_users,DC=core,DC=sec"
+gurjen;Guri;Jensen;Guri.Jensen@core.sec;Guri Jensen;sr_2!fdfgsg32ad;Finance;"OU=finance,OU=learnIT_users,DC=core,DC=sec"
