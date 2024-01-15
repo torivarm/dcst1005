@@ -128,3 +128,14 @@ foreach ($department in $departments) {
     }
 
 }
+
+
+# ---- Move Computer to correct OU ---- #
+Get-ADComputer -Filter * | ft
+Move-ADObject -Identity "CN=mgr,CN=Computers,DC=core,DC=sec" `
+            -TargetPath "OU=it,OU=LearnIT_Computers,DC=core,DC=sec"
+
+New-ADOrganizationalUnit "Servers" `
+                -Description "OU for Servers" `
+                -Path "OU=LearnIT_Computers,DC=core,DC=sec" `
+                -ProtectedFromAccidentalDeletion:$false
