@@ -66,12 +66,12 @@ foreach ($department in $departments) {
             Where-Object {($_.name -eq "$department") `
             -and ($_.DistinguishedName -like "OU=$department,OU=$lit_groups,*")}
     New-ADGroup -Name "g_$department" `
-            -SamAccountName "g_$department" `
-            -GroupCategory Security `
-            -GroupScope Global `
-            -DisplayName "g_$department" `
-            -Path $path.DistinguishedName `
-            -Description "$department group"
+                -SamAccountName "g_$department" `
+                -GroupCategory Security `
+                -GroupScope Global `
+                -DisplayName "g_$department" `
+                -Path $path.DistinguishedName `
+                -Description "$department group"
 }
 
 New-ADGroup -name "g_all_employee" `
@@ -93,26 +93,38 @@ Get-Help New-AdUSer -Online
 
 $password = Read-Host -Prompt "EnterPassword" -AsSecureString
 New-ADUser -Name "Hans Hansen" `
- -GivenName "Hans" `
- -Surname "Hansen" `
- -SamAccountName  "hhansen" `
- -UserPrincipalName  "hhansen@core.sec" `
- -Path "OU=IT,OU=LearnIT_Users,DC=core,DC=sec" `
- -AccountPassword $Password -Enabled $true
+            -GivenName "Hans" `
+            -Surname "Hansen" `
+            -SamAccountName  "hhansen" `
+            -UserPrincipalName  "hhansen@core.sec" `
+            -Path "OU=IT,OU=LearnIT_Users,DC=core,DC=sec" `
+            -AccountPassword $Password `
+            -Enabled $true
 
 # HUSK å vis til egen csv fil med brukere (-path viser her en type windows-path)
-$users = Import-Csv -Path 'C:\projects\dcst1005-demo\v23\users.csv' -Delimiter ";"
+$users = Import-Csv -Path 'C:\WRITE-YOUR-OWN-PATH!!!!!\02-01-Users.csv' -Delimiter ";"
 
 foreach ($user in $users) {
     New-ADUser -Name $user.DisplayName `
-    -GivenName $user.GivenName `
-    -Surname $user.Surname `
-    -SamAccountName  $user.username `
-    -UserPrincipalName  $user.UserPrincipalName `
-    -Path $user.path `
-    -AccountPassword (convertto-securestring $user.password -AsPlainText -Force) `
-    -Department $user.department `
-    -Enabled $true
+                -GivenName $user.GivenName `
+                -Surname $user.Surname `
+                -SamAccountName  $user.username `
+                -UserPrincipalName  $user.UserPrincipalName `
+                -Path $user.path `
+                -AccountPassword (convertto-securestring $user.password -AsPlainText -Force) `
+                -Department $user.department `
+                -Enabled $true
+            }
+
+# Legger til brukere i grupper basert på avdeling (department)
+$ADUsers = @()
+
+foreach ($department in $departments) {
+    $ADUsers = Get-ADUser -Filter {Department -eq $department} -Properties Department
+    #Write-Host "$ADUsers som er funnet under $department"
+
+    foreach ($aduser in $ADUsers) {
+        Add-ADPrincipalGroupMembership -Identity $aduser.SamAccountName -MemberOf "g_$department"
+    }
+
 }
-
-
