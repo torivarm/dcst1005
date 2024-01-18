@@ -101,11 +101,11 @@ function New-Password {
 # Write-Host "Generated password is a SecureString"
 
 # Example usage
-# $upn = Get-UserPrincipalName -givenName "Thomas Lee" -surName "Cook" -domainName "whateverdomainname.com"
+# $upn = Get-UserPrincipalName -givenName "Tor Ivar" -surName "melling" -domainName "infrait.sec"
 # Write-Host "Generated UPN: $upn"
 
 # Example usage
-# $username = Get-Username -givenName "Thomas Lee" -surName "Cook"
+# $username = Get-Username -givenName "Tor Ivar" -surName "Melling"
 # Write-Host "Generated username: $username"
 
 
