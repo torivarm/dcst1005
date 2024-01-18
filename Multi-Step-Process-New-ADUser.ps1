@@ -13,17 +13,19 @@ function Get-Username {
     $surNamePart = ""
 
     # Determine the givenName part
-    if ($givenName.Length -lt 4) {
+    if ($givenName.Length -lt 3) {
         $givenNamePart = $givenName
     } else {
-        $givenNamePart = $givenName.Substring(0, 4)
+        $givenNamePart = $givenName.Substring(0, 3)
+        $givenNamePart = $givenNamePart.Trim()
     }
 
     # Determine the surName part
-    if ($surName.Length -lt 4) {
+    if ($surName.Length -lt 3) {
         $surNamePart = $surName
     } else {
-        $surNamePart = $surName.Substring(0, 4)
+        $surNamePart = $surName.Substring(0, 3)
+        $surNamePart = $surNamePart.Trim()
     }
 
     # Combine to form the username
@@ -105,7 +107,7 @@ function New-Password {
 # Write-Host "Generated UPN: $upn"
 
 # Example usage
-# $username = Get-Username -givenName "Tor Ivar" -surName "Melling"
+# $username = Get-Username -givenName "Jo Ivar" -surName "Melling"
 # Write-Host "Generated username: $username"
 
 
