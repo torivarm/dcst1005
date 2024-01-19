@@ -1,3 +1,7 @@
+<#
+
+#>
+
 function Get-Username {
     param(
         [string]$givenName,
@@ -114,3 +118,26 @@ function New-Password {
 $username
 $upn
 $securePassword
+
+$textVariable | Get-Member -MemberType Method
+[string]$textVariable = "Hello, PowerShell!"
+$textVariable | Get-Member -MemberType Method
+$textVariable.ToUpper()
+
+
+function New-UserEmailAddress {
+    param (
+        [string]$GivenName,
+        [string]$Surname
+    )
+
+    # Combining the given name and surname with the domain to create the email address.
+    # Using the ToLower method to ensure the email address is in lower case.
+    $emailAddress = "$GivenName.$Surname@infrait.sec".ToLower()
+
+    # Returning the constructed email address.
+    return $emailAddress
+}
+
+$usermailaddress = New-UserEmailAddress -GivenName "Hans" -Surname "Hansen"
+
