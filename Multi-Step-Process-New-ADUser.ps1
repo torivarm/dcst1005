@@ -137,7 +137,7 @@ function Get-UserOU {
     )
 
     [string] $searchdn = "OU=$department,OU=$rootOUusers,*"
-    $ouPath = Get-ADOrganizationalUnit -Filter * | Where-Object {($_.name -eq $user.Department) -and ($_.DistinguishedName -like $searchdn)} 
+    $ouPath = Get-ADOrganizationalUnit -Filter * | Where-Object {($_.name -eq $department) -and ($_.DistinguishedName -like $searchdn)} 
     
     return $ouPath
 }
