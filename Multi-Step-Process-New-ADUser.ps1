@@ -134,6 +134,7 @@ function Get-UserOU {
     param(
         [string]$department,
         [string]$rootOUusers
+
     )
 
     [string] $searchdn = "OU=$department,OU=$rootOUusers,*"
@@ -144,10 +145,8 @@ function Get-UserOU {
 
 # Example usage:
 # $department = "Finance" # Example department name
-# $ouPath = Get-UserOU -department $department -rootOUusers "InfrIT_Users"
+# $ou = Get-UserOU -department "hr" -rootOUusers "InfraIT_Users"
 # Write-Host "OU Path for department '$department': $ouPath"
-
-
 
 # Example usage
 # $names = Convert-SpecialCharacters -givenName "Per Jørgen" -surName "Bråten"
