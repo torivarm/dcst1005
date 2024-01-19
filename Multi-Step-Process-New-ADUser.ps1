@@ -89,10 +89,6 @@ function New-UserPrincipalName {
     }
 
     $UserPrincipalName = $("$($givenName).$($surName)").ToLower()
-    #$UserPrincipalName = $UserPrincipalName.Replace('æ','e')
-    #$UserPrincipalName = $UserPrincipalName.Replace('ø','o')
-    #$UserPrincipalName = $UserPrincipalName.Replace('å','a')
-    #$UserPrincipalName = $UserPrincipalName.Replace('é','e')
 
     Return $UserPrincipalName
 
@@ -134,6 +130,23 @@ function New-Password {
     return $securePassword
 }
 
+function Get-UserOU {
+    param(
+        [string]$department,
+        [string]$rootOUusers
+    )
+
+    [string] $searchdn = "OU=$department,OU=$rootOUusers,*"
+    $ouPath = Get-ADOrganizationalUnit -Filter * | Where-Object {($_.name -eq $user.Department) -and ($_.DistinguishedName -like $searchdn)} 
+    
+    return $ouPath
+}
+
+# Example usage:
+# $department = "Finance" # Example department name
+# $ouPath = Get-UserOU -department $department -rootOUusers "InfrIT_Users"
+# Write-Host "OU Path for department '$department': $ouPath"
+
 
 
 # Example usage
@@ -155,10 +168,6 @@ function New-Password {
 
 $Users = Import-Csv -Path "/Users/melling/git-projects/dcst1005/tmp_csv-users-example.csv" -Header "FirstName","LastName","Department","phone" -Delimiter ","
 
-
-$username
-$upn
-$securePassword
 
 
 
