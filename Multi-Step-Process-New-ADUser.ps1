@@ -1,7 +1,41 @@
-<#
+function Convert-SpecialCharacters {
+    param(
+        [string]$givenName,
+        [string]$surName
+    )
 
-#>
+    # Function to replace special characters in a string
+    function New-Characters {
+        param(
+            [string]$inputString
+        )
 
+        # Define replacements
+        $replacements = @{
+            'ø' = 'o';
+            'å' = 'a';
+            'æ' = 'ae';
+            'é' = 'e'
+        }
+
+        # Perform replacements
+        foreach ($key in $replacements.Keys) {
+            $inputString = $inputString.Replace($key, $replacements[$key])
+        }
+
+        return $inputString
+    }
+
+    # Apply replacements to givenName and surName
+    $convertedGivenName = New-Characters -inputString $givenName
+    $convertedSurName = New-Characters -inputString $surName
+
+    # Return the converted names
+    return @{
+        ConvertedGivenName = $convertedGivenName;
+        ConvertedSurName = $convertedSurName
+    }
+}
 function Get-Username {
     param(
         [string]$givenName,
@@ -39,31 +73,29 @@ function Get-Username {
 
     return $userName
 }
-function Get-UserPrincipalName {
-    param(
-        [string]$givenName,
-        [string]$surName,
-        [string]$domainName
+function New-UserPrincipalName {
+    param (
+        [Parameter(Mandatory=$true)][string] $givenName,
+        [Parameter(Mandatory=$true)][string] $surName
     )
 
-    # Remove extra whitespace and split the givenName into parts
-    $givenNameParts = $givenName.Trim().Split(' ')
+    if ($givenName -match $([char]32)) {
+        $splitted = $givenName.Split($([char]32))
+        $givenName = $splitted[0]
 
-    # Initialize the UPN with the first part of the givenName
-    $upn = $givenNameParts[0].ToLower()
-
-    # Process middle names, if any
-    if ($givenNameParts.Length -gt 1) {
-        for ($i = 1; $i -lt $givenNameParts.Length; $i++) {
-            $middleNameInitial = $givenNameParts[$i].Substring(0, 1).ToLower()
-            $upn += ".$middleNameInitial"
+        for ( $index = 1 ; $index -lt $splitted.Length ; $index ++ ) {
+            $givenName += ".$($splitted[$index][0])"
         }
     }
 
-    # Add the surName and the domain name
-    $upn += ".$surName@$domainName".ToLower()
+    $UserPrincipalName = $("$($givenName).$($surName)").ToLower()
+    #$UserPrincipalName = $UserPrincipalName.Replace('æ','e')
+    #$UserPrincipalName = $UserPrincipalName.Replace('ø','o')
+    #$UserPrincipalName = $UserPrincipalName.Replace('å','a')
+    #$UserPrincipalName = $UserPrincipalName.Replace('é','e')
 
-    return $upn
+    Return $UserPrincipalName
+
 }
 function New-Password {
     # Character sets
@@ -102,42 +134,31 @@ function New-Password {
     return $securePassword
 }
 
+
+
+# Example usage
+# $names = Convert-SpecialCharacters -givenName "Per Jørgen" -surName "Bråten"
+# Write-Host "Converted Given Name: $($names.ConvertedGivenName), Converted Sur Name: $($names.ConvertedSurName)"
+
+# Example usage
+# $username = Get-Username -givenName $names.ConvertedGivenName -surName $names.ConvertedSurName
+# Write-Host "Generated username: $username"
+
+# Example usage
+# $upn = New-UserPrincipalName -givenName $names.ConvertedGivenName -surName $names.ConvertedSurName
+# Write-Host "Generated UPN: $upn"
+
 # Example usage
 # $securePassword = New-Password
 # Write-Host "Generated password is a SecureString"
 
-# Example usage
-# $upn = Get-UserPrincipalName -givenName "Tor Ivar" -surName "melling" -domainName "infrait.sec"
-# Write-Host "Generated UPN: $upn"
 
-# Example usage
-# $username = Get-Username -givenName "Jo Ivar" -surName "Melling"
-# Write-Host "Generated username: $username"
+$Users = Import-Csv -Path "/Users/melling/git-projects/dcst1005/tmp_csv-users-example.csv" -Header "FirstName","LastName","Department","phone" -Delimiter ","
 
 
 $username
 $upn
 $securePassword
 
-$textVariable | Get-Member -MemberType Method
-[string]$textVariable = "Hello, PowerShell!"
-$textVariable | Get-Member -MemberType Method
-$textVariable.ToUpper()
 
-
-function New-UserEmailAddress {
-    param (
-        [string]$GivenName,
-        [string]$Surname
-    )
-
-    # Combining the given name and surname with the domain to create the email address.
-    # Using the ToLower method to ensure the email address is in lower case.
-    $emailAddress = "$GivenName.$Surname@infrait.sec".ToLower()
-
-    # Returning the constructed email address.
-    return $emailAddress
-}
-
-$usermailaddress = New-UserEmailAddress -GivenName "Hans" -Surname "Hansen"
 
