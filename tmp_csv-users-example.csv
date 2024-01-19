@@ -1,4 +1,4 @@
-FirstName,LastName,Department,phone
+givenName,surName,Department,phone
 Hans,Hansen,HR,12345678
 Lena,Larsen,Consultant,87654321
 Erik,Eriksen,Sales,12345623

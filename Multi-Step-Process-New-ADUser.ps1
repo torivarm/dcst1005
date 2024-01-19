@@ -27,8 +27,8 @@ function Convert-SpecialCharacters {
     }
 
     # Apply replacements to givenName and surName
-    $convertedGivenName = New-Characters -inputString $givenName
-    $convertedSurName = New-Characters -inputString $surName
+    $convertedGivenName = New-Characters -inputString $givenName.ToLower()
+    $convertedSurName = New-Characters -inputString $surName.ToLower()
 
     # Return the converted names
     return @{
@@ -165,7 +165,35 @@ function Get-UserOU {
 # Write-Host "Generated password is a SecureString"
 
 
-$Users = Import-Csv -Path "/Users/melling/git-projects/dcst1005/tmp_csv-users-example.csv" -Header "FirstName","LastName","Department","phone" -Delimiter ","
+$Users = Import-Csv -Path "C:\git-projects\dcst1005\dcst1005\tmp_csv-users-example.csv" -Delimiter ","
+
+foreach ($user in $users) {
+    $newNames = Convert-SpecialCharacters -givenName $user.givenName -surName $user.surName
+    Write-Host $newNames.ConvertedGivenName -ForegroundColor Green
+    Write-Host $newNames.ConvertedSurName -ForegroundColor Green
+
+    $newusername = Get-Username -givenName $newNames.ConvertedGivenName -surName $newNames.ConvertedSurName
+    Write-Host $newusername
+
+    $upn = New-UserPrincipalName -givenName $newNames.ConvertedGivenName -surName $newNames.ConvertedSurName
+    Write-Host $upn -ForegroundColor DarkYellow
+
+    $password = New-Password
+
+    $ou = Get-UserOU -department $user.Department -rootOUusers "InfraIT_Users"
+    Write-Host $ou -ForegroundColor DarkMagenta
+
+    New-ADUser -SamAccountName `
+                -UserPrincipalName $upn `
+                -Name `
+                -GivenName `
+                -Surname `
+                -Enabled `
+                -DisplayName `
+                -Department `
+                -Path `
+                -AccountPassword
+}
 
 
 
