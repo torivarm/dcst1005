@@ -143,10 +143,10 @@ function Get-UserOU {
     return $ouPath
 }
 
-$rootFolder = "/Users/melling/git-projects/dcst1005/"
+$rootFolder = "C:\git-projects\dcst1005\dcst1005\"
 
 # CSV-file with users
-$Users = Import-Csv -Path "$rootFolder/tmp_csv-users-example.csv" -Delimiter ","
+$Users = Import-Csv -Path "$rootFolder\tmp_csv-users-example.csv" -Delimiter ","
 
 # Initialize arrays to store the results
 $usersCreated = @()
@@ -154,21 +154,21 @@ $usersNotCreated = @()
 
 foreach ($user in $users) {
     $newNames = Convert-SpecialCharacters -givenName $user.givenName -surName $user.surName
-    Write-Host $newNames.ConvertedGivenName -ForegroundColor Green
-    Write-Host $newNames.ConvertedSurName -ForegroundColor Green
+    #Write-Host $newNames.ConvertedGivenName -ForegroundColor Green
+    #Write-Host $newNames.ConvertedSurName -ForegroundColor Green
 
     $newusername = New-Username -givenName $newNames.ConvertedGivenName -surName $newNames.ConvertedSurName
-    Write-Host $newusername -ForegroundColor Cyan
+    #Write-Host $newusername -ForegroundColor Cyan
 
     $upn = New-UserPrincipalName -givenName $newNames.ConvertedGivenName -surName $newNames.ConvertedSurName
-    Write-Host $upn -ForegroundColor DarkYellow
+    #Write-Host $upn -ForegroundColor DarkYellow
 
     $password = New-Password
-    Write-Host $password -ForegroundColor DarkGreen
+    #Write-Host $password -ForegroundColor DarkGreen
 
     # Only works if the OU already exists and names in CSV-file are correct / matching AD structure
     $ou = Get-UserOU -department $user.Department -rootOUusers "InfraIT_Users"
-    Write-Host $ou -ForegroundColor DarkMagenta
+    #Write-Host $ou -ForegroundColor DarkMagenta
 
     # Check if a user with this samAccountName or UserPrincipalName already exists in AD
     $existingUser = Get-ADUser -Filter "samAccountName -eq '$newusername' -or UserPrincipalName -eq '$upn'" -ErrorAction SilentlyContinue
@@ -201,8 +201,8 @@ foreach ($user in $users) {
 }
 
 # Export the results to CSV files
-$usersCreated | Export-Csv "$rootFolder/users_created.csv" -NoTypeInformation -Encoding UTF8
-$usersNotCreated | Export-Csv "$rootFolder/users_not_created.csv" -NoTypeInformation -Encoding utf8
+$usersCreated | Export-Csv "$rootFolder\users_created.csv" -NoTypeInformation -Encoding UTF8
+$usersNotCreated | Export-Csv "$rootFolder\users_not_created.csv" -NoTypeInformation -Encoding utf8
 
 Write-Host "Export complete. Users created: $($usersCreated.Count). Users not created: $($usersNotCreated.Count)."
 
