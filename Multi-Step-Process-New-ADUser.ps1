@@ -1,3 +1,4 @@
+# Functions: Convert-SpecialCharacters, New-Username, New-UserPrincipalName, New-Password, Get-UserOU
 function Convert-SpecialCharacters {
     param(
         [string]$givenName,
@@ -36,7 +37,7 @@ function Convert-SpecialCharacters {
         ConvertedSurName = $convertedSurName
     }
 }
-function Get-Username {
+function New-Username {
     param(
         [string]$givenName,
         [string]$surName
@@ -129,7 +130,6 @@ function New-Password {
 
     return $securePassword
 }
-
 function Get-UserOU {
     param(
         [string]$department,
@@ -143,60 +143,67 @@ function Get-UserOU {
     return $ouPath
 }
 
-# Example usage:
-# $department = "Finance" # Example department name
-# $ou = Get-UserOU -department "hr" -rootOUusers "InfraIT_Users"
-# Write-Host "OU Path for department '$department': $ouPath"
+$rootFolder = "/Users/melling/git-projects/dcst1005/"
 
-# Example usage
-# $names = Convert-SpecialCharacters -givenName "Per Jørgen" -surName "Bråten"
-# Write-Host "Converted Given Name: $($names.ConvertedGivenName), Converted Sur Name: $($names.ConvertedSurName)"
+# CSV-file with users
+$Users = Import-Csv -Path "$rootFolder/tmp_csv-users-example.csv" -Delimiter ","
 
-# Example usage
-# $username = Get-Username -givenName $names.ConvertedGivenName -surName $names.ConvertedSurName
-# Write-Host "Generated username: $username"
-
-# Example usage
-# $upn = New-UserPrincipalName -givenName $names.ConvertedGivenName -surName $names.ConvertedSurName
-# Write-Host "Generated UPN: $upn"
-
-# Example usage
-# $securePassword = New-Password
-# Write-Host "Generated password is a SecureString"
-
-
-$Users = Import-Csv -Path "C:\git-projects\dcst1005\dcst1005\tmp_csv-users-example.csv" -Delimiter ","
+# Initialize arrays to store the results
+$usersCreated = @()
+$usersNotCreated = @()
 
 foreach ($user in $users) {
     $newNames = Convert-SpecialCharacters -givenName $user.givenName -surName $user.surName
     Write-Host $newNames.ConvertedGivenName -ForegroundColor Green
     Write-Host $newNames.ConvertedSurName -ForegroundColor Green
 
-    $newusername = Get-Username -givenName $newNames.ConvertedGivenName -surName $newNames.ConvertedSurName
-    Write-Host $newusername
+    $newusername = New-Username -givenName $newNames.ConvertedGivenName -surName $newNames.ConvertedSurName
+    Write-Host $newusername -ForegroundColor Cyan
 
     $upn = New-UserPrincipalName -givenName $newNames.ConvertedGivenName -surName $newNames.ConvertedSurName
     Write-Host $upn -ForegroundColor DarkYellow
 
     $password = New-Password
+    Write-Host $password -ForegroundColor DarkGreen
 
+    # Only works if the OU already exists and names in CSV-file are correct / matching AD structure
     $ou = Get-UserOU -department $user.Department -rootOUusers "InfraIT_Users"
     Write-Host $ou -ForegroundColor DarkMagenta
 
-    New-ADUser -SamAccountName `
-                -UserPrincipalName $upn `
-                -Name `
-                -GivenName `
-                -Surname `
-                -Enabled `
-                -DisplayName `
-                -Department `
-                -Path `
-                -AccountPassword
+    # Check if a user with this samAccountName or UserPrincipalName already exists in AD
+    $existingUser = Get-ADUser -Filter "samAccountName -eq '$newusername' -or UserPrincipalName -eq '$upn'" -ErrorAction SilentlyContinue
+
+    if ($existingUser) {
+        Write-Host "User $newusername already exists" -ForegroundColor Red
+        $usersNotCreated += $user
+        } 
+        else {
+            try {
+                # Attempt to create the new user
+                Write-Host "Creating user $newusername" -ForegroundColor Green
+                New-ADUser -SamAccountName $newusername `
+                            -UserPrincipalName $upn `
+                            -Name "$($user.givenName) $($user.surName)" `
+                            -GivenName $user.givenName `
+                            -Surname $user.surName `
+                            -Enabled $true `
+                            -DisplayName "$($user.givenName) $($user.surName)" `
+                            -Department $user.Department `
+                            -Path $ou.DistinguishedName `
+                            -AccountPassword $password
+                $usersCreated += $user
+                }
+                catch {
+                    Write-Host "Failed to create user $newusername" -ForegroundColor Red
+                    $usersNotCreated += $user
+                }
+        }       
 }
 
-#
+# Export the results to CSV files
+$usersCreated | Export-Csv "$rootFolder/users_created.csv" -NoTypeInformation -Encoding UTF8
+$usersNotCreated | Export-Csv "$rootFolder/users_not_created.csv" -NoTypeInformation -Encoding utf8
 
-
+Write-Host "Export complete. Users created: $($usersCreated.Count). Users not created: $($usersNotCreated.Count)."
 
 
