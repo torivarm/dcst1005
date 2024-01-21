@@ -33,7 +33,7 @@ $lit_groups = "LearnIT_Groups"
 $lit_computers = "LearnIT_Computers"
 
 $topOUs = @($lit_users,$lit_groups,$lit_computers )
-$departments = @('hr','it','dev','sale','finance')
+$departments = @('hr','it','consultants','sales','finance')
 
 foreach ($ou in $topOUs) {
     New-ADOrganizationalUnit $ou -Description "Top OU for LearnIT" -ProtectedFromAccidentalDeletion:$false
