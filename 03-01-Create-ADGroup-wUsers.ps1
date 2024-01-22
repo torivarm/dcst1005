@@ -13,6 +13,7 @@ $groupExists = @()
 foreach ($group in $groups) {
     $group = "g_" + $group.group
     $existingGroup = Get-ADGroup -Filter "Name -eq '$group'"
+    # Conditional statement used to check if the variable $existingGroup has a value that is considered 'true'
     if ($existingGroup) {
         Write-Host "Group $group already exists" -ForegroundColor Red
         $groupExists += $group
