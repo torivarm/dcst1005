@@ -105,5 +105,3 @@ foreach ($user in $users) {
         Write-Host "Error adding user $($ADuser.Name) to group $groupName." -ForegroundColor red
     }
 }
-
-Write-Host "Process completed."
