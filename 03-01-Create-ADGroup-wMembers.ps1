@@ -1,22 +1,12 @@
-function Get-GroupOU {
-    param(
-        [string]$groupOU
-
-    )
-    # Will only work as long the OU name is UNIQUE
-    $ouPath = Get-ADOrganizationalUnit -Filter * | where-Object {$_.name -eq "InfraIT_Groups"}
-    
-    return $ouPath
-}
-
-# Edit these variables to match your environment
+# Edit this variables to match your environment
 $OU = "InfraIT_Groups"
 
 # Retrieve the OU's distinguished name
-$groupOU = Get-GroupOU -groupOU $OU
+$ouPath = Get-ADOrganizationalUnit -Filter * | where-Object {$OU -eq "InfraIT_Groups"}
+
 
 # Retrieve all groups from the specified OU
-$groups = Get-ADGroup -Filter * -SearchBase $ouDN
+$groups = Get-ADGroup -Filter * -SearchBase $ouPath.DistinguishedName 
 
 # Iterate through each group and list its members
 foreach ($group in $groups) {
@@ -33,4 +23,3 @@ foreach ($group in $groups) {
     Write-Host "" # Adds a blank line for readability
 }
 
-# End of script
