@@ -94,7 +94,7 @@ foreach ($user in $users) {
 
     try {
         # Get the AD user object
-        $ADuser = Get-ADUser -filter * -Properties samAccountName, department | Where-Object {$_.samaccountname -eq $username}
+        $ADuser = Get-ADUser -filter * -Properties samAccountName, department | Where-Object {$_.samaccountname -eq $newusername}
         $groupname = "g_" + $ADuser.Department
 
         # Add the user to the group
