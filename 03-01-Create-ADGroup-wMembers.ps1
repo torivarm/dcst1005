@@ -6,7 +6,7 @@ $ouPath = Get-ADOrganizationalUnit -Filter * | where-Object {$_.name -eq "$OU"}
 
 
 # Retrieve all groups from the specified OU
-$groups = Get-ADGroup -Filter * | -SearchBase $ouPath.DistinguishedName 
+$groups = Get-ADGroup -Filter * -SearchBase $ouPath.DistinguishedName 
 
 # Iterate through each group and list its members
 foreach ($group in $groups) {
