@@ -1,4 +1,4 @@
-# Define the CSV file path to export the data
+# Define the CSV file path to export the data - MUST BE CHANGED TO MATCH YOUR ENVIRONMENT
 $csvFilePath = "C:\git-projects\dcst1005\dcst1005\"
 
 # Initialize an array to hold the output data
