@@ -52,6 +52,6 @@ foreach ($folder in $sharedFolders) {
 }
 
 # Export the data to a CSV file
-$outputDataServices | Export-Csv -Path $csvFilePath -NoTypeInformation
-$outputDataShares | Export-Csv -Path $csvFilePath-NoTypeInformation
-$outputDataNTFS | Export-Csv -Path $csvFilePath -NoTypeInformation
+$outputDataServices | Export-Csv -Path "$csvFilePath RunningServices.csv" -NoTypeInformation
+$outputDataShares | Export-Csv -Path "$csvFilePath SharedFolders" -NoTypeInformation
+$outputDataNTFS | Export-Csv -Path "$csvFilePath NTFSRights" -NoTypeInformation
