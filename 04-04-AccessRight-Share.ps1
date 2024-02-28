@@ -30,3 +30,11 @@ $acl = Get-Acl "\\infrait.sec\files\Finance-Share"
 
 
 
+$acl = Get-acl -Path "\\infrait.sec\files\Hr-Share"
+$acl.access
+$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("l_FileShareHR_FullControll","FullControl","Allow")
+$acl.SetAccessRule($AccessRule)
+$acl | Set-Acl -Path "\\infrait.sec\files\HR-Share"
+
+$acl = Get-acl -Path "\\infrait.sec\files\HR-Share"
+$acl.access

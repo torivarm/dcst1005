@@ -7,3 +7,8 @@ Get-Counter -ListSet * | Where-Object {$_.CounterSetName -like "*Memory*"} | Sel
 # Gets all the counters for the Processor object
 Get-Counter -ListSet Processor | Select-Object -ExpandProperty Counter
 Get-Counter -Counter "\Processor(*)\% Processor Time" -SampleInterval 2 -MaxSamples 10
+
+
+Get-Counter -ListSet * | Where-Object {$_.CounterSetName -like "*Disk*"} | Select-Object -ExpandProperty CounterSetName
+Get-Counter -ListSet PhysicalDisk | Select-Object -ExpandProperty Counter
+
