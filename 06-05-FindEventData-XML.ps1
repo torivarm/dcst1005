@@ -1,9 +1,3 @@
-$faildLogon = Get-WinEvent -FilterHashtable @{
-    LogName ='Security'
-    ID = 4625
-}
-
-
 # Get the last 10 failed logon events and then parse the XML to get the data
 $events = Get-WinEvent -FilterHashtable @{
     LogName='Security';
@@ -25,10 +19,15 @@ foreach ($event in $events) {
 
 
 # Find the user name of the failed logon
-$faildLogon | ForEach-Object {
+$events = Get-WinEvent -FilterHashtable @{
+    LogName='Security';
+    ID=4625;
+} -MaxEvents 10
+
+$Events | ForEach-Object {
     $event = [xml]$_.ToXml()
     $event.Event.EventData.Data | ForEach-Object {
-        if ($_.Name -eq 'TargetUserName') {
+        if ($_.Name -eq 'IpAddress') {
             $_.'#text'
         }
     }
