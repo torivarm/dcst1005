@@ -11,13 +11,13 @@ $scriptBlock = {
 }
 
 # Duration and interval settings
-$duration = 10 #24 * 60 # 24 hours in minutes
+$duration = 5 #24 * 60 # 24 hours in minutes
 $interval = 10 # Interval in seconds
 $startTime = Get-Date
 
 # Loop to collect data every interval for the duration of 24 hours
 $results = while ((New-TimeSpan -Start $startTime).TotalMinutes -lt $duration) {
-    Invoke-Command -ComputerName dc1,srv1 -ScriptBlock $scriptBlock
+    Invoke-Command -ComputerName dc1 -ScriptBlock $scriptBlock
     Start-Sleep -Seconds ($interval)
 }
 
