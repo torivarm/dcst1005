@@ -11,8 +11,8 @@ $scriptBlock = {
 }
 
 # Duration and interval settings
-$duration = 5 #24 * 60 # 24 hours in minutes
-$interval = 10 # Interval in seconds
+$duration = 2 #24 * 60 # 24 hours in minutes
+$interval = 1 # Interval in seconds
 $startTime = Get-Date
 
 # Loop to collect data every interval for the duration of 24 hours
