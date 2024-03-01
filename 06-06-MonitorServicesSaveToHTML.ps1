@@ -57,6 +57,3 @@ Write-Host "Service status report saved to: $filePath"
 
 $session = New-PSSession -ComputerName srv1
 Copy-Item -Path "C:\git-projects\dcst1005\dcst1005\serviceStatusReport.html" -Destination "C:\inetpub\wwwroot" -ToSession $session
-Invoke-Command -Session $session -ScriptBlock {
-}
-Invoke-Command -Session $session -ScriptBlock { $PSVersionTable }
