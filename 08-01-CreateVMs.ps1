@@ -46,7 +46,7 @@ $vmSize = 'Standard_B1s'
 $adminUsername = 'tim'
 $adminPassword = 'SDfsgl!_DFahS24!fsdf'
 $secureAdminPassword = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
-$image = 'debian11'
+$image = 'debian-11'
 
 
 
@@ -117,7 +117,7 @@ $vmConfig2 = New-AzVMConfig -VMName $vmName2 -VMSize $vmSize |
             Set-AzVMOperatingSystem -Linux `
             -ComputerName $vmName2 `
             -Credential (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword)) |
-            Set-AzVMSourceImage -PublisherName "Debian" -Offer "debian-11" -Skus "11" -Version "latest" |
+            Set-AzVMSourceImage -PublisherName "Debian" -Offer $image -Skus "11" -Version "latest" |
             Add-AzVMNetworkInterface -Id $nic2.Id
 
 
