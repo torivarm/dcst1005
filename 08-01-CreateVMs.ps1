@@ -54,8 +54,17 @@ $image = 'debian11'
 $rg = Get-AzResourceGroup -Name $rgName -ErrorAction SilentlyContinue
 $vnet1 = Get-AzVirtualNetwork -Name $vnetName1 -ResourceGroupName $rgName -ErrorAction SilentlyContinue
 $vnet2 = Get-AzVirtualNetwork -Name $vnetName2 -ResourceGroupName $rgName -ErrorAction SilentlyContinue
-$subnet1 = Get-AzVirtualNetworkSubnetConfig -Name $subnetName1 -VirtualNetwork $vnet1 -ErrorAction SilentlyContinue
-$subnet2 = Get-AzVirtualNetworkSubnetConfig -Name $subnetName2 -VirtualNetwork $vnet2 -ErrorAction SilentlyContinue
+# If vnet is null, drop subnet check
+if (!$vnet1 -eq $null -or !$vnet2 -eq $null) {
+    $subnet1 = Get-AzVirtualNetworkSubnetConfig -Name $subnetName1 -VirtualNetwork $vnet1 -ErrorAction SilentlyContinue
+    $subnet2 = Get-AzVirtualNetworkSubnetConfig -Name $subnetName2 -VirtualNetwork $vnet2 -ErrorAction SilentlyContinue
+}
+
+# If $rg is null then create the Resource Group
+if ($rg -eq $null) {
+    New-AzResourceGroup -Name $rgName -Location $location
+}
+    
 
 # Create Public IPs
 $publicIP1 = @{
