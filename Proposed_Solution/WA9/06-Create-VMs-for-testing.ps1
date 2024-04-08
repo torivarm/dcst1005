@@ -1,6 +1,3 @@
-
-
-
 function New-AzurePublicIPs {
     param (
         [Parameter(Mandatory = $true)]
@@ -23,11 +20,57 @@ function New-AzurePublicIPs {
     }
 }
 
+function New-AzureVMNICs {
+    param (
+        [Parameter(Mandatory = $true)]
+        [System.Collections.Hashtable[]]$nicConfigurations
+    )
+
+    foreach ($config in $nicConfigurations) {
+        try {
+            # Retrieve the Public IP Address object
+            $publicIP = Get-AzPublicIpAddress -Name $config.PublicIpAddress -ResourceGroupName $config.ResourceGroupName
+            if (-not $publicIP) {
+                Write-Error "Public IP Address $($config.PublicIpAddress) not found."
+                continue
+            }
+
+            # Attempt to retrieve the VNet that contains the target subnet
+            $subnet = $null
+            $vNets = Get-AzVirtualNetwork -ResourceGroupName $resourceGroupNameVNET
+            foreach ($vNet in $vNets) {
+                $subnet = $vNet.Subnets | Where-Object { $_.Name -eq $config.Subnet }
+                if ($subnet) {
+                    break
+                }
+            }
+
+            if (-not $subnet) {
+                Write-Error "Subnet $($config.Subnet) not found."
+                continue
+            }
+
+            # Create the NIC with the associated Public IP Address and Subnet
+            $nic = New-AzNetworkInterface -Name $config.Name `
+                                          -ResourceGroupName $config.ResourceGroupName `
+                                          -Location $config.Location `
+                                          -SubnetId $subnet.Id `
+                                          -PublicIpAddressId $publicIP.Id `
+                                          -ErrorAction Stop
+            Write-Output "Successfully created NIC: $($nic.Name) in $($nic.Location)"
+        }
+        catch {
+            Write-Error "Failed to create NIC: $($config.Name). Error: $_"
+        }
+    }
+}
+
 
 # Variables
 $prefix = "tim"
 $resourceGroupName = "$prefix-rg-vm-001"
 $location = "uksouth"
+$resourceGroupNameVNET = "$prefix-rg-network-001"
 
 # Create Resource Group for VMs
 
@@ -44,10 +87,17 @@ $adminPassword = 'SDfsgl!_DFahS24!fsdf'
 $secureAdminPassword = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
 $image = 'debian-11'
 
+# pip names
 $publicIPName1 = "$prefix-pip-mgmt-prod-uk-001"
 $publicIPName2 = "$prefix-pip-web-prod-uk-001"
 $publicIPName3 = "$prefix-pip-hr-prod-uk-001"
 $publicIPName4 = "$prefix-pip-hrdev-dev-uk-001"
+
+# Subnet names
+$subnetName1 = "$prefix-snet-mgmt-prod-uk-001"
+$subnetName2 = "$prefix-snet-web-prod-uk-001"
+$subnetName3 = "$prefix-snet-hr-prod-uk-001"
+$subnetName4 = "$prefix-snet-hrdev-dev-uk-001"
 
 
     
@@ -80,28 +130,49 @@ $publicIPconfigs = @(
     }
 )
 
+# NIC configurations
+$nicConfigurations = @(
+    @{
+        Name = $vmName1 + '-nic'
+        ResourceGroupName = $resourceGroupName
+        Location = $location
+        PublicIpAddress = $publicIPName1
+        Subnet = $subnetName1
+    },
+    @{
+        Name = $vmName2 + '-nic'
+        ResourceGroupName = $resourceGroupName
+        Location = $location
+        PublicIpAddress = $publicIPName2
+        Subnet = $subnetName2
+    },
+    @{
+        Name = $vmName3 + '-nic'
+        ResourceGroupName = $resourceGroupName
+        Location = $location
+        PublicIpAddress = $publicIPName3
+        Subnet = $subnetName3
+    },
+    @{
+        Name = $vmName4 + '-nic'
+        ResourceGroupName = $resourceGroupName
+        Location = $location
+        PublicIpAddress = $publicIPName4
+        Subnet = $subnetName4
+    }
+)
+
+
+
+
 # Call the function to create the Public IPs
 New-AzurePublicIPs -publicIPconfigs $publicIPconfigs
+Start-Sleep -Seconds 30
 
-# Create NICs
-$nic1 = @{
-    Name = $vmName1 + '-nic'
-    ResourceGroupName = $resourceGroupName
-    Location = $location
-    PublicIpAddress = $pip1
-    Subnet = $subnet1
-}
+# Call the funtion to create the NICs
+New-AzureVMNICs -nicConfigurations $nicConfigurations
 
-$nic2 = @{
-    Name = $vmName2 + '-nic'
-    ResourceGroupName = $resourceGroupName
-    Location = $location
-    PublicIpAddress = $pip2
-    Subnet = $subnet2
-}
 
-$nic1 = New-AzNetworkInterface @nic1
-$nic2 = New-AzNetworkInterface @nic2
 
 
 # Create VMs configuration
