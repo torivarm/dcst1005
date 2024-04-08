@@ -12,23 +12,6 @@ $subscrptionID = "41082359-57d6-4427-b5d9-21e269157652"
 Connect-AzAccount -Tenant $tenantID -Subscription $subscrptionID
 #>
 
-function Get-ResourceGroup {
-    param (
-        [string]$resourceGroupName,
-        [string]$location
-    )
-
-    # Check if the Resource Group already exists
-    $resourceGroup = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
-
-    if (-not $resourceGroup) {
-        # Resource Group does not exist, so create it
-        New-AzResourceGroup -Name $resourceGroupName -Location $location -ErrorAction Stop
-        Write-Output "Created Resource Group: $resourceGroupName in $location"
-    } else {
-        Write-Output "Resource Group $resourceGroupName already exists."
-    }
-}
 
 
 function New-VNetWithSubnets {
@@ -39,6 +22,16 @@ function New-VNetWithSubnets {
         [string]$vnetAddressSpace,
         [array]$subnets
     )
+    # Check if the Resource Group exists
+    $resourceGroup = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
+
+    if (-not $resourceGroup) {
+        Write-Error "Resource Group $resourceGroupName does not exist. Creates the Resource Group first."
+        New-ResourceGroup -resourceGroupName $resourceGroupName -location $location
+    }
+    else {
+        <# Action when all if and elseif conditions are false #>
+    
 
     # Check if the VNET already exists
     $vnet = Get-AzVirtualNetwork -Name $vnetName -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
@@ -65,6 +58,7 @@ function New-VNetWithSubnets {
             Write-Output "Subnet $($subnet.Name) already exists in $vnetName."
         }
     }
+}
 }
 
 
@@ -150,7 +144,7 @@ $resourceGroupName = $prefix + '-rg-network-001'
 $location = 'uksouth'
 
 # First, ensure the Resource Group exists or create it if it does not
-Get-ResourceGroup -resourceGroupName $resourceGroupName -location $location
+New-ResourceGroup -resourceGroupName $resourceGroupName -location $location
 
 # Execution - Create the VNETs with subnets
 foreach ($vnetConfig in $vnetConfigs) {
