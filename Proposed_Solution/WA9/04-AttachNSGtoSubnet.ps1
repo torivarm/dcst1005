@@ -1,10 +1,10 @@
 # This script attaches a NSG to appropriate subnets in the virtual networks created in 01-CreateVNET-and-subnet.ps1.
 # This is the following subnets from the previous script:
 # Subnets: 
-# - $prefix-snet-mgmt-prod-we-001
-# - $prefix-snet-web-prod-we-001
-# - $prefix-snet-hrweb-prod-we-001
-# - $prefix-snet-hrweb-dev-we-001
+# - $prefix-snet-mgmt-prod-uk-001
+# - $prefix-snet-web-prod-uk-001
+# - $prefix-snet-hrweb-prod-uk-001
+# - $prefix-snet-hrweb-dev-uk-001
 
 # Variables
 $prefix = "tim"
@@ -14,10 +14,10 @@ $location = "uksouth"
 
 # Define subnet names to search for
 $targetSubnets = @(
-    "$prefix-snet-mgmt-prod-we-001",
-    "$prefix-snet-web-prod-we-001",
-    "$prefix-snet-hrweb-prod-we-001",
-    "$prefix-snet-hrweb-dev-we-001"
+    "$prefix-snet-mgmt-prod-uk-001",
+    "$prefix-snet-web-prod-uk-001",
+    "$prefix-snet-hrweb-prod-uk-001",
+    "$prefix-snet-hrweb-dev-uk-001"
 )
 
 # Fetch the NSG

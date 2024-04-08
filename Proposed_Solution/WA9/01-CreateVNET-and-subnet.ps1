@@ -51,37 +51,37 @@ function New-VNetWithSubnets {
 
 $vnetConfigs = @(
     @{
-        Name = "$prefix-vnet-hub-shared-we"
+        Name = "$prefix-vnet-hub-shared-uk"
         AddressSpace = "10.10.0.0/16"
         Subnets = @(
-            @{Name = "$prefix-snet-mgmt-prod-we-001"; AddressPrefix = "10.10.0.0/24"}
+            @{Name = "$prefix-snet-mgmt-prod-uk-001"; AddressPrefix = "10.10.0.0/24"}
         )
     },
     @{
-        Name = "$prefix-vnet-web-shared-we-001"
+        Name = "$prefix-vnet-web-shared-uk-001"
         AddressSpace = "10.20.0.0/16"
         Subnets = @(
-            @{Name = "$prefix-snet-web-prod-we-001"; AddressPrefix = "10.20.0.0/24"},
-            @{Name = "$prefix-snet-app-prod-we-001"; AddressPrefix = "10.20.1.0/24"},
-            @{Name = "$prefix-snet-db-prod-we-001"; AddressPrefix = "10.20.2.0/24"}
+            @{Name = "$prefix-snet-web-prod-uk-001"; AddressPrefix = "10.20.0.0/24"},
+            @{Name = "$prefix-snet-app-prod-uk-001"; AddressPrefix = "10.20.1.0/24"},
+            @{Name = "$prefix-snet-db-prod-uk-001"; AddressPrefix = "10.20.2.0/24"}
         )
     },
     @{
-        Name = "$prefix-vnet-hr-prod-we-001"
+        Name = "$prefix-vnet-hr-prod-uk-001"
         AddressSpace = "10.30.0.0/16"
         Subnets = @(
-            @{Name = "$prefix-snet-hrweb-prod-we-001"; AddressPrefix = "10.30.0.0/24"},
-            @{Name = "$prefix-snet-hrapp-prod-we-001"; AddressPrefix = "10.30.1.0/24"},
-            @{Name = "$prefix-snet-hrdb-prod-we-001"; AddressPrefix = "10.30.2.0/24"}
+            @{Name = "$prefix-snet-hrweb-prod-uk-001"; AddressPrefix = "10.30.0.0/24"},
+            @{Name = "$prefix-snet-hrapp-prod-uk-001"; AddressPrefix = "10.30.1.0/24"},
+            @{Name = "$prefix-snet-hrdb-prod-uk-001"; AddressPrefix = "10.30.2.0/24"}
         )
     },
     @{
-        Name = "$prefix-vnet-hrdev-dev-we-001"
+        Name = "$prefix-vnet-hrdev-dev-uk-001"
         AddressSpace = "10.40.0.0/16"
         Subnets = @(
-            @{Name = "$prefix-snet-hrweb-dev-we-001"; AddressPrefix = "10.40.0.0/24"},
-            @{Name = "$prefix-snet-hrapp-dev-we-001"; AddressPrefix = "10.40.1.0/24"},
-            @{Name = "$prefix-snet-hrdb-dev-we-001"; AddressPrefix = "10.40.2.0/24"}
+            @{Name = "$prefix-snet-hrweb-dev-uk-001"; AddressPrefix = "10.40.0.0/24"},
+            @{Name = "$prefix-snet-hrapp-dev-uk-001"; AddressPrefix = "10.40.1.0/24"},
+            @{Name = "$prefix-snet-hrdb-dev-uk-001"; AddressPrefix = "10.40.2.0/24"}
         )
     }
 )

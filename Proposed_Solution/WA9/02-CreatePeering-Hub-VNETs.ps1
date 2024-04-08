@@ -42,8 +42,8 @@ $location = 'uksouth'
 
 # Create Peering between VNETs - NOTE! Hardcoded VNET names. These are the same as in the previous scripts.
 # Define the hub and spoke VNET names. Names found in 01-CreateVNET-and-subnet.ps1 under $vnetConfigs hashtable.
-$hubVnetName = "$prefix-vnet-hub-shared-we"
-$spokeVnetNames = @("$prefix-vnet-web-shared-we-001", "$prefix-vnet-hr-prod-we-001", "$prefix-vnet-hrdev-dev-we-001")
+$hubVnetName = "$prefix-vnet-hub-shared-uk"
+$spokeVnetNames = @("$prefix-vnet-web-shared-uk-001", "$prefix-vnet-hr-prod-uk-001", "$prefix-vnet-hrdev-dev-uk-001")
 
 # Loop through each spoke VNET and create peering with the hub
 foreach ($spokeVnetName in $spokeVnetNames) {
