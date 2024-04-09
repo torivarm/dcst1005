@@ -5,7 +5,11 @@
 # Connect to Azure
 #Connect-AzAccount -Tenant $tenantID -Subscription $subscrptionID
 
-
+# Variables - REMEMBER to change $prefix to your own prefix
+$prefix = 'tim'
+# Resource group:
+$resourceGroupName = $prefix + '-rg-network-001'
+$location = 'uksouth'
 
 # Create Resource Group for the VNETs with a function
 function New-ResourceGroup {
@@ -26,12 +30,6 @@ function New-ResourceGroup {
     }
 }
 
-
-# Variables - REMEMBER to change $prefix to your own prefix
-$prefix = 'tim'
-# Resource group:
-$resourceGroupName = $prefix + '-rg-network-001'
-$location = 'uksouth'
 
 # Create the resource group, if it does not exist
 New-ResourceGroup -resourceGroupName $resourceGroupName -location $location
