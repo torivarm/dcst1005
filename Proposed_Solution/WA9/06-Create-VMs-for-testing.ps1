@@ -169,6 +169,7 @@ Start-Sleep -Seconds 30
 
 # Call the funtion to create the NICs
 New-AzureVMNICs -nicConfigurations $nicConfigurations
+Start-Sleep -Seconds 30
 
 
 
