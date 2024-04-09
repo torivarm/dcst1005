@@ -27,12 +27,11 @@ function New-ResourceGroup {
 }
 
 
-# Define the prefix for the resource group and resources
+# Variables - REMEMBER to change $prefix to your own prefix
 $prefix = 'tim'
 # Resource group:
 $resourceGroupName = $prefix + '-rg-network-001'
 $location = 'uksouth'
-
 
 # Create the resource group, if it does not exist
 New-ResourceGroup -resourceGroupName $resourceGroupName -location $location

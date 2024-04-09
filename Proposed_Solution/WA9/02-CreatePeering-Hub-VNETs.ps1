@@ -1,3 +1,13 @@
+# This script creates peering between the hub and spoke VNETs created in 01-CreateVNET-and-subnet.ps1.
+# The script defines a function New-VNetPeering that creates a peering between two VNETs.
+
+# Variables - REMEMBER to change $prefix to your own prefix
+$prefix = 'tim'
+# Resource group:
+$resourceGroupName = $prefix + '-rg-network-001'
+$location = 'uksouth'
+
+
 function New-VNetPeering {
     param (
         [Parameter(Mandatory=$true)]
@@ -33,12 +43,6 @@ function New-VNetPeering {
     }
 }
 
-
-# Variables
-$prefix = 'tim'
-# Resource group:
-$resourceGroupName = $prefix + '-rg-network-001'
-$location = 'uksouth'
 
 # Create Peering between VNETs - NOTE! Hardcoded VNET names. These are the same as in the previous scripts.
 # Define the hub and spoke VNET names. Names found in 01-CreateVNET-and-subnet.ps1 under $vnetConfigs hashtable.

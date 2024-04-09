@@ -5,6 +5,12 @@
 # The script contains a function New-VNetWithSubnets that creates a VNET with the specified subnets.
 # It iterates over each subnet configuration and adds it to the VNET.
 
+# Variables - REMEMBER to change $prefix to your own prefix
+$prefix = 'tim'
+# Resource group:
+$resourceGroupName = $prefix + '-rg-network-001'
+$location = 'uksouth'
+
 function New-VNetWithSubnets {
     param (
         [string]$resourceGroupName,
@@ -86,11 +92,6 @@ $vnetConfigs = @(
     }
 )
 
-# Variables
-$prefix = 'tim'
-# Resource group:
-$resourceGroupName = $prefix + '-rg-network-001'
-$location = 'uksouth'
 
 # Execution - Create the VNETs with subnets
 foreach ($vnetConfig in $vnetConfigs) {

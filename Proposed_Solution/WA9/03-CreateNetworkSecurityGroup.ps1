@@ -2,10 +2,13 @@
 # The NSG will be attached to appropriate subnets in the virtual networks on 04-AttachNSGtoSubnet.ps1.
 # Then the script will create a rule that allows for inbound traffic on port 80 and 22.
 
-$prefix = "tim"
+# Variables - REMEMBER to change $prefix to your own prefix
+$prefix = 'tim'
+# Resource group:
+$resourceGroupName = $prefix + '-rg-network-001'
+$location = 'uksouth'
+# NSG:
 $nsgName = "$prefix-nsg-port80-22"
-$resourceGroupName = "$prefix-rg-network-001"
-$location = "uksouth"
 
 # Attempt to fetch an existing NSG
 $nsg = Get-AzNetworkSecurityGroup -Name $nsgName -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue

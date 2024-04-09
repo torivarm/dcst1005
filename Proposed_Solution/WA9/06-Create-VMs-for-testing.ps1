@@ -72,8 +72,6 @@ $resourceGroupName = "$prefix-rg-vm-001"
 $location = "uksouth"
 $resourceGroupNameVNET = "$prefix-rg-network-001"
 
-# Create Resource Group for VMs
-
 
 # Variables for VMs
 $vmName1 = "$prefix-vm-mgmt-prod-uk-001"
@@ -96,8 +94,8 @@ $publicIPName4 = "$prefix-pip-hrdev-dev-uk-001"
 # Subnet names
 $subnetName1 = "$prefix-snet-mgmt-prod-uk-001"
 $subnetName2 = "$prefix-snet-web-prod-uk-001"
-$subnetName3 = "$prefix-snet-hr-prod-uk-001"
-$subnetName4 = "$prefix-snet-hrdev-dev-uk-001"
+$subnetName3 = "$prefix-snet-hrweb-prod-uk-001"
+$subnetName4 = "$prefix-snet-hrweb-dev-uk-001"
 
 
     

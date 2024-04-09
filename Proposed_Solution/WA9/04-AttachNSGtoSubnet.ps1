@@ -6,11 +6,13 @@
 # - $prefix-snet-hrweb-prod-uk-001
 # - $prefix-snet-hrweb-dev-uk-001
 
-# Variables
-$prefix = "tim"
+# Variables - REMEMBER to change $prefix to your own prefix
+$prefix = 'tim'
+# Resource group:
+$resourceGroupName = $prefix + '-rg-network-001'
+$location = 'uksouth'
+# NSG:
 $nsgName = "$prefix-nsg-port80-22"
-$resourceGroupName = "$prefix-rg-network-001"
-$location = "uksouth"
 
 # Define subnet names to search for
 $targetSubnets = @(
