@@ -258,14 +258,5 @@ Start-Sleep -Seconds 30
 
 # Call the function to create the VM(s)
 New-AzureVMs -vmConfigurations $vmConfigurations
-Start-Sleep -Seconds 240
+Start-Sleep -Seconds 480
 
-
-
-Invoke-AzVMRunCommand `
-   -ResourceGroupName $resourceGroupName `
-   -Name $vmName1 `
-   -CommandId 'RunShellScript' `
-   -ScriptString 'sudo apt-get update && sudo apt-get install -y nginx'
-
-Get-AzPublicIpAddress -Name $publicIPName1 -ResourceGroupName $resourceGroupName | Select-Object "IpAddress"
