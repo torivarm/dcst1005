@@ -65,6 +65,40 @@ function New-AzureVMNICs {
     }
 }
 
+function New-AzureVMs {
+    param (
+        [Parameter(Mandatory = $true)]
+        [System.Collections.Hashtable[]]$vmConfigurations
+    )
+
+    foreach ($config in $vmConfigurations) {
+        # Retrieve the NIC for the VM
+        $nic = Get-AzNetworkInterface -Name $config.NicName -ResourceGroupName $config.ResourceGroupName
+        if (-not $nic) {
+            Write-Error "NIC $($config.NicName) not found."
+            continue
+        }
+
+        # Define the VM configuration
+        try {
+            # Create VM configuration
+            $vmConfig = New-AzVMConfig -VMName $config.VMName -VMSize $config.VMSize
+            $vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Linux -ComputerName $config.VMName -Credential $config.Credential
+            $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName $config.ImagePublisher -Offer $config.ImageOffer -Skus $config.ImageSku -Version $config.ImageVersion
+            $vmConfig = Add-AzVMNetworkInterface -VM $vmConfig -Id $nic.Id
+
+            # Create the VM
+            New-AzVM -ResourceGroupName $config.ResourceGroupName -Location $config.Location -VM $vmConfig -AsJob -Verbose
+            Write-Output "Successfully created VM: $($config.VMName)"
+        }
+        catch {
+            Write-Error "Failed to create VM: $($config.VMName). Error: $_"
+        }
+    }
+}
+
+
+
 
 # Variables
 $prefix = "tim"
@@ -79,6 +113,7 @@ $vmName2 = "$prefix-vm-web-prod-uk-001"
 $vmName3 = "$prefix-vm-hr-prod-uk-001"
 $vmName4 = "$prefix-vm-hrdev-dev-uk-001"
 
+# VM configurations - Change username and password
 $vmSize = 'Standard_B1s'
 $adminUsername = 'tim'
 $adminPassword = 'SDfsgl!_DFahS24!fsdf'
@@ -160,7 +195,57 @@ $nicConfigurations = @(
     }
 )
 
-
+# Example VM configuration
+$vmConfigurations = @(
+    @{
+        VMName = $vmName1
+        NicName = "$vmName1-nic"
+        ResourceGroupName = $resourceGroupName
+        Location = $location
+        VMSize = $vmSize
+        Credential = (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword))
+        ImagePublisher = "debian"
+        ImageOffer = $image
+        ImageSku = "11"
+        ImageVersion = "latest"
+    },
+    @{
+        VMName = $vmName2
+        NicName = "$vmName2-nic"
+        ResourceGroupName = $resourceGroupName
+        Location = $location
+        VMSize = $vmSize
+        Credential = (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword))
+        ImagePublisher = "debian"
+        ImageOffer = $image
+        ImageSku = "11"
+        ImageVersion = "latest"
+    },
+    @{
+        VMName = $vmName3
+        NicName = "$vmName3-nic"
+        ResourceGroupName = $resourceGroupName
+        Location = $location
+        VMSize = $vmSize
+        Credential = (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword))
+        ImagePublisher = "debian"
+        ImageOffer = $image
+        ImageSku = "11"
+        ImageVersion = "latest"
+    },
+    @{
+        VMName = $vmName4
+        NicName = "$vmName4-nic"
+        ResourceGroupName = $resourceGroupName
+        Location = $location
+        VMSize = $vmSize
+        Credential = (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword))
+        ImagePublisher = "debian"
+        ImageOffer = $image
+        ImageSku = "11"
+        ImageVersion = "latest"
+    }
+)
 
 
 # Call the function to create the Public IPs
@@ -170,6 +255,12 @@ Start-Sleep -Seconds 30
 # Call the funtion to create the NICs
 New-AzureVMNICs -nicConfigurations $nicConfigurations
 Start-Sleep -Seconds 30
+
+# Call the function to create the VM(s)
+New-AzureVMs -vmConfigurations $vmConfigurations
+Start-Sleep -Seconds 240
+
+
 
 
 
