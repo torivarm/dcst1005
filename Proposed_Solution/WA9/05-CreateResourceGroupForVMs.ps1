@@ -1,4 +1,11 @@
 # Create Resource Group for VMs with a function
+
+# Define the prefix for the resource group and resources
+$prefix = 'tim'
+# Resource group:
+$resourceGroupName = $prefix + '-rg-vm-001'
+$location = 'uksouth'
+
 function New-ResourceGroup {
     param (
         [string]$resourceGroupName,
@@ -16,13 +23,6 @@ function New-ResourceGroup {
         Write-Output "Resource Group $resourceGroupName already exists."
     }
 }
-
-
-# Define the prefix for the resource group and resources
-$prefix = 'tim'
-# Resource group:
-$resourceGroupName = $prefix + '-rg-vm-001'
-$location = 'uksouth'
 
 
 # Create the resource group, if it does not exist

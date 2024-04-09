@@ -1,3 +1,16 @@
+# This script creates four VMs in Azure using the Az module.
+# The script defines three functions: New-AzurePublicIPs, New-AzureVMNICs, and New-AzureVMs.
+# The New-AzurePublicIPs function creates public IP addresses.
+# The New-AzureVMNICs function creates network interfaces (NICs) with associated public IP addresses and subnets.
+# The New-AzureVMs function creates VMs with the specified NICs.
+
+# Variables
+$prefix = "tim"
+$resourceGroupName = "$prefix-rg-vm-001"
+$location = "uksouth"
+$resourceGroupNameVNET = "$prefix-rg-network-001"
+
+
 function New-AzurePublicIPs {
     param (
         [Parameter(Mandatory = $true)]
@@ -96,16 +109,6 @@ function New-AzureVMs {
         }
     }
 }
-
-
-
-
-# Variables
-$prefix = "tim"
-$resourceGroupName = "$prefix-rg-vm-001"
-$location = "uksouth"
-$resourceGroupNameVNET = "$prefix-rg-network-001"
-
 
 # Variables for VMs
 $vmName1 = "$prefix-vm-mgmt-prod-uk-001"
