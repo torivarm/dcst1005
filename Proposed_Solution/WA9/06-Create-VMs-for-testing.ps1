@@ -262,30 +262,6 @@ Start-Sleep -Seconds 240
 
 
 
-
-
-
-# Create VMs configuration
-$vmConfig1 = New-AzVMConfig -VMName $vmName1 -VMSize $vmSize |
-            Set-AzVMOperatingSystem -Linux `
-            -ComputerName $vmName1 `
-            -Credential (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword)) |
-            Set-AzVMSourceImage -PublisherName "Debian" -Offer "debian-11" -Skus "11" -Version "latest" |
-            Add-AzVMNetworkInterface -Id $nic1.Id
-
-$vmConfig2 = New-AzVMConfig -VMName $vmName2 -VMSize $vmSize |
-            Set-AzVMOperatingSystem -Linux `
-            -ComputerName $vmName2 `
-            -Credential (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword)) |
-            Set-AzVMSourceImage -PublisherName "Debian" -Offer $image -Skus "11" -Version "latest" |
-            Add-AzVMNetworkInterface -Id $nic2.Id
-
-
-# Create VMs
-
-New-AzVM -ResourceGroupName $resourceGroupName -Location $location -VM $vmConfig1 -asJob
-New-AzVM -ResourceGroupName $resourceGroupName -Location $location -VM $vmConfig2 -asJob
-
 Invoke-AzVMRunCommand `
    -ResourceGroupName $resourceGroupName `
    -Name $vmName1 `
