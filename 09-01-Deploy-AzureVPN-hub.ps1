@@ -58,20 +58,21 @@ $gwipconfig = New-AzVirtualNetworkGatewayIpConfig -Name gwipconfig1 -SubnetId $g
 
 # Create the VPN gateway - NOTE! Takes about 45 minutes to create
 $gwname = $prefix + '-gw-vpngw-001'
-New-AzVirtualNetworkGateway -Name $gwname -ResourceGroupName $resourceGroupName -Location $location -IpConfigurations $gwipconfig -GatewayType Vpn -VpnType RouteBased -EnableBgp $false -GatewaySku VpnGw2 -VpnGatewayGeneration "Generation2" -VpnClientProtocol IkeV2,OpenVPN
+New-AzVirtualNetworkGateway -Name $gwname -ResourceGroupName $resourceGroupName -Location $location -IpConfigurations $gwipconfig -GatewayType Vpn -VpnType RouteBased -EnableBgp $false -GatewaySku VpnGw2 -VpnGatewayGeneration "Generation2" -VpnClientProtocol OpenVPN
 
 # Sleeps for 4 minutes after creating the gateway
 Start-Sleep -Seconds 240
-Get-AzVirtualNetworkGateway -Name $gwname -ResourceGroup $resourceGroupName
 
 $VPNClientAddressPool = "172.16.201.0/24"
 $Gateway = Get-AzVirtualNetworkGateway -ResourceGroupName $resourceGroupName -Name $gwname
 Set-AzVirtualNetworkGateway -VirtualNetworkGateway $Gateway -VpnClientAddressPool $VPNClientAddressPool
 
+# Output the VPN gateway information and IP address
+Write-Output "VPN Gateway Name: $gwname"
+Write-Output "VPN Gateway Public IP Address: $($gwpip.IpAddress)"
 
 
-
-# Checks all subnets in hub VNET
+# Checks subnets in hub VNET and list address prefixes
 Write-host $vnet.Name -ForegroundColor Green
 $vnet.Subnets | ForEach-Object {
     Write-Output "Subnet: $($_.Name) AddressPrefix: $($_.AddressPrefix)"
