@@ -6,7 +6,7 @@
 # It iterates over each subnet configuration and adds it to the VNET.
 
 # Variables - REMEMBER to change $prefix to your own prefix
-$prefix = 'tim'
+$prefix = 'demo'
 # Resource group:
 $resourceGroupName = $prefix + '-rg-network-001'
 $location = 'uksouth'

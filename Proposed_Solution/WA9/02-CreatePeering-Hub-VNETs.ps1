@@ -2,7 +2,7 @@
 # The script defines a function New-VNetPeering that creates a peering between two VNETs.
 
 # Variables - REMEMBER to change $prefix to your own prefix
-$prefix = 'tim'
+$prefix = 'demo'
 # Resource group:
 $resourceGroupName = $prefix + '-rg-network-001'
 $location = 'uksouth'

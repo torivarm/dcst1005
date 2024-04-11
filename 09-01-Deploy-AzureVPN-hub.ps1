@@ -7,7 +7,7 @@
 
 
 
-$prefix = 'tim'
+$prefix = 'demo'
 # Resource group:
 $resourceGroupName = $prefix + '-rg-network-001'
 $location = 'uksouth'
@@ -26,7 +26,7 @@ try {
     $vnet = Get-AzVirtualNetwork -Name $hubvnet -ResourceGroupName $resourceGroupName -ErrorAction Stop
     Write-Output "Hub VNET $hubvnet exists"
 } catch {
-    ritWe-Error "Hub VNET $hubvnet does not exist. Creates the VNET first."
+    WritWe-Error "Hub VNET $hubvnet does not exist. Creates the VNET first."
     Write-Host "Run the 01-CreateVNET-and-subnet.ps1 in WA9 script to create the VNET."
     exit
 }
@@ -49,16 +49,29 @@ if (-not $gatewaySubnet) {
 
 # Create the public IP address for the VPN gateway
 $publicIPName = $prefix + '-pip-vpngw-001'
-$gwpip = New-AzPublicIpAddress -Name $publicIPName -ResourceGroupName $resourceGroupName -Location $location -AllocationMethod Static
+$gwpip = New-AzPublicIpAddress -Name $publicIPName `
+                                -ResourceGroupName $resourceGroupName `
+                                -Location $location `
+                                -AllocationMethod Static `
+                                -Sku Standard
 
 # Create the IP configuration for the VPN gateway
 $vnet = Get-AzVirtualNetwork -Name $hubvnet -ResourceGroupName $resourceGroupName
 $gwsubnet = Get-AzVirtualNetworkSubnetConfig -Name 'GatewaySubnet' -VirtualNetwork $vnet
-$gwipconfig = New-AzVirtualNetworkGatewayIpConfig -Name gwipconfig1 -SubnetId $gwsubnet.Id -PublicIpAddressId $gwpip.Id
+$gwipconfig = New-AzVirtualNetworkGatewayIpConfig -Name "$prefix-gwipconfig1" -SubnetId $gwsubnet.Id -PublicIpAddressId $gwpip.Id
 
 # Create the VPN gateway - NOTE! Takes about 45 minutes to create
 $gwname = $prefix + '-gw-vpngw-001'
-New-AzVirtualNetworkGateway -Name $gwname -ResourceGroupName $resourceGroupName -Location $location -IpConfigurations $gwipconfig -GatewayType Vpn -VpnType RouteBased -EnableBgp $false -GatewaySku VpnGw2 -VpnGatewayGeneration "Generation2" -VpnClientProtocol OpenVPN
+New-AzVirtualNetworkGateway -Name $gwname `
+                            -ResourceGroupName $resourceGroupName `
+                            -Location $location `
+                            -IpConfigurations $gwipconfig `
+                            -GatewayType Vpn `
+                            -VpnType RouteBased `
+                            -EnableBgp $false `
+                            -GatewaySku VpnGw2 `
+                            -VpnGatewayGeneration "Generation2" `
+                            -VpnClientProtocol OpenVPN
 
 # Sleeps for 4 minutes after creating the gateway
 Start-Sleep -Seconds 240

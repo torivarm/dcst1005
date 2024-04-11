@@ -6,7 +6,7 @@
 #Connect-AzAccount -Tenant $tenantID -Subscription $subscrptionID
 
 # Variables - REMEMBER to change $prefix to your own prefix
-$prefix = 'tim'
+$prefix = 'demo'
 # Resource group:
 $resourceGroupName = $prefix + '-rg-network-001'
 $location = 'uksouth'

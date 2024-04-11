@@ -1,7 +1,7 @@
 # Create Resource Group for VMs with a function
 
 # Define the prefix for the resource group and resources
-$prefix = 'tim'
+$prefix = 'demo'
 # Resource group:
 $resourceGroupName = $prefix + '-rg-vm-001'
 $location = 'uksouth'
