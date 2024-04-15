@@ -15,7 +15,7 @@ $vnet = Get-AzVirtualNetwork -Name $vnetNameHUB -ResourceGroupName $resourceGrou
 Add-AzVirtualNetworkSubnetConfig `
                     -Name "AzureBastionSubnet" `
                     -VirtualNetwork $vnet `
-                    -AddressPrefix "10.1.1.0/26" |
+                    -AddressPrefix "10.10.2.0/24" |
                     Set-AzVirtualNetwork
 
 
