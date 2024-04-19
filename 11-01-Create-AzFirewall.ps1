@@ -3,7 +3,7 @@
 # It is placed in the same resource group as the virtual network, but we will delete it after testing.
 
 # Variables
-$prefix = 'tim'
+$prefix = 'demo'
 $resourceGroupName = $prefix + '-rg-network-001'
 $location = 'uksouth'
 $vnetNameHUB = "$prefix-vnet-hub-shared-uk"
@@ -69,11 +69,12 @@ $azFirewall = New-AzFirewall -Name $fwName `
                             -ResourceGroupName $resourceGroupName `
                             -Location $location `
                             -VirtualNetwork $vnet `
-                            -PublicIpAddress $publicIp
+                            -PublicIpAddress $publicIp `
+                            -AsJob
 
 
 # Output the configuration
-Get-AzFirewall -Name $fwName -ResourceGroupName $resourceGroupName
+# Get-AzFirewall -Name $fwName -ResourceGroupName $resourceGroupName
 
 # Delete the Azure Firewall
 # $azFirewall | Remove-AzFirewall -Force
