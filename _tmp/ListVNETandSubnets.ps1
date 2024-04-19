@@ -1,6 +1,6 @@
 # Retrieve all virtual networks within the current subscription context
 # Get's all VNET based on a name prefix variable $prefix
-$prefix = 'demo'
+$prefix = 'tim'
 $vnetList = Get-AzVirtualNetwork | Where-Object { $_.Name -like "$prefix*" }
 
 # Check if we found any VNETs, if not, exit
