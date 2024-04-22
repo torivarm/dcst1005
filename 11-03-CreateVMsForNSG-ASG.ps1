@@ -30,16 +30,25 @@ function New-AzureVMNICs {
 
             if (-not $subnet) {
                 Write-Error "Subnet $($config.Subnet) not found."
+                exit
+            }
+            # Check if the NIC already exists
+            $nic = Get-AzNetworkInterface -Name $config.Name -ResourceGroupName $config.ResourceGroupName -ErrorAction SilentlyContinue
+            if ($nic) {
+                Write-Host "NIC $($config.Name) already exists."
                 continue
             }
+            else {
+                Write-Host "Creating NIC $($config.Name)..."
+                # Create the NIC and attach to Subnet
+                $nic = New-AzNetworkInterface -Name $config.Name `
+                                            -ResourceGroupName $config.ResourceGroupName `
+                                            -Location $config.Location `
+                                            -SubnetId $subnet.Id `
+                                            -ErrorAction Stop
+                Write-Output "Successfully created NIC: $($nic.Name) in $($nic.Location)"
+            }
 
-            # Create the NIC and attach to Subnet
-            $nic = New-AzNetworkInterface -Name $config.Name `
-                                          -ResourceGroupName $config.ResourceGroupName `
-                                          -Location $config.Location `
-                                          -SubnetId $subnet.Id `
-                                          -ErrorAction Stop
-            Write-Output "Successfully created NIC: $($nic.Name) in $($nic.Location)"
         }
         catch {
             Write-Error "Failed to create NIC: $($config.Name). Error: $_"
@@ -58,7 +67,7 @@ function New-AzureVMs {
         $nic = Get-AzNetworkInterface -Name $config.NicName -ResourceGroupName $config.ResourceGroupName
         if (-not $nic) {
             Write-Error "NIC $($config.NicName) not found."
-            continue
+            exit
         }
 
         # Define the VM configuration
@@ -69,9 +78,19 @@ function New-AzureVMs {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName $config.ImagePublisher -Offer $config.ImageOffer -Skus $config.ImageSku -Version $config.ImageVersion
             $vmConfig = Add-AzVMNetworkInterface -VM $vmConfig -Id $nic.Id
 
-            # Create the VM
-            New-AzVM -ResourceGroupName $config.ResourceGroupName -Location $config.Location -VM $vmConfig -AsJob -Verbose
-            Write-Output "Successfully created VM: $($config.VMName)"
+            # Checks if VM exists
+            $vm = Get-AzVM -ResourceGroupName $config.ResourceGroupName -Name $config.VMName -ErrorAction SilentlyContinue
+            if ($vm) {
+                Write-Host "VM $($config.VMName) already exists."
+                continue
+            }
+            else {
+                Write-Host "Creating VM $($config.VMName)..."
+                # Create the VM
+                New-AzVM -ResourceGroupName $config.ResourceGroupName -Location $config.Location -VM $vmConfig -AsJob -Verbose
+                Write-Output "Successfully created VM: $($config.VMName)"
+            }
+
         }
         catch {
             Write-Error "Failed to create VM: $($config.VMName). Error: $_"
@@ -121,3 +140,50 @@ $nicConfigurations = @(
         Subnet = $subnetName3
     }
 )
+
+# VM configuration
+$vmConfigurations = @(
+    @{
+        VMName = $vmName1
+        NicName = "$vmName1-nic"
+        ResourceGroupName = $resourceGroupName
+        Location = $location
+        VMSize = $vmSize
+        Credential = (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword))
+        ImagePublisher = "debian"
+        ImageOffer = $image
+        ImageSku = "11"
+        ImageVersion = "latest"
+    },
+    @{
+        VMName = $vmName2
+        NicName = "$vmName2-nic"
+        ResourceGroupName = $resourceGroupName
+        Location = $location
+        VMSize = $vmSize
+        Credential = (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword))
+        ImagePublisher = "debian"
+        ImageOffer = $image
+        ImageSku = "11"
+        ImageVersion = "latest"
+    },
+    @{
+        VMName = $vmName3
+        NicName = "$vmName3-nic"
+        ResourceGroupName = $resourceGroupName
+        Location = $location
+        VMSize = $vmSize
+        Credential = (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword))
+        ImagePublisher = "debian"
+        ImageOffer = $image
+        ImageSku = "11"
+        ImageVersion = "latest"
+    }
+)
+
+# Call the funtion to create the NICs
+New-AzureVMNICs -nicConfigurations $nicConfigurations
+Start-Sleep -Seconds 5
+
+# Call the function to create the VM(s)
+New-AzureVMs -vmConfigurations $vmConfigurations
