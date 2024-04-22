@@ -1,15 +1,14 @@
-# This script creates four VMs in Azure using the Az module.
-# The script defines three functions: New-AzurePublicIPs, New-AzureVMNICs, and New-AzureVMs.
-# The New-AzurePublicIPs function creates public IP addresses.
-# The New-AzureVMNICs function creates network interfaces (NICs) with associated public IP addresses and subnets.
-# The New-AzureVMs function creates VMs with the specified NICs.
+# In this script we will create VMs in the different subnets in the VNET named $prefix-vnet-web-shared-uk-001.
+# The VMs will be placed in the resource group $prefix-rg-vm-001.
+# The VMs will be named the same as the subnet they are placed in.
+# The VMs will only gave private IP address.
 
+# Variables
 # Variables
 $prefix = "demo"
 $resourceGroupName = "$prefix-rg-vm-001"
 $location = "uksouth"
 $resourceGroupNameVNET = "$prefix-rg-network-001"
-
 
 function New-AzureVMNICs {
     param (
@@ -81,10 +80,11 @@ function New-AzureVMs {
 }
 
 # Variables for VMs
-$vmName1 = "$prefix-vm-mgmt-prod-uk-001"
-$vmName2 = "$prefix-vm-web-prod-uk-001"
-$vmName3 = "$prefix-vm-hr-prod-uk-001"
-$vmName4 = "$prefix-vm-hrdev-dev-uk-001"
+$vmName1 = "$prefix-vm-web-prod-uk-001"
+$vmName2 = "$prefix-vm-app-prod-uk-001"
+$vmName3 = "$prefix-vm-db-prod-uk-001"
+
+
 
 # VM configurations - Change username and password
 $vmSize = 'Standard_B1s'
@@ -93,20 +93,13 @@ $adminPassword = 'SDfsgl!_DFahS24!fsdf'
 $secureAdminPassword = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
 $image = 'debian-11'
 
-# pip names
-$publicIPName1 = "$prefix-pip-mgmt-prod-uk-001"
-$publicIPName2 = "$prefix-pip-web-prod-uk-001"
-$publicIPName3 = "$prefix-pip-hr-prod-uk-001"
-$publicIPName4 = "$prefix-pip-hrdev-dev-uk-001"
 
 # Subnet names
-$subnetName1 = "$prefix-snet-mgmt-prod-uk-001"
-$subnetName2 = "$prefix-snet-web-prod-uk-001"
-$subnetName3 = "$prefix-snet-hrweb-prod-uk-001"
-$subnetName4 = "$prefix-snet-hrweb-dev-uk-001"
+$subnetName1 = "$prefix-snet-web-prod-uk-001"
+$subnetName2 = "$prefix-snet-app-prod-uk-001"
+$subnetName3 = "$prefix-snet-db-prod-uk-001"
 
 
-    
 # NIC configurations
 $nicConfigurations = @(
     @{
@@ -126,73 +119,5 @@ $nicConfigurations = @(
         ResourceGroupName = $resourceGroupName
         Location = $location
         Subnet = $subnetName3
-    },
-    @{
-        Name = $vmName4 + '-nic'
-        ResourceGroupName = $resourceGroupName
-        Location = $location
-        Subnet = $subnetName4
     }
 )
-
-# VM configuration
-$vmConfigurations = @(
-    @{
-        VMName = $vmName1
-        NicName = "$vmName1-nic"
-        ResourceGroupName = $resourceGroupName
-        Location = $location
-        VMSize = $vmSize
-        Credential = (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword))
-        ImagePublisher = "debian"
-        ImageOffer = $image
-        ImageSku = "11"
-        ImageVersion = "latest"
-    },
-    @{
-        VMName = $vmName2
-        NicName = "$vmName2-nic"
-        ResourceGroupName = $resourceGroupName
-        Location = $location
-        VMSize = $vmSize
-        Credential = (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword))
-        ImagePublisher = "debian"
-        ImageOffer = $image
-        ImageSku = "11"
-        ImageVersion = "latest"
-    },
-    @{
-        VMName = $vmName3
-        NicName = "$vmName3-nic"
-        ResourceGroupName = $resourceGroupName
-        Location = $location
-        VMSize = $vmSize
-        Credential = (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword))
-        ImagePublisher = "debian"
-        ImageOffer = $image
-        ImageSku = "11"
-        ImageVersion = "latest"
-    },
-    @{
-        VMName = $vmName4
-        NicName = "$vmName4-nic"
-        ResourceGroupName = $resourceGroupName
-        Location = $location
-        VMSize = $vmSize
-        Credential = (New-Object System.Management.Automation.PSCredential ($adminUsername, $secureAdminPassword))
-        ImagePublisher = "debian"
-        ImageOffer = $image
-        ImageSku = "11"
-        ImageVersion = "latest"
-    }
-)
-
-
-# Call the funtion to create the NICs
-New-AzureVMNICs -nicConfigurations $nicConfigurations
-Start-Sleep -Seconds 30
-
-# Call the function to create the VM(s)
-New-AzureVMs -vmConfigurations $vmConfigurations
-Start-Sleep -Seconds 480
-
