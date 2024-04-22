@@ -78,5 +78,6 @@ $azFirewall = New-AzFirewall -Name $fwName `
 
 
 # Delete the Azure Firewall
-# $azFirewall | Remove-AzFirewall -Force
+# $azFirewall = Get-AzFirewall -Name $fwName -ResourceGroupName $resourceGroupName
+# $azFirewall | Remove-AzFirewall -Force -AsJob
 
