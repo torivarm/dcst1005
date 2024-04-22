@@ -8,6 +8,7 @@ $location = "uksouth"
 
 $asg1Name = "$prefix-ASG-App"
 $asg2Name = "$prefix-ASG-DB"
+$asg3Name = "$prefix-ASG-Web"
 
 # Create ASG1
 # Check if ASG exists, if not, create it
@@ -31,38 +32,13 @@ else {
     Write-Host "ASG $asg2Name already exists."
 }
 
-# Adding VMs to the ASGs
-# Variables
-$resourceGroupNameVM = $prefix + '-rg-vm-001'
-$vmName1 = "$prefix-vm-app-prod-uk-001"
-$vmName2 = "$prefix-vm-db-prod-uk-001"
-
-# Get the VMs
-"Getting the VMs..."
-try {
-    $vm1 = Get-AzVM -Name $vmName1 -ResourceGroupName $resourceGroupNameVM
-    $vm1.Name
+# Create ASG3
+# Check if ASG exists, if not, create it
+$asgcheck = Get-AzApplicationSecurityGroup -Name $asg3Name -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+if (-not $asgcheck) {
+    Write-Host "Creating ASG $asg3Name..." -ForegroundColor Green
+    $asg3 = New-AzApplicationSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name $asg3Name
 }
-catch {
-    Write-Error "VM '$vmName1' not found. Please create the VM or check the name."
-    exit
+else {
+    Write-Host "ASG $asg3Name already exists."
 }
-
-try {
-    $vm2 = Get-AzVM -Name $vmName2 -ResourceGroupName $resourceGroupNameVM
-    $vm2.Name
-}
-catch {
-    Write-Error "VM '$vmName2' not found. Please create the VM or check the name."
-    exit
-}
-
-# Add the VMs to the ASGs
-"Adding the VMs to the ASGs..."
-$vm1 = Add-AzVMApplicationSecurityGroup -VM $vm1 -ApplicationSecurityGroup $asg1
-$vm2 = Add-AzVMApplicationSecurityGroup -VM $vm2 -ApplicationSecurityGroup $asg2
-
-
-# Output the configuration for verification
-Get-AzApplicationSecurityGroup -ResourceGroupName $resourceGroupName
-
