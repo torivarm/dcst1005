@@ -2,7 +2,7 @@ heat_template_version: 2013-05-23
 
 description: >
   HOT template to create a new neutron network plus a router to the public
-  network, and for deploying one Windows 10 (hostname cl1) and two Windows
+  network, and for deploying two Windows 11 (hostname cl1 and adm) and two Windows
   Servers (hostnames dc1 and srv1) without any configuration (only cl1 has
   a boot script to set correct hostname).
 
