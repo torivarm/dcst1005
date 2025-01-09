@@ -52,8 +52,38 @@ La oss bryte ned denne sekvensen:
 
 Etter at kommandoene er kjørt, må man logge ut og inn igjen for at endringene skal tre i kraft.
 
+## Nettverkskonfigurasjon
+
+Normalt ville en domenekontroller være konfigurert med en statisk IP-adresse for å sikre stabil tilgang til domenets tjenester. I dette tilfellet, siden maskinene kjører i et OpenStack-miljø hvor IP-adressene styres dynamisk av plattformen, beholder vi den dynamiske IP-konfigurasjonen.
+
+For å se gjeldende IP-konfigurasjon, kan følgende kommandoer benyttes:
+
+```powershell
+Get-NetIPAddress
+```
+
+Denne kommandoen viser alle IP-adresser konfigurert på maskinen. For mer detaljert informasjon om nettverksadaptere, bruk:
+
+```powershell
+Get-NetAdapter
+```
+
+For å se full TCP/IP-konfigurasjon inkludert gateway og DNS-servere:
+
+```powershell
+Get-NetIPConfiguration -Detailed
+```
+
+Denne cmdlet'en gir en omfattende oversikt over:
+- IP-adresser (både IPv4 og IPv6)
+- Standard gateway
+- DNS-serverinnstillinger
+- Nettverksadapter status
+- DHCP-status
+
 ## Viktige Notater
 - Alle disse kommandoene må kjøres med administratorrettigheter
 - Endringer i tastaturoppsett krever en utlogging for å aktiveres fullstendig
 - Tidssoneendringer trer i kraft umiddelbart
 - Kommandoene kan verifiseres ved å kjøre de første kommandoene på nytt etter endringene er gjort
+- I et produksjonsmiljø ville en domenekontroller normalt ha statisk IP-adresse
