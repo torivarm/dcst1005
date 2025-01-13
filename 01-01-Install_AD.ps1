@@ -10,8 +10,8 @@
 # variable containing the computer name
 $env:COMPUTERNAME
 # If you want to change the computer name, you can use the Rename-Computer cmdlet
-$newcompname = Read-host "Skriv inn ønsket hostname på maskinen"
-Rename-Computer -Newname $newcompname -Restart -Force
+# $newcompname = Read-host "Skriv inn ønsket hostname på maskinen"
+# Rename-Computer -Newname $newcompname -Restart -Force
 
 # Check what features are installed
 Get-WindowsFeature | Where-Object {$_. installstate -eq "installed"}
