@@ -18,9 +18,9 @@ Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses $ipaddressdc1
 ipconfig /all
 
 # Add the computer to the domain
-$domainName = "DomainName.whatever"
+$domainName = "DomainName.whatever" # replace with your domain name (e.g. InfraIT.sec)
 
-$cred = Get-Credential -UserName "@$domainName" -Message 'Provide credentials for a domain admin'
+$cred = Get-Credential -UserName "<writeYourUserName>@$domainName" -Message 'Provide credentials for a domain admin'
 Add-Computer -Credential $cred -DomainName $domainName -PassThru -Verbose
 Restart-Computer
 
