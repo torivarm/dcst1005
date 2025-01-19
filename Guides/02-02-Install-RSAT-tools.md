@@ -18,7 +18,7 @@ To install Active Directory Domain Services and Lightweight Directory Services T
 ```powershell
 Add-WindowsCapability -Online -Name "Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0"
 ```
-
+![alt text](InstallRSAT_ADDS.png)
 ### DNS Server Tools
 To install DNS Server Tools:
 
