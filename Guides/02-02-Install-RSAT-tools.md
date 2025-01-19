@@ -9,7 +9,7 @@ First, let's check which RSAT tools are available on your system:
 ```powershell
 Get-WindowsCapability -Name RSAT* -Online | Select-Object Name, State
 ```
-
+![alt text](ListRSAT.png)
 ## Installing Specific RSAT Tools
 
 ### Active Directory Tools
