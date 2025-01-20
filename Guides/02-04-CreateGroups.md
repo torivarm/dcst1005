@@ -28,19 +28,19 @@ Here's how to create multiple groups using an array structure.
 $groups = @(
     @{
         Name = "IT Support"
-        Path = "OU=IT,OU=Groups,DC=contoso,DC=com"
+        Path = "OU=IT,OU=Groups,DC=InfraIT,DC=sec"
         Scope = "Global"
         Category = "Security"
     },
     @{
         Name = "HR Team"
-        Path = "OU=HR,OU=Groups,DC=contoso,DC=com"
+        Path = "OU=HR,OU=Groups,DC=InfraIT,DC=sec"
         Scope = "Global"
         Category = "Security"
     },
     @{
         Name = "Finance Users"
-        Path = "OU=Finance,OU=Groups,DC=contoso,DC=com"
+        Path = "OU=Finance,OU=Groups,DC=InfraIT,DC=sec"
         Scope = "Global"
         Category = "Security"
     }
@@ -202,14 +202,14 @@ Here's a complete example that puts it all together:
 $groups = @(
     @{
         Name = "IT Support"
-        Path = "OU=IT,OU=Groups,DC=contoso,DC=com"
+        Path = "OU=IT,OU=Groups,DC=InfraIT,DC=sec"
         Scope = "Global"
         Category = "Security"
         Members = @("John.Doe", "Jane.Smith", "Help Desk")
     },
     @{
         Name = "HR Team"
-        Path = "OU=HR,OU=Groups,DC=contoso,DC=com"
+        Path = "OU=HR,OU=Groups,DC=InfraIT,DC=sec"
         Scope = "Global"
         Category = "Security"
         Members = @("Sarah.Johnson", "HR Managers")
@@ -240,4 +240,4 @@ This script demonstrates:
 5. Handling errors at each step
 6. Providing clear feedback for all operations
 
-Remember to replace "DC=contoso,DC=com" and the OU paths with your actual domain structure. Also ensure that the users and groups you're referencing actually exist in your Active Directory environment.
+Remember to replace "DC=InfraIT,DC=sec" and the OU paths with your actual domain structure. Also ensure that the users and groups you're referencing actually exist in your Active Directory environment.
