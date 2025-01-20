@@ -167,7 +167,7 @@ $ouStructure = @{
     )
 }
 
-$domainPath = "DC=contoso,DC=com"
+$domainPath = "DC=InfraIT,DC=sec"
 
 # Function to create an OU with error handling
 function New-CustomADOU {
