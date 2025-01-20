@@ -10,9 +10,25 @@ New-ADOrganizationalUnit -Name "TestOU" -Path "DC=infrait,DC=sec"
 ```
 
 ### Deleting the OU
+There are two approaches to delete an OU:
+
+#### Option 1: Disable Protection and Delete
 ```powershell
-# Note: The -Recursive switch is needed because OUs are protected from accidental deletion by default
-Remove-ADOrganizationalUnit -Identity "OU=TestOU,DC=infrait,DC=sec" -Recursive -Confirm:$false
+# First, disable the protection
+Set-ADOrganizationalUnit -Identity "OU=TestOU,DC=infrait,DC=sec" -ProtectedFromAccidentalDeletion $false
+
+# Then delete the OU
+Remove-ADOrganizationalUnit -Identity "OU=TestOU,DC=infrait,DC=sec" -Confirm:$false
+```
+
+#### Option 2: Create OU Without Protection
+When creating new OUs, you can disable the protection from the start:
+```powershell
+# Create OU with protection disabled
+New-ADOrganizationalUnit -Name "TestOU" -Path "DC=infrait,DC=sec" -ProtectedFromAccidentalDeletion $false
+
+# Now you can delete it without first disabling protection
+Remove-ADOrganizationalUnit -Identity "OU=TestOU,DC=infrait,DC=sec" -Confirm:$false
 ```
 
 ## Checking OU Existence Before Creation
