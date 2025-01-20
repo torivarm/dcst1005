@@ -178,8 +178,13 @@ function New-CustomADOU {
     )
     
     try {
-        # Check if OU exists
-        $existingOU = Get-ADOrganizationalUnit -Filter "Name -eq '$Name'" -SearchBase $Path -ErrorAction SilentlyContinue
+        # Check if OU exists - we need to handle the case where the search base doesn't exist
+        try {
+            $existingOU = Get-ADOrganizationalUnit -Filter "Name -eq '$Name'" -SearchBase $Path -ErrorAction Stop
+        } catch {
+            # If SearchBase doesn't exist, we know the OU doesn't exist
+            $existingOU = $null
+        }
         
         if (-not $existingOU) {
             # Create new OU
@@ -236,13 +241,24 @@ function Remove-CustomADOU {
 foreach ($parentOU in $ouStructure.Keys) {
     # Create parent OU
     $parentPath = $domainPath
+    Write-Host "`nCreating parent OU: $parentOU" -ForegroundColor Cyan
     $parentCreated = New-CustomADOU -Name $parentOU -Path $parentPath
     
     if ($parentCreated) {
-        # Create child OUs
-        foreach ($childOU in $ouStructure[$parentOU]) {
-            $childPath = "OU=$parentOU,$domainPath"
-            New-CustomADOU -Name $childOU -Path $childPath
+        # Verify parent OU exists before creating children
+        $parentFullPath = "OU=$parentOU,$domainPath"
+        $verifyParent = Get-ADOrganizationalUnit -Identity $parentFullPath -ErrorAction SilentlyContinue
+        
+        if ($verifyParent) {
+            Write-Host "Verified parent OU exists, creating children..." -ForegroundColor Cyan
+            # Create child OUs
+            foreach ($childOU in $ouStructure[$parentOU]) {
+                $childPath = $parentFullPath
+                New-CustomADOU -Name $childOU -Path $childPath
+            }
+        } else {
+            Write-Host "Parent OU verification failed for: $parentOU" -ForegroundColor Red
+            Write-Host "Cannot create child OUs" -ForegroundColor Red
         }
     }
 }
@@ -266,6 +282,7 @@ function Remove-OUStructure {
         Remove-CustomADOU -Identity $parentPath
     }
 }
+
 
 # Example usage to remove the structure:
 # Remove-OUStructure -Structure $ouStructure -DomainPath $domainPath
