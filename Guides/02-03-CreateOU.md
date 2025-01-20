@@ -283,7 +283,6 @@ function Remove-OUStructure {
     }
 }
 
-
 # Example usage to remove the structure:
 # Remove-OUStructure -Structure $ouStructure -DomainPath $domainPath
 ```
