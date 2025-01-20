@@ -10,7 +10,7 @@ Let's start with the basic commands to create and delete Active Directory groups
 New-ADGroup -Name "IT Support" `
     -GroupScope Global `
     -GroupCategory Security `
-    -Path "OU=Groups,DC=contoso,DC=com"
+    -Path "OU=Groups,DC=InfraIT,DC=sec"
 ```
 
 ### Deleting a Group
