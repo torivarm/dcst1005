@@ -1,0 +1,344 @@
+# Active Directory User Management with PowerShell - A Comprehensive Guide
+
+## Table of Contents
+- [Basic User Creation](#basic-user-creation)
+- [Advanced User Creation](#advanced-user-creation)
+- [User Existence Check](#user-existence-check)
+- [Password Generation](#password-generation)
+- [Username Generation](#username-generation)
+- [Bulk User Creation from CSV](#bulk-user-creation-from-csv)
+- [Updating User Properties](#updating-user-properties)
+- [Cleanup Script](#cleanup-script)
+
+## Basic User Creation
+
+Let's start with the simplest form of creating a new user in Active Directory using PowerShell. The minimum required properties are:
+- SamAccountName
+- UserPrincipalName
+- Name
+- GivenName
+- Surname
+- AccountPassword
+
+```powershell
+# Basic user creation
+New-ADUser `
+    -SamAccountName "john.doe" `
+    -UserPrincipalName "john.doe@domain.com" `
+    -Name "John Doe" `
+    -GivenName "John" `
+    -Surname "Doe" `
+    -AccountPassword (ConvertTo-SecureString "P@ssw0rd123" -AsPlainText -Force) `
+    -Enabled $true
+```
+
+## Advanced User Creation
+
+Now let's add more properties and organize the code better:
+
+```powershell
+# Advanced user creation with additional properties
+$userProperties = @{
+    SamAccountName       = "john.doe"
+    UserPrincipalName   = "john.doe@domain.com"
+    Name                = "John Doe"
+    GivenName           = "John"
+    Surname            = "Doe"
+    DisplayName        = "John Doe"
+    Description        = "Sales Department"
+    Office             = "New York"
+    Company            = "Contoso Ltd"
+    Department         = "Sales"
+    Title              = "Sales Representative"
+    City               = "New York"
+    Country            = "US"
+    AccountPassword    = (ConvertTo-SecureString "P@ssw0rd123" -AsPlainText -Force)
+    Enabled            = $true
+    ChangePasswordAtLogon = $true
+}
+
+New-ADUser @userProperties
+```
+
+## User Existence Check
+
+Before creating a user, it's good practice to check if they already exist:
+
+```powershell
+function Test-ADUserExists {
+    param(
+        [Parameter(Mandatory)]
+        [string]$SamAccountName
+    )
+    
+    try {
+        $user = Get-ADUser -Identity $SamAccountName
+        return $true
+    }
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
+        return $false
+    }
+    catch {
+        Write-Error "Error checking user existence: $_"
+        return $false
+    }
+}
+
+# Usage example with try-catch
+$samAccountName = "john.doe"
+
+try {
+    if (Test-ADUserExists -SamAccountName $samAccountName) {
+        Write-Warning "User $samAccountName already exists!"
+    }
+    else {
+        New-ADUser @userProperties
+        Write-Host "User $samAccountName created successfully!" -ForegroundColor Green
+    }
+}
+catch {
+    Write-Error "Error creating user: $_"
+}
+```
+
+## Password Generation
+
+Here's a function to generate random, complex passwords:
+
+```powershell
+function New-RandomPassword {
+    param(
+        [int]$Length = 12,
+        [int]$SpecialChars = 2,
+        [int]$Numbers = 2
+    )
+    
+    # Character sets
+    $lowercase = 'abcdefghijklmnopqrstuvwxyz'
+    $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    $numbers = '0123456789'
+    $special = '!@#$%^&*()_+-=[]{}|;:,.<>?'
+    
+    # Initialize password
+    $password = @()
+    
+    # Add required special characters
+    for ($i = 0; $i -lt $SpecialChars; $i++) {
+        $password += $special[(Get-Random -Maximum $special.Length)]
+    }
+    
+    # Add required numbers
+    for ($i = 0; $i -lt $Numbers; $i++) {
+        $password += $numbers[(Get-Random -Maximum $numbers.Length)]
+    }
+    
+    # Fill the rest with letters
+    $lettersNeeded = $Length - $SpecialChars - $Numbers
+    for ($i = 0; $i -lt $lettersNeeded; $i++) {
+        if ((Get-Random -Maximum 2) -eq 0) {
+            $password += $lowercase[(Get-Random -Maximum $lowercase.Length)]
+        }
+        else {
+            $password += $uppercase[(Get-Random -Maximum $uppercase.Length)]
+        }
+    }
+    
+    # Shuffle the password
+    $password = ($password | Get-Random -Count $password.Count)
+    
+    return -join $password
+}
+```
+
+## Username Generation
+
+Function to generate standardized usernames:
+
+```powershell
+function New-StandardUsername {
+    param(
+        [Parameter(Mandatory)]
+        [string]$GivenName,
+        [string]$MiddleName = '',
+        [Parameter(Mandatory)]
+        [string]$Surname,
+        [Parameter(Mandatory)]
+        [string]$Domain
+    )
+    
+    # Clean and normalize input
+    $GivenName = $GivenName.Trim().ToLower()
+    $MiddleName = $MiddleName.Trim().ToLower()
+    $Surname = $Surname.Trim().ToLower()
+    
+    # Generate username (givenName.middleInitial.surname@domain.com)
+    $middleInitial = if ($MiddleName) { ".$($MiddleName.Substring(0,1))." } else { "." }
+    $username = "$GivenName$middleInitial$Surname@$Domain"
+    
+    # Remove any special characters and replace spaces
+    $username = $username -replace '[^a-zA-Z0-9@._-]', ''
+    
+    return $username
+}
+```
+
+## Bulk User Creation from CSV
+
+Example CSV format:
+```
+GivenName,MiddleName,Surname,Department,Title,Office
+John,Robert,Doe,Sales,Sales Rep,New York
+Jane,Marie,Smith,Marketing,Marketing Manager,Chicago
+```
+
+Script to process the CSV:
+
+```powershell
+function New-BulkADUsers {
+    param(
+        [Parameter(Mandatory)]
+        [string]$CsvPath,
+        [Parameter(Mandatory)]
+        [string]$Domain,
+        [string]$LogPath = "user_creation_log.txt"
+    )
+    
+    # Import CSV
+    $users = Import-Csv -Path $CsvPath
+    
+    # Initialize log
+    $log = @()
+    
+    foreach ($user in $users) {
+        try {
+            # Generate username
+            $upn = New-StandardUsername -GivenName $user.GivenName `
+                                      -MiddleName $user.MiddleName `
+                                      -Surname $user.Surname `
+                                      -Domain $Domain
+            
+            $samAccountName = ($upn -split '@')[0]
+            
+            # Check if user exists
+            if (Test-ADUserExists -SamAccountName $samAccountName) {
+                $log += "SKIP: User $samAccountName already exists"
+                continue
+            }
+            
+            # Generate random password
+            $password = New-RandomPassword
+            
+            # Prepare user properties
+            $userProperties = @{
+                SamAccountName       = $samAccountName
+                UserPrincipalName   = $upn
+                Name                = "$($user.GivenName) $($user.Surname)"
+                GivenName           = $user.GivenName
+                Surname            = $user.Surname
+                DisplayName        = "$($user.GivenName) $($user.Surname)"
+                Department         = $user.Department
+                Title              = $user.Title
+                Office             = $user.Office
+                AccountPassword    = (ConvertTo-SecureString $password -AsPlainText -Force)
+                Enabled            = $true
+                ChangePasswordAtLogon = $true
+            }
+            
+            # Create user
+            New-ADUser @userProperties
+            $log += "SUCCESS: Created user $samAccountName with password: $password"
+        }
+        catch {
+            $log += "ERROR: Failed to create user from record: $($user.GivenName) $($user.Surname). Error: $_"
+        }
+    }
+    
+    # Save log
+    $log | Out-File -FilePath $LogPath
+}
+
+# Usage example
+New-BulkADUsers -CsvPath "users.csv" -Domain "domain.com"
+```
+
+## Updating User Properties
+
+Here's how to update existing user properties using Set-ADUser:
+
+```powershell
+# Basic property update
+Set-ADUser -Identity "john.doe" -Office "London" -Title "Senior Sales Representative"
+
+# Multiple properties update using a hash table
+$updateProperties = @{
+    Office      = "London"
+    Title       = "Senior Sales Representative"
+    Department  = "Global Sales"
+    Description = "Updated role 2024"
+}
+
+Set-ADUser -Identity "john.doe" @updateProperties
+
+# Update user's manager
+Set-ADUser -Identity "john.doe" -Manager "jane.smith"
+
+# Enable or disable account
+Set-ADUser -Identity "john.doe" -Enabled $false
+
+# Force password change at next logon
+Set-ADUser -Identity "john.doe" -ChangePasswordAtLogon $true
+```
+
+## Cleanup Script
+
+Use this script to remove users created from the CSV file:
+
+```powershell
+function Remove-BulkADUsers {
+    param(
+        [Parameter(Mandatory)]
+        [string]$CsvPath,
+        [Parameter(Mandatory)]
+        [string]$Domain,
+        [string]$LogPath = "user_removal_log.txt"
+    )
+    
+    # Import CSV
+    $users = Import-Csv -Path $CsvPath
+    $log = @()
+    
+    foreach ($user in $users) {
+        try {
+            # Generate the same username as creation
+            $upn = New-StandardUsername -GivenName $user.GivenName `
+                                      -MiddleName $user.MiddleName `
+                                      -Surname $user.Surname `
+                                      -Domain $Domain
+            
+            $samAccountName = ($upn -split '@')[0]
+            
+            # Check if user exists
+            if (Test-ADUserExists -SamAccountName $samAccountName) {
+                Remove-ADUser -Identity $samAccountName -Confirm:$false
+                $log += "SUCCESS: Removed user $samAccountName"
+            }
+            else {
+                $log += "SKIP: User $samAccountName does not exist"
+            }
+        }
+        catch {
+            $log += "ERROR: Failed to remove user $samAccountName. Error: $_"
+        }
+    }
+    
+    # Save log
+    $log | Out-File -FilePath $LogPath
+}
+
+# Usage example
+Remove-BulkADUsers -CsvPath "users.csv" -Domain "domain.com"
+```
+
+This script will remove all users that were created using the same CSV file, making it easy to clean up after testing or training sessions.
+
+Remember to always test these scripts in a non-production environment first!
