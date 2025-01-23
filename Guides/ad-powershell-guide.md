@@ -1,7 +1,6 @@
 # Active Directory User Management with PowerShell - A Comprehensive Guide
 
 ## Table of Contents
-
 - [Active Directory User Management with PowerShell - A Comprehensive Guide](#active-directory-user-management-with-powershell---a-comprehensive-guide)
   - [Table of Contents](#table-of-contents)
   - [Basic User Creation](#basic-user-creation)
@@ -11,9 +10,8 @@
   - [Username Generation](#username-generation)
   - [Bulk User Creation from CSV](#bulk-user-creation-from-csv)
   - [Updating User Properties](#updating-user-properties)
-  - [Cleanup Script](#cleanup-script)
   - [OU Path Management](#ou-path-management)
-  - [Bulk User Creation from CSV WITH OU PATH](#bulk-user-creation-from-csv-with-ou-path)
+  - [Cleanup Script](#cleanup-script)
 
 ## Basic User Creation
 
@@ -32,11 +30,11 @@ Let's start with the simplest form of creating a new user in Active Directory us
 ```powershell
 # Basic user creation
 New-ADUser `
-    -SamAccountName "melling" `
-    -UserPrincipalName "tor.i.melling@infrait.sec" `
-    -Name "Tor Ivar Melling" `
-    -GivenName "Tor" `
-    -Surname "Ivar" `
+    -SamAccountName "john.doe" `
+    -UserPrincipalName "john.doe@domain.com" `
+    -Name "John Doe" `
+    -GivenName "John" `
+    -Surname "Doe" `
     -AccountPassword (ConvertTo-SecureString "P@ssw0rd123" -AsPlainText -Force) `
     -Enabled $true
 ```
@@ -48,19 +46,19 @@ Now let's add more properties and organize the code better:
 ```powershell
 # Advanced user creation with additional properties
 $userProperties = @{
-    SamAccountName       = "melling"
-    UserPrincipalName   = "tor.i.melling@infrait.sec"
-    Name                = "Tor Ivar Melling"
-    GivenName           = "Tor Ivar"
-    Surname            = "Melling"
-    DisplayName        = "Tor Ivar Melling"
-    Description        = "IT department"
-    Office             = "Trondheim"
-    Company            = "InfraIT Sec"
-    Department         = "IT"
-    Title              = "IT admin"
-    City               = "Trondheim"
-    Country            = "NO"
+    SamAccountName       = "john.doe"
+    UserPrincipalName   = "john.doe@domain.com"
+    Name                = "John Doe"
+    GivenName           = "John"
+    Surname            = "Doe"
+    DisplayName        = "John Doe"
+    Description        = "Sales Department"
+    Office             = "New York"
+    Company            = "Contoso Ltd"
+    Department         = "Sales"
+    Title              = "Sales Representative"
+    City               = "New York"
+    Country            = "US"
     AccountPassword    = (ConvertTo-SecureString "P@ssw0rd123" -AsPlainText -Force)
     Enabled            = $true
     ChangePasswordAtLogon = $true
@@ -97,7 +95,7 @@ function Test-ADUserExists {
 }
 
 # Usage example with try-catch
-$samAccountName = "melling"
+$samAccountName = "john.doe"
 
 try {
     if (Test-ADUserExists -SamAccountName $samAccountName) {
@@ -119,40 +117,46 @@ Here's a function to generate random, complex passwords:
 
 ```powershell
 function New-RandomPassword {
+    param(
+        [int]$Length = 12,
+        [int]$SpecialChars = 2,
+        [int]$Numbers = 2
+    )
+    
     # Character sets
-    $lowerCase = "abcdefghijklmnopqrstuvwxyz"
-    $upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    $numbers = "0123456789"
-    # Safe special characters based on common practices
-    $specialChars = "!@#$%^&*()-_=+[]{}|;:,.<>?"
-
-    # Combined character set
-    $allChars = $lowerCase + $upperCase + $numbers + $specialChars
-
-    # Random password length between 13 and 17
-    $passwordLength = Get-Random -Minimum 13 -Maximum 18
-
-    # Creating an array to hold password characters
-    $passwordChars = @()
-
-    # Ensuring at least one character from each set
-    $passwordChars += $lowerCase.ToCharArray()[(Get-Random -Maximum $lowerCase.Length)]
-    $passwordChars += $upperCase.ToCharArray()[(Get-Random -Maximum $upperCase.Length)]
-    $passwordChars += $numbers.ToCharArray()[(Get-Random -Maximum $numbers.Length)]
-    $passwordChars += $specialChars.ToCharArray()[(Get-Random -Maximum $specialChars.Length)]
-
-    # Filling the rest of the password
-    for ($i = $passwordChars.Count; $i -lt $passwordLength; $i++) {
-        $passwordChars += $allChars.ToCharArray()[(Get-Random -Maximum $allChars.Length)]
+    $lowercase = 'abcdefghijklmnopqrstuvwxyz'
+    $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    $numbers = '0123456789'
+    $special = '!@#$%^&*()_+-=[]{}|;:,.<>?'
+    
+    # Initialize password
+    $password = @()
+    
+    # Add required special characters
+    for ($i = 0; $i -lt $SpecialChars; $i++) {
+        $password += $special[(Get-Random -Maximum $special.Length)]
     }
-
-    # Shuffle the characters to remove predictable patterns
-    $password = -join ($passwordChars | Get-Random -Count $passwordChars.Count)
-
-    # Convert to SecureString
-    $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
-
-    return $securePassword
+    
+    # Add required numbers
+    for ($i = 0; $i -lt $Numbers; $i++) {
+        $password += $numbers[(Get-Random -Maximum $numbers.Length)]
+    }
+    
+    # Fill the rest with letters
+    $lettersNeeded = $Length - $SpecialChars - $Numbers
+    for ($i = 0; $i -lt $lettersNeeded; $i++) {
+        if ((Get-Random -Maximum 2) -eq 0) {
+            $password += $lowercase[(Get-Random -Maximum $lowercase.Length)]
+        }
+        else {
+            $password += $uppercase[(Get-Random -Maximum $uppercase.Length)]
+        }
+    }
+    
+    # Shuffle the password
+    $password = ($password | Get-Random -Count $password.Count)
+    
+    return -join $password
 }
 ```
 
@@ -258,229 +262,6 @@ function New-BulkADUsers {
         [string]$CsvPath,
         [Parameter(Mandatory)]
         [string]$Domain,
-        [string]$LogPath = "user_creation_log.txt"
-    )
-    
-    # Import CSV
-    $users = Import-Csv -Path $CsvPath
-    
-    # Initialize log
-    $log = @()
-    
-    foreach ($user in $users) {
-        try {
-            # Generate username
-            $upn = New-StandardUsername -GivenName $user.GivenName `
-                                      -MiddleName $user.MiddleName `
-                                      -Surname $user.Surname `
-                                      -Domain $Domain
-            
-            $samAccountName = ($upn -split '@')[0]
-            
-            # Check if user exists
-            if (Test-ADUserExists -SamAccountName $samAccountName) {
-                $log += "SKIP: User $samAccountName already exists"
-                continue
-            }
-            
-            # Generate random password
-            $password = New-RandomPassword
-            
-            # Prepare user properties
-            $userProperties = @{
-                SamAccountName       = $samAccountName
-                UserPrincipalName   = $upn
-                Name                = "$($user.GivenName) $($user.Surname)"
-                GivenName           = $user.GivenName
-                Surname            = $user.Surname
-                DisplayName        = "$($user.GivenName) $($user.Surname)"
-                Department         = $user.Department
-                Title              = $user.Title
-                Office             = $user.Office
-                AccountPassword    = (ConvertTo-SecureString $password -AsPlainText -Force)
-                Enabled            = $true
-                ChangePasswordAtLogon = $true
-            }
-            
-            # Create user
-            New-ADUser @userProperties
-            $log += "SUCCESS: Created user $samAccountName with password: $password"
-        }
-        catch {
-            $log += "ERROR: Failed to create user from record: $($user.GivenName) $($user.Surname). Error: $_"
-        }
-    }
-    
-    # Save log
-    $log | Out-File -FilePath $LogPath
-}
-
-# Usage example
-New-BulkADUsers -CsvPath "users.csv" -Domain "domain.com"
-```
-
-## Updating User Properties
-
-Related documentation:
-- [Set-ADUser](https://learn.microsoft.com/en-us/powershell/module/activedirectory/set-aduser)
-
-Here's how to update existing user properties using Set-ADUser:
-
-```powershell
-# Basic property update
-Set-ADUser -Identity "melling" -Office "London" -Title "Senior IT Consultant"
-
-# Multiple properties update using a hash table
-$updateProperties = @{
-    Office      = "London"
-    Title       = "Senior IT Consultant"
-    Department  = "IT"
-    Description = "Updated role 2024"
-}
-
-Set-ADUser -Identity "melling" @updateProperties
-
-# Update user's manager
-Set-ADUser -Identity "melling" -Manager "Kari Nordmann"
-
-# Enable or disable account
-Set-ADUser -Identity "melling" -Enabled $false
-
-# Force password change at next logon
-Set-ADUser -Identity "melling" -ChangePasswordAtLogon $true
-```
-
-## Cleanup Script
-
-Related documentation:
-- [Remove-ADUser](https://learn.microsoft.com/en-us/powershell/module/activedirectory/remove-aduser)
-
-Use this script to remove users created from the CSV file:
-
-```powershell
-function Remove-BulkADUsers {
-    param(
-        [Parameter(Mandatory)]
-        [string]$CsvPath,
-        [Parameter(Mandatory)]
-        [string]$Domain,
-        [string]$LogPath = "user_removal_log.txt"
-    )
-    
-    # Import CSV
-    $users = Import-Csv -Path $CsvPath
-    $log = @()
-    
-    foreach ($user in $users) {
-        try {
-            # Generate the same username as creation
-            $upn = New-StandardUsername -GivenName $user.GivenName `
-                                      -MiddleName $user.MiddleName `
-                                      -Surname $user.Surname `
-                                      -Domain $Domain
-            
-            $samAccountName = ($upn -split '@')[0]
-            
-            # Check if user exists
-            if (Test-ADUserExists -SamAccountName $samAccountName) {
-                Remove-ADUser -Identity $samAccountName -Confirm:$false
-                $log += "SUCCESS: Removed user $samAccountName"
-            }
-            else {
-                $log += "SKIP: User $samAccountName does not exist"
-            }
-        }
-        catch {
-            $log += "ERROR: Failed to remove user $samAccountName. Error: $_"
-        }
-    }
-    
-    # Save log
-    $log | Out-File -FilePath $LogPath
-}
-
-# Usage example
-Remove-BulkADUsers -CsvPath "users.csv" -Domain "domain.com"
-```
-
-This script will remove all users that were created using the same CSV file, making it easy to clean up after testing or training sessions.
-
-## OU Path Management
-
-Related documentation:
-- [Get-ADOrganizationalUnit](https://learn.microsoft.com/en-us/powershell/module/activedirectory/get-adorganizationalunit)
-
-Here's a function to get or create the correct OU path based on department:
-
-```powershell
-function Get-DepartmentOUPath {
-    param(
-        [Parameter(Mandatory)]
-        [string]$Department,
-        [Parameter(Mandatory)]
-        [string]$BasePath,  # Example: "OU=Users,DC=domain,DC=com"
-        [switch]$CreateIfNotExist
-    )
-    
-    try {
-        # Clean department name
-        $departmentOU = $Department.Trim()
-        
-        # Construct full OU path
-        $ouPath = "OU=$departmentOU,$BasePath"
-        
-        # Try to get the OU
-        try {
-            $null = Get-ADOrganizationalUnit -Identity $ouPath
-            Write-Verbose "Found existing OU: $ouPath"
-        }
-        catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
-            if ($CreateIfNotExist) {
-                # Create new OU if it doesn't exist
-                New-ADOrganizationalUnit -Name $departmentOU -Path $BasePath
-                Write-Verbose "Created new OU: $ouPath"
-            }
-            else {
-                Write-Warning "OU does not exist: $ouPath"
-                return $BasePath
-            }
-        }
-        
-        return $ouPath
-    }
-    catch {
-        Write-Error "Error processing OU path: $_"
-        return $BasePath
-    }
-}
-
-# Usage example:
-$basePath = "OU=Users,DC=domain,DC=com"
-$ouPath = Get-DepartmentOUPath -Department "IT" -BasePath $basePath -CreateIfNotExist
-```
-
-## Bulk User Creation from CSV WITH OU PATH
-
-Related documentation:
-- [Import-Csv](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/import-csv)
-- [Out-File](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/out-file)
-
-Example CSV format:
-```
-GivenName,MiddleName,Surname,Department,Title,Office
-John,Robert,Doe,Sales,Sales Rep,New York
-Jane,Marie,Smith,Marketing,Marketing Manager,Chicago
-```
-
-Script to process the CSV:
-
-```powershell
-function New-BulkADUsers {
-    param(
-        [Parameter(Mandatory)]
-        [string]$CsvPath,
-        [Parameter(Mandatory)]
-        [string]$Domain,
         [Parameter(Mandatory)]
         [string]$BasePath,  # Example: "OU=Users,DC=domain,DC=com"
         [string]$LogPath = "user_creation_log.txt"
@@ -552,3 +333,145 @@ function New-BulkADUsers {
 $basePath = "OU=Users,DC=domain,DC=com"
 New-BulkADUsers -CsvPath "users.csv" -Domain "domain.com" -BasePath $basePath
 ```
+
+## Updating User Properties
+
+Related documentation:
+- [Set-ADUser](https://learn.microsoft.com/en-us/powershell/module/activedirectory/set-aduser)
+
+Here's how to update existing user properties using Set-ADUser:
+
+```powershell
+# Basic property update
+Set-ADUser -Identity "john.doe" -Office "London" -Title "Senior Sales Representative"
+
+# Multiple properties update using a hash table
+$updateProperties = @{
+    Office      = "London"
+    Title       = "Senior Sales Representative"
+    Department  = "Global Sales"
+    Description = "Updated role 2024"
+}
+
+Set-ADUser -Identity "john.doe" @updateProperties
+
+# Update user's manager
+Set-ADUser -Identity "john.doe" -Manager "jane.smith"
+
+# Enable or disable account
+Set-ADUser -Identity "john.doe" -Enabled $false
+
+# Force password change at next logon
+Set-ADUser -Identity "john.doe" -ChangePasswordAtLogon $true
+```
+
+## OU Path Management
+
+Related documentation:
+- [Get-ADOrganizationalUnit](https://learn.microsoft.com/en-us/powershell/module/activedirectory/get-adorganizationalunit)
+
+Here's a function to get or create the correct OU path based on department:
+
+```powershell
+function Get-DepartmentOUPath {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Department,
+        [Parameter(Mandatory)]
+        [string]$BasePath,  # Example: "OU=Users,DC=domain,DC=com"
+        [switch]$CreateIfNotExist
+    )
+    
+    try {
+        # Clean department name
+        $departmentOU = $Department.Trim()
+        
+        # Construct full OU path
+        $ouPath = "OU=$departmentOU,$BasePath"
+        
+        # Try to get the OU
+        try {
+            $null = Get-ADOrganizationalUnit -Identity $ouPath
+            Write-Verbose "Found existing OU: $ouPath"
+        }
+        catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
+            if ($CreateIfNotExist) {
+                # Create new OU if it doesn't exist
+                New-ADOrganizationalUnit -Name $departmentOU -Path $BasePath
+                Write-Verbose "Created new OU: $ouPath"
+            }
+            else {
+                Write-Warning "OU does not exist: $ouPath"
+                return $BasePath
+            }
+        }
+        
+        return $ouPath
+    }
+    catch {
+        Write-Error "Error processing OU path: $_"
+        return $BasePath
+    }
+}
+
+# Usage example:
+$basePath = "OU=Users,DC=domain,DC=com"
+$ouPath = Get-DepartmentOUPath -Department "IT" -BasePath $basePath -CreateIfNotExist
+```
+
+## Cleanup Script
+
+Related documentation:
+- [Remove-ADUser](https://learn.microsoft.com/en-us/powershell/module/activedirectory/remove-aduser)
+
+Use this script to remove users created from the CSV file:
+
+```powershell
+function Remove-BulkADUsers {
+    param(
+        [Parameter(Mandatory)]
+        [string]$CsvPath,
+        [Parameter(Mandatory)]
+        [string]$Domain,
+        [string]$LogPath = "user_removal_log.txt"
+    )
+    
+    # Import CSV
+    $users = Import-Csv -Path $CsvPath
+    $log = @()
+    
+    foreach ($user in $users) {
+        try {
+            # Generate the same username as creation
+            $upn = New-StandardUsername -GivenName $user.GivenName `
+                                      -MiddleName $user.MiddleName `
+                                      -Surname $user.Surname `
+                                      -Domain $Domain
+            
+            $samAccountName = ($upn -split '@')[0]
+            
+            # Check if user exists
+            if (Test-ADUserExists -SamAccountName $samAccountName) {
+                Remove-ADUser -Identity $samAccountName -Confirm:$false
+                $log += "SUCCESS: Removed user $samAccountName"
+            }
+            else {
+                $log += "SKIP: User $samAccountName does not exist"
+            }
+        }
+        catch {
+            $log += "ERROR: Failed to remove user $samAccountName. Error: $_"
+        }
+    }
+    
+    # Save log
+    $log | Out-File -FilePath $LogPath
+}
+
+# Usage example
+Remove-BulkADUsers -CsvPath "users.csv" -Domain "domain.com"
+```
+
+This script will remove all users that were created using the same CSV file, making it easy to clean up after testing or training sessions.
+
+Remember to always test these scripts in a non-production environment first!
