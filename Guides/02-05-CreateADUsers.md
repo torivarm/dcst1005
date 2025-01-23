@@ -12,6 +12,8 @@
   - [Bulk User Creation from CSV](#bulk-user-creation-from-csv)
   - [Updating User Properties](#updating-user-properties)
   - [Cleanup Script](#cleanup-script)
+  - [OU Path Management](#ou-path-management)
+  - [Bulk User Creation from CSV WITH OU PATH](#bulk-user-creation-from-csv-with-ou-path)
 
 ## Basic User Creation
 
@@ -402,3 +404,151 @@ Remove-BulkADUsers -CsvPath "users.csv" -Domain "domain.com"
 ```
 
 This script will remove all users that were created using the same CSV file, making it easy to clean up after testing or training sessions.
+
+## OU Path Management
+
+Related documentation:
+- [Get-ADOrganizationalUnit](https://learn.microsoft.com/en-us/powershell/module/activedirectory/get-adorganizationalunit)
+
+Here's a function to get or create the correct OU path based on department:
+
+```powershell
+function Get-DepartmentOUPath {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Department,
+        [Parameter(Mandatory)]
+        [string]$BasePath,  # Example: "OU=Users,DC=domain,DC=com"
+        [switch]$CreateIfNotExist
+    )
+    
+    try {
+        # Clean department name
+        $departmentOU = $Department.Trim()
+        
+        # Construct full OU path
+        $ouPath = "OU=$departmentOU,$BasePath"
+        
+        # Try to get the OU
+        try {
+            $null = Get-ADOrganizationalUnit -Identity $ouPath
+            Write-Verbose "Found existing OU: $ouPath"
+        }
+        catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
+            if ($CreateIfNotExist) {
+                # Create new OU if it doesn't exist
+                New-ADOrganizationalUnit -Name $departmentOU -Path $BasePath
+                Write-Verbose "Created new OU: $ouPath"
+            }
+            else {
+                Write-Warning "OU does not exist: $ouPath"
+                return $BasePath
+            }
+        }
+        
+        return $ouPath
+    }
+    catch {
+        Write-Error "Error processing OU path: $_"
+        return $BasePath
+    }
+}
+
+# Usage example:
+$basePath = "OU=Users,DC=domain,DC=com"
+$ouPath = Get-DepartmentOUPath -Department "IT" -BasePath $basePath -CreateIfNotExist
+```
+
+## Bulk User Creation from CSV WITH OU PATH
+
+Related documentation:
+- [Import-Csv](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/import-csv)
+- [Out-File](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/out-file)
+
+Example CSV format:
+```
+GivenName,MiddleName,Surname,Department,Title,Office
+John,Robert,Doe,Sales,Sales Rep,New York
+Jane,Marie,Smith,Marketing,Marketing Manager,Chicago
+```
+
+Script to process the CSV:
+
+```powershell
+function New-BulkADUsers {
+    param(
+        [Parameter(Mandatory)]
+        [string]$CsvPath,
+        [Parameter(Mandatory)]
+        [string]$Domain,
+        [Parameter(Mandatory)]
+        [string]$BasePath,  # Example: "OU=Users,DC=domain,DC=com"
+        [string]$LogPath = "user_creation_log.txt"
+    )
+    
+    # Import CSV
+    $users = Import-Csv -Path $CsvPath
+    
+    # Initialize log
+    $log = @()
+    
+    foreach ($user in $users) {
+        try {
+            # Generate username
+            $upn = New-StandardUsername -GivenName $user.GivenName `
+                                      -MiddleName $user.MiddleName `
+                                      -Surname $user.Surname `
+                                      -Domain $Domain
+            
+            $samAccountName = ($upn -split '@')[0]
+            
+            # Check if user exists
+            if (Test-ADUserExists -SamAccountName $samAccountName) {
+                $log += "SKIP: User $samAccountName already exists"
+                continue
+            }
+            
+            # Generate random password
+            $password = New-RandomPassword
+            
+            # Prepare user properties
+            $userProperties = @{
+                SamAccountName       = $samAccountName
+                UserPrincipalName   = $upn
+                Name                = "$($user.GivenName) $($user.Surname)"
+                GivenName           = $user.GivenName
+                Surname            = $user.Surname
+                DisplayName        = "$($user.GivenName) $($user.Surname)"
+                Department         = $user.Department
+                Title              = $user.Title
+                Office             = $user.Office
+                AccountPassword    = (ConvertTo-SecureString $password -AsPlainText -Force)
+                Enabled            = $true
+                ChangePasswordAtLogon = $true
+            }
+            
+            # Get appropriate OU path
+            $ouPath = Get-DepartmentOUPath -Department $user.Department `
+                                         -BasePath $BasePath `
+                                         -CreateIfNotExist
+            
+            # Add OU path to user properties
+            $userProperties['Path'] = $ouPath
+            
+            # Create user
+            New-ADUser @userProperties
+            $log += "SUCCESS: Created user $samAccountName in OU $ouPath with password: $password"
+        }
+        catch {
+            $log += "ERROR: Failed to create user from record: $($user.GivenName) $($user.Surname). Error: $_"
+        }
+    }
+    
+    # Save log
+    $log | Out-File -FilePath $LogPath
+}
+
+# Usage example
+$basePath = "OU=Users,DC=domain,DC=com"
+New-BulkADUsers -CsvPath "users.csv" -Domain "domain.com" -BasePath $basePath
+```
