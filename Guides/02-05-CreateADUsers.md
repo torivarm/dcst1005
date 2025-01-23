@@ -115,47 +115,41 @@ catch {
 Here's a function to generate random, complex passwords:
 
 ```powershell
-function New-RandomPassword {
-    param(
-        [int]$Length = 14,
-        [int]$SpecialChars = 2,
-        [int]$Numbers = 2
-    )
-    
+function New-Password {
     # Character sets
-    $lowercase = 'abcdefghijklmnopqrstuvwxyz'
-    $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    $numbers = '0123456789'
-    $special = '!@#$%^&*()_+-=[]{}|;:,.<>?'
-    
-    # Initialize password
-    $password = @()
-    
-    # Add required special characters
-    for ($i = 0; $i -lt $SpecialChars; $i++) {
-        $password += $special[(Get-Random -Maximum $special.Length)]
+    $lowerCase = "abcdefghijklmnopqrstuvwxyz"
+    $upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    $numbers = "0123456789"
+    # Safe special characters based on common practices
+    $specialChars = "!@#$%^&*()-_=+[]{}|;:,.<>?"
+
+    # Combined character set
+    $allChars = $lowerCase + $upperCase + $numbers + $specialChars
+
+    # Random password length between 13 and 17
+    $passwordLength = Get-Random -Minimum 13 -Maximum 18
+
+    # Creating an array to hold password characters
+    $passwordChars = @()
+
+    # Ensuring at least one character from each set
+    $passwordChars += $lowerCase.ToCharArray()[(Get-Random -Maximum $lowerCase.Length)]
+    $passwordChars += $upperCase.ToCharArray()[(Get-Random -Maximum $upperCase.Length)]
+    $passwordChars += $numbers.ToCharArray()[(Get-Random -Maximum $numbers.Length)]
+    $passwordChars += $specialChars.ToCharArray()[(Get-Random -Maximum $specialChars.Length)]
+
+    # Filling the rest of the password
+    for ($i = $passwordChars.Count; $i -lt $passwordLength; $i++) {
+        $passwordChars += $allChars.ToCharArray()[(Get-Random -Maximum $allChars.Length)]
     }
-    
-    # Add required numbers
-    for ($i = 0; $i -lt $Numbers; $i++) {
-        $password += $numbers[(Get-Random -Maximum $numbers.Length)]
-    }
-    
-    # Fill the rest with letters
-    $lettersNeeded = $Length - $SpecialChars - $Numbers
-    for ($i = 0; $i -lt $lettersNeeded; $i++) {
-        if ((Get-Random -Maximum 2) -eq 0) {
-            $password += $lowercase[(Get-Random -Maximum $lowercase.Length)]
-        }
-        else {
-            $password += $uppercase[(Get-Random -Maximum $uppercase.Length)]
-        }
-    }
-    
-    # Shuffle the password
-    $password = ($password | Get-Random -Count $password.Count)
-    
-    return -join $password
+
+    # Shuffle the characters to remove predictable patterns
+    $password = -join ($passwordChars | Get-Random -Count $passwordChars.Count)
+
+    # Convert to SecureString
+    $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+
+    return $securePassword
 }
 ```
 
