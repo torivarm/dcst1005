@@ -1,14 +1,16 @@
 # Active Directory User Management with PowerShell - A Comprehensive Guide
 
 ## Table of Contents
-- [Basic User Creation](#basic-user-creation)
-- [Advanced User Creation](#advanced-user-creation)
-- [User Existence Check](#user-existence-check)
-- [Password Generation](#password-generation)
-- [Username Generation](#username-generation)
-- [Bulk User Creation from CSV](#bulk-user-creation-from-csv)
-- [Updating User Properties](#updating-user-properties)
-- [Cleanup Script](#cleanup-script)
+- [Active Directory User Management with PowerShell - A Comprehensive Guide](#active-directory-user-management-with-powershell---a-comprehensive-guide)
+  - [Table of Contents](#table-of-contents)
+  - [Basic User Creation](#basic-user-creation)
+  - [Advanced User Creation](#advanced-user-creation)
+  - [User Existence Check](#user-existence-check)
+  - [Password Generation](#password-generation)
+  - [Username Generation](#username-generation)
+  - [Bulk User Creation from CSV](#bulk-user-creation-from-csv)
+  - [Updating User Properties](#updating-user-properties)
+  - [Cleanup Script](#cleanup-script)
 
 ## Basic User Creation
 
@@ -27,11 +29,11 @@ Let's start with the simplest form of creating a new user in Active Directory us
 ```powershell
 # Basic user creation
 New-ADUser `
-    -SamAccountName "john.doe" `
-    -UserPrincipalName "john.doe@domain.com" `
-    -Name "John Doe" `
-    -GivenName "John" `
-    -Surname "Doe" `
+    -SamAccountName "melling" `
+    -UserPrincipalName "tor.i.melling@infrait.sec" `
+    -Name "Tor Ivar Melling" `
+    -GivenName "Tor" `
+    -Surname "Ivar" `
     -AccountPassword (ConvertTo-SecureString "P@ssw0rd123" -AsPlainText -Force) `
     -Enabled $true
 ```
@@ -43,19 +45,19 @@ Now let's add more properties and organize the code better:
 ```powershell
 # Advanced user creation with additional properties
 $userProperties = @{
-    SamAccountName       = "john.doe"
-    UserPrincipalName   = "john.doe@domain.com"
-    Name                = "John Doe"
-    GivenName           = "John"
-    Surname            = "Doe"
-    DisplayName        = "John Doe"
-    Description        = "Sales Department"
-    Office             = "New York"
-    Company            = "Contoso Ltd"
-    Department         = "Sales"
-    Title              = "Sales Representative"
-    City               = "New York"
-    Country            = "US"
+    SamAccountName       = "melling"
+    UserPrincipalName   = "tor.i.melling@infrait.sec"
+    Name                = "Tor Ivar Melling"
+    GivenName           = "Tor Ivar"
+    Surname            = "Melling"
+    DisplayName        = "Tor Ivar Melling"
+    Description        = "IT department"
+    Office             = "Trondheim"
+    Company            = "InfraIT Sec"
+    Department         = "IT"
+    Title              = "IT admin"
+    City               = "Trondheim"
+    Country            = "NO"
     AccountPassword    = (ConvertTo-SecureString "P@ssw0rd123" -AsPlainText -Force)
     Enabled            = $true
     ChangePasswordAtLogon = $true
@@ -92,7 +94,7 @@ function Test-ADUserExists {
 }
 
 # Usage example with try-catch
-$samAccountName = "john.doe"
+$samAccountName = "melling"
 
 try {
     if (Test-ADUserExists -SamAccountName $samAccountName) {
@@ -115,7 +117,7 @@ Here's a function to generate random, complex passwords:
 ```powershell
 function New-RandomPassword {
     param(
-        [int]$Length = 12,
+        [int]$Length = 14,
         [int]$SpecialChars = 2,
         [int]$Numbers = 2
     )
@@ -329,26 +331,26 @@ Here's how to update existing user properties using Set-ADUser:
 
 ```powershell
 # Basic property update
-Set-ADUser -Identity "john.doe" -Office "London" -Title "Senior Sales Representative"
+Set-ADUser -Identity "melling" -Office "London" -Title "Senior IT Consultant"
 
 # Multiple properties update using a hash table
 $updateProperties = @{
     Office      = "London"
-    Title       = "Senior Sales Representative"
-    Department  = "Global Sales"
+    Title       = "Senior IT Consultant"
+    Department  = "IT"
     Description = "Updated role 2024"
 }
 
-Set-ADUser -Identity "john.doe" @updateProperties
+Set-ADUser -Identity "melling" @updateProperties
 
 # Update user's manager
-Set-ADUser -Identity "john.doe" -Manager "jane.smith"
+Set-ADUser -Identity "melling" -Manager "Kari Nordmann"
 
 # Enable or disable account
-Set-ADUser -Identity "john.doe" -Enabled $false
+Set-ADUser -Identity "melling" -Enabled $false
 
 # Force password change at next logon
-Set-ADUser -Identity "john.doe" -ChangePasswordAtLogon $true
+Set-ADUser -Identity "melling" -ChangePasswordAtLogon $true
 ```
 
 ## Cleanup Script
@@ -405,5 +407,3 @@ Remove-BulkADUsers -CsvPath "users.csv" -Domain "domain.com"
 ```
 
 This script will remove all users that were created using the same CSV file, making it easy to clean up after testing or training sessions.
-
-Remember to always test these scripts in a non-production environment first!
