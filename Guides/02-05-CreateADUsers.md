@@ -12,6 +12,10 @@
 
 ## Basic User Creation
 
+Related documentation:
+- [New-ADUser](https://learn.microsoft.com/en-us/powershell/module/activedirectory/new-aduser)
+- [ConvertTo-SecureString](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/convertto-securestring)
+
 Let's start with the simplest form of creating a new user in Active Directory using PowerShell. The minimum required properties are:
 - SamAccountName
 - UserPrincipalName
@@ -61,6 +65,9 @@ New-ADUser @userProperties
 ```
 
 ## User Existence Check
+
+Related documentation:
+- [Get-ADUser](https://learn.microsoft.com/en-us/powershell/module/activedirectory/get-aduser)
 
 Before creating a user, it's good practice to check if they already exist:
 
@@ -232,6 +239,10 @@ function New-StandardUsername {
 
 ## Bulk User Creation from CSV
 
+Related documentation:
+- [Import-Csv](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/import-csv)
+- [Out-File](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/out-file)
+
 Example CSV format:
 ```
 GivenName,MiddleName,Surname,Department,Title,Office
@@ -311,6 +322,9 @@ New-BulkADUsers -CsvPath "users.csv" -Domain "domain.com"
 
 ## Updating User Properties
 
+Related documentation:
+- [Set-ADUser](https://learn.microsoft.com/en-us/powershell/module/activedirectory/set-aduser)
+
 Here's how to update existing user properties using Set-ADUser:
 
 ```powershell
@@ -338,6 +352,9 @@ Set-ADUser -Identity "john.doe" -ChangePasswordAtLogon $true
 ```
 
 ## Cleanup Script
+
+Related documentation:
+- [Remove-ADUser](https://learn.microsoft.com/en-us/powershell/module/activedirectory/remove-aduser)
 
 Use this script to remove users created from the CSV file:
 
