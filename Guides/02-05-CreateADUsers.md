@@ -115,7 +115,7 @@ catch {
 Here's a function to generate random, complex passwords:
 
 ```powershell
-function New-Password {
+function New-RandomPassword {
     # Character sets
     $lowerCase = "abcdefghijklmnopqrstuvwxyz"
     $upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
