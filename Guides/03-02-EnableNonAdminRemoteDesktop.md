@@ -49,18 +49,25 @@
    1. ![alt text](MembersOfGroup.png)
 5. Click Apply and OK
 
-### 5. Enable Remote Desktop
+### 5. Update group policy
+1. Start a remote PS session against Cl1. Run the following commands
+```
+Enter-PSSession -ComputerName cl1
+gpupdate /force
+```
+   1. ![alt text](PSRemote.png)
+### 6. Enable Remote Desktop
 1. In the Group Policy Editor, navigate to:
    ```
    Computer Configuration > Policies > Administrative Templates > Windows Components > Remote Desktop Services > Remote Desktop Session Host > Connections
    ```
 2. Enable "Allow users to connect remotely by using Remote Desktop Services"
 
-### 6. Configure Network Level Authentication
+### 7. Configure Network Level Authentication
 1. In the same location, find "Require user authentication for remote connections by using Network Level Authentication"
 2. Set to "Enabled" for better security
 
-### 7. Configure Windows Firewall
+### 8. Configure Windows Firewall
 1. Navigate to:
    ```
    Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security
@@ -70,7 +77,7 @@
    - Remote Desktop - User Mode (TCP-In)
    - Remote Desktop - User Mode (UDP-In)
 
-### 8. Apply and Test
+## 9. Apply and Test
 1. Open Command Prompt as administrator on a domain controller
 2. Run:
    ```
@@ -93,7 +100,7 @@
 ## Security Considerations
 - Enable Network Level Authentication (NLA)
 - Implement strong password policies
-- Consider implementing time-based access restrictions
+- Consider implemen#ting time-based access restrictions
 - Monitor and audit RDP access attempts
 - Keep systems updated with latest security patches
 - Consider implementing Remote Desktop Gateway for external access
