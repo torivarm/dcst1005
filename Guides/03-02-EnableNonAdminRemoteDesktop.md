@@ -64,3 +64,4 @@ gpupdate /force
    1. ![alt text](ResetPassword.png)
 3. Log in on Cl1 with Remote Desktop and your test NON ADMIN user.
    1. ![alt text](HR-Test-User.png)
+   2. ![alt text](LoginHR.png)
