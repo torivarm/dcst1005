@@ -1,0 +1,93 @@
+# Enabling Remote Desktop Access for Active Directory Users
+
+## Prerequisites
+- Domain Administrator rights
+- Active Directory Domain Services installed
+- Group Policy Management Console installed
+
+## Steps
+
+### 1. Create a Security Group
+1. Open Active Directory Users and Computers
+2. Right-click the OU where you want to create the group
+3. Select New > Group
+4. Name: l_remoteDesktopNonAdmin
+5. Group scope: local
+6. Group type: Security
+7. Click OK
+
+![alt text](01-NewLocalGroup.png)
+
+### 2. Add Users to the Security Group
+1. Double-click the newly created RDP_Users group
+2. Click the Members tab
+3. Click Add
+4. Enter the usernames or search for users
+5. Click OK to add selected users
+6. Click Apply and OK
+
+### 3. Create and Configure Group Policy
+1. Open Group Policy Management Console
+2. Navigate to the target OU
+3. Right-click and select "Create a GPO in this domain, and Link it here"
+4. Name it "RDP Access Policy"
+5. Right-click the new GPO and select Edit
+
+### 4. Configure Remote Desktop Settings
+1. Navigate to:
+   ```
+   Computer Configuration > Policies > Windows Settings > Security Settings > Restricted Groups
+   ```
+2. Right-click in the right pane and select "Add Group"
+3. Click Browse and type "Remote Desktop Users"
+4. Under "Members of this group", add your RDP_Users group
+5. Click Apply and OK
+
+### 5. Enable Remote Desktop
+1. In the Group Policy Editor, navigate to:
+   ```
+   Computer Configuration > Policies > Administrative Templates > Windows Components > Remote Desktop Services > Remote Desktop Session Host > Connections
+   ```
+2. Enable "Allow users to connect remotely by using Remote Desktop Services"
+
+### 6. Configure Network Level Authentication
+1. In the same location, find "Require user authentication for remote connections by using Network Level Authentication"
+2. Set to "Enabled" for better security
+
+### 7. Configure Windows Firewall
+1. Navigate to:
+   ```
+   Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security
+   ```
+2. Create inbound rules for:
+   - TCP port 3389
+   - Remote Desktop - User Mode (TCP-In)
+   - Remote Desktop - User Mode (UDP-In)
+
+### 8. Apply and Test
+1. Open Command Prompt as administrator on a domain controller
+2. Run:
+   ```
+   gpupdate /force
+   ```
+3. On client machines, either restart or run:
+   ```
+   gpupdate /force
+   ```
+4. Test remote desktop connection from a user account
+
+## Troubleshooting
+- Ensure target computers are online and can receive group policy updates
+- Verify user is a member of RDP_Users group
+- Check Windows Firewall status on target machines
+- Review Event Viewer for RDP-related errors
+- Verify network connectivity between client and target machines
+- Ensure target computers are domain-joined and in the correct OU
+
+## Security Considerations
+- Enable Network Level Authentication (NLA)
+- Implement strong password policies
+- Consider implementing time-based access restrictions
+- Monitor and audit RDP access attempts
+- Keep systems updated with latest security patches
+- Consider implementing Remote Desktop Gateway for external access
