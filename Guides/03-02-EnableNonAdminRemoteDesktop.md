@@ -43,8 +43,9 @@
    Computer Configuration > Policies > Windows Settings > Security Settings > Restricted Groups
    ```
 2. Right-click in the right pane and select "Add Group"
-3. Click Browse and type "Remote Desktop Users"
-4. Under "Members of this group", add your RDP_Users group
+3. Type "Remote Desktop Users" and click Ok
+   1. ![alt text](remoteDesktopGroup.png)
+4. Under "Members of this group", add your l_remoteDektopNonAdmin group
 5. Click Apply and OK
 
 ### 5. Enable Remote Desktop
