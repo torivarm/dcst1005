@@ -46,6 +46,7 @@
 3. Type "Remote Desktop Users" and click Ok
    1. ![alt text](remoteDesktopGroup.png)
 4. Under "Members of this group", add your l_remoteDektopNonAdmin group
+   1. ![alt text](MembersOfGroup.png)
 5. Click Apply and OK
 
 ### 5. Enable Remote Desktop
