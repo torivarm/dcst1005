@@ -29,9 +29,11 @@
 ![alt text](02-NewLocalGroup.png)
 
 ### 3. Create and Configure Group Policy
-1. Open Group Policy Management Console
-2. Navigate to the target OU
+1. Add Group Policy Management in MMC through Add/Remove Snap-in
+   1. ![alt text](gpSnapIn.png)
+2. Navigate to the OU where you want to allow non admin users to Remote Desktop in
 3. Right-click and select "Create a GPO in this domain, and Link it here"
+   1. ![alt text](createGP.png)
 4. Name it "RDP Access Policy"
 5. Right-click the new GPO and select Edit
 
