@@ -59,11 +59,13 @@ gpupdate /force
    1. ![alt text](PSRemote.png)
 
 ### 6. Test user login
-1. 
+1. Set a password to test RDP. My example, a user in HR OU.
+2. Right click the user and Reset Password. Take away the check mark for "user must change password at next login"
+   1. ![alt text](ResetPassword.png)
    ```
    Computer Configuration > Policies > Administrative Templates > Windows Components > Remote Desktop Services > Remote Desktop Session Host > Connections
    ```
-2. Enable "Allow users to connect remotely by using Remote Desktop Services"
+3. Enable "Allow users to connect remotely by using Remote Desktop Services"
 
 ### 7. Configure Network Level Authentication
 1. In the same location, find "Require user authentication for remote connections by using Network Level Authentication"
