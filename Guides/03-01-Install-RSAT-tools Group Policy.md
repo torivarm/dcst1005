@@ -13,8 +13,8 @@ This PowerShell command installs Remote Server Administration Tools (RSAT) for G
 2. Run:
 ```powershell
 Add-WindowsCapability -Online -Name Rsat.GroupPolicy.Management.Tools
-![alt text](RSAT-GroupPolicy.png)
 ```
+![alt text](RSAT-GroupPolicy.png)
 
 ## Usage
 After installation:
