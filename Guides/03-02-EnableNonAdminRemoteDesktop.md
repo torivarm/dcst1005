@@ -62,49 +62,5 @@ gpupdate /force
 1. Set a password to test RDP. My example, a user in HR OU.
 2. Right click the user and Reset Password. Take away the check mark for "user must change password at next login"
    1. ![alt text](ResetPassword.png)
-   ```
-   Computer Configuration > Policies > Administrative Templates > Windows Components > Remote Desktop Services > Remote Desktop Session Host > Connections
-   ```
-3. Enable "Allow users to connect remotely by using Remote Desktop Services"
-
-### 7. Configure Network Level Authentication
-1. In the same location, find "Require user authentication for remote connections by using Network Level Authentication"
-2. Set to "Enabled" for better security
-
-### 8. Configure Windows Firewall
-1. Navigate to:
-   ```
-   Computer Configuration > Policies > Windows Settings > Security Settings > Windows Firewall with Advanced Security
-   ```
-2. Create inbound rules for:
-   - TCP port 3389
-   - Remote Desktop - User Mode (TCP-In)
-   - Remote Desktop - User Mode (UDP-In)
-
-## 9. Apply and Test
-1. Open Command Prompt as administrator on a domain controller
-2. Run:
-   ```
-   gpupdate /force
-   ```
-3. On client machines, either restart or run:
-   ```
-   gpupdate /force
-   ```
-4. Test remote desktop connection from a user account
-
-## Troubleshooting
-- Ensure target computers are online and can receive group policy updates
-- Verify user is a member of RDP_Users group
-- Check Windows Firewall status on target machines
-- Review Event Viewer for RDP-related errors
-- Verify network connectivity between client and target machines
-- Ensure target computers are domain-joined and in the correct OU
-
-## Security Considerations
-- Enable Network Level Authentication (NLA)
-- Implement strong password policies
-- Consider implemen#ting time-based access restrictions
-- Monitor and audit RDP access attempts
-- Keep systems updated with latest security patches
-- Consider implementing Remote Desktop Gateway for external access
+3. Log in on Cl1 with Remote Desktop and your test NON ADMIN user.
+   1. ![alt text](HR-Test-User.png)
