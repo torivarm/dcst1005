@@ -1,7 +1,7 @@
 try {
     
     $department = "Sales"
-    $groupName = "g_all_sales"
+    $groupName = "g_all_$department"
 
     $users = Get-ADUser -Filter "Department -eq '$department'" -ErrorAction Stop
     
