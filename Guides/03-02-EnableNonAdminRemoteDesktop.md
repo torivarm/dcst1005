@@ -19,12 +19,14 @@
 ![alt text](01-NewLocalGroup.png)
 
 ### 2. Add Users to the Security Group
-1. Double-click the newly created RDP_Users group
+1. Double-click the newly created group
 2. Click the Members tab
 3. Click Add
-4. Enter the usernames or search for users
-5. Click OK to add selected users
+4. Find the groups where you have all your employees
+5. Click OK to add selected
 6. Click Apply and OK
+
+![alt text](02-NewLocalGroup.png)
 
 ### 3. Create and Configure Group Policy
 1. Open Group Policy Management Console
