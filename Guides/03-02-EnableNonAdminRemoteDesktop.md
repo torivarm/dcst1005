@@ -9,12 +9,13 @@
 
 ### 1. Create a Security Group
 1. Open Active Directory Users and Computers
-2. Right-click the OU where you want to create the group
-3. Select New > Group
-4. Name: l_remoteDesktopNonAdmin
-5. Group scope: local
-6. Group type: Security
-7. Click OK
+2. Drag n drop cl1 machine into a department OU under your computers OU, for example HR under InfraIT_Computers -> Workstations
+3. Right-click the OU where you want to create the group (My example InfraIT_Groups -> Local)
+4. Select New > Group
+5. Name: l_remoteDesktopNonAdmin
+6. Group scope: local
+7. Group type: Security
+8. Click OK
 
 ![alt text](01-NewLocalGroup.png)
 
@@ -56,8 +57,9 @@ Enter-PSSession -ComputerName cl1
 gpupdate /force
 ```
    1. ![alt text](PSRemote.png)
-### 6. Enable Remote Desktop
-1. In the Group Policy Editor, navigate to:
+
+### 6. Test user login
+1. 
    ```
    Computer Configuration > Policies > Administrative Templates > Windows Components > Remote Desktop Services > Remote Desktop Session Host > Connections
    ```
