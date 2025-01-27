@@ -40,8 +40,22 @@ Invoke-Command -ComputerName srv1 -ScriptBlock {
 }
 ```
 
-# Creating DFS Namespace Structure
+## Creating SMB Shares
 
+Create SMB shares for all folders with Everyone having Full Access:
+
+```powershell
+Invoke-Command -ComputerName srv1 -ScriptBlock {
+    # Share department folders
+    $departments = @('Finance','Sales','IT','Consultants','HR')
+    foreach ($dept in $departments) {
+        New-SmbShare -Name $dept -Path "C:\shares\$dept" -FullAccess "Everyone"
+    }
+    
+    # Share DFS root folder
+    New-SmbShare -Name "files" -Path "C:\dfsroots\files" -FullAccess "Everyone"
+}
+```
 ## Create DFS Namespace Root
 
 First, create the DFS Namespace root: (make sure to edit the domain name, if you don't have the same name)
@@ -65,12 +79,13 @@ Invoke-Command -ComputerName srv1 -ScriptBlock {
     # Create DFS folders for each department
     $departments = @('Finance','Sales','IT','Consultants','HR')
     foreach ($dept in $departments) {
-        New-DfsnFolder -Path "\\domain.com\files\$dept" `
+        New-DfsnFolder -Path "\\infrait.sec\files\$dept" `
                       -TargetPath "\\srv1\$dept" `
                       -EnableTargetFailback $true
     }
 }
 ```
+-EnableTargetFailback: This property is particularly useful in scenarios where you have geographically dispersed targets and need clients to connect to the nearest or most efficient target whenever possible.
 
 ## Verify DFS Namespace Configuration
 
@@ -84,35 +99,6 @@ Invoke-Command -ComputerName srv1 -ScriptBlock {
     # Verify DFS folders
     Get-DfsnFolder -Path "\\domain.com\files\*" | 
     Format-Table Path,TargetPath,State -AutoSize
-}
-```
-
-Important Notes:
-1. Replace "domain.com" with your actual domain name
-2. The MGR machine must have the RSAT-DFS-Mgmt-Con feature installed to manage DFS remotely
-3. The account running these commands needs appropriate permissions (Domain Admin or delegated DFS admin rights)
-4. The DFS namespace server (srv1) must be a domain member
-5. DNS must be properly configured in your domain for DFS to work
-
-To verify access, users can now access their department shares through either:
-- Direct path: `\\srv1\department`
-- DFS path: `\\domain.com\files\department`
-
-
-## Creating SMB Shares
-
-Create SMB shares for all folders with Everyone having Full Access:
-
-```powershell
-Invoke-Command -ComputerName srv1 -ScriptBlock {
-    # Share department folders
-    $departments = @('Finance','Sales','IT','Consultants','HR')
-    foreach ($dept in $departments) {
-        New-SmbShare -Name $dept -Path "C:\shares\$dept" -FullAccess "Everyone"
-    }
-    
-    # Share DFS root folder
-    New-SmbShare -Name "files" -Path "C:\dfsroots\files" -FullAccess "Everyone"
 }
 ```
 
