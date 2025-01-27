@@ -121,4 +121,99 @@ Important Note: Each department's global group (containing all users from that d
 
 After creating these groups, you should configure the appropriate NTFS permissions on each share to restrict access to only the relevant local group, replacing the initial "Everyone" Full Access permissions used during setup.
 
-Would you like me to provide additional information about configuring the NTFS permissions or setting up the DFS namespaces?
+
+# Windows DFS Installation and Configuration Guide (Continued)
+
+## Configuring NTFS Permissions
+
+After creating the shares, configure the NTFS permissions to ensure proper access control:
+
+```powershell
+Invoke-Command -ComputerName srv1 -ScriptBlock {
+    # Configure NTFS permissions for each department
+    $folderPermissions = @{
+        'HR' = 'l_fullAccess-hr-share'
+        'IT' = 'l_fullAccess-it-share'
+        'Sales' = 'l_fullAccess-sales-share'
+        'Finance' = 'l_fullAccess-finance-share'
+        'Consultants' = 'l_fullAccess-consultants-share'
+    }
+
+    foreach ($folder in $folderPermissions.Keys) {
+        $path = "C:\shares\$folder"
+        $group = $folderPermissions[$folder]
+
+        # Remove inheritance
+        $acl = Get-Acl -Path $path
+        $acl.SetAccessRuleProtection($true, $false)
+
+        # Add SYSTEM and Administrators with Full Control
+        $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule("BUILTIN\Administrators", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+        $systemRule = New-Object System.Security.AccessControl.FileSystemAccessRule("NT AUTHORITY\SYSTEM", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+        
+        # Add department group with Full Control
+        $groupRule = New-Object System.Security.AccessControl.FileSystemAccessRule($group, "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+
+        # Clear existing rules and add new ones
+        $acl.Access.Clear()
+        $acl.AddAccessRule($adminRule)
+        $acl.AddAccessRule($systemRule)
+        $acl.AddAccessRule($groupRule)
+
+        # Apply the new ACL
+        Set-Acl -Path $path -AclObject $acl
+    }
+
+    # Configure NTFS permissions for the DFS root
+    $dfsPath = "C:\dfsroots\files"
+    $dfsAcl = Get-Acl -Path $dfsPath
+    $dfsAcl.SetAccessRuleProtection($true, $false)
+
+    # Add SYSTEM and Administrators with Full Control
+    $dfsAcl.Access.Clear()
+    $dfsAcl.AddAccessRule($adminRule)
+    $dfsAcl.AddAccessRule($systemRule)
+
+    # Add all department groups to DFS root with Full Control
+    foreach ($group in $folderPermissions.Values) {
+        $groupRule = New-Object System.Security.AccessControl.FileSystemAccessRule($group, "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+        $dfsAcl.AddAccessRule($groupRule)
+    }
+
+    # Apply the DFS root ACL
+    Set-Acl -Path $dfsPath -AclObject $dfsAcl
+}
+```
+
+## Verify NTFS Permissions
+
+To verify the permissions are set correctly, you can run:
+
+```powershell
+Invoke-Command -ComputerName srv1 -ScriptBlock {
+    $folders = @('HR', 'IT', 'Sales', 'Finance', 'Consultants')
+    foreach ($folder in $folders) {
+        Write-Host "`nPermissions for $folder folder:" -ForegroundColor Yellow
+        (Get-Acl -Path "C:\shares\$folder").Access | Format-Table IdentityReference,FileSystemRights
+    }
+
+    Write-Host "`nPermissions for DFS root:" -ForegroundColor Yellow
+    (Get-Acl -Path "C:\dfsroots\files").Access | Format-Table IdentityReference,FileSystemRights
+}
+```
+
+This configuration ensures:
+
+1. Each department folder has NTFS permissions for:
+   - The corresponding local access group (Full Control)
+   - SYSTEM (Full Control)
+   - Administrators (Full Control)
+
+2. The DFS root folder has NTFS permissions for:
+   - All department local access groups (Full Control)
+   - SYSTEM (Full Control)
+   - Administrators (Full Control)
+
+3. Inheritance is disabled on all folders to prevent unexpected permission changes
+
+4. All other inherited permissions are removed for security
