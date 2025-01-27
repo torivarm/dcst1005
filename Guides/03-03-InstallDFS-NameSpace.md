@@ -99,10 +99,10 @@ To verify the DFS namespace configuration:
 ```powershell
 Invoke-Command -ComputerName srv1 -ScriptBlock {
     # Verify DFS root
-    Get-DfsnRoot -Path "\\domain.com\files"
+    Get-DfsnRoot -Path "\\infrait.sec\files"
 
     # Verify DFS folders
-    Get-DfsnFolder -Path "\\domain.com\files\*" | 
+    Get-DfsnFolder -Path "\\infrait.sec\files\*" | 
     Format-Table Path,TargetPath,State -AutoSize
 }
 ```
