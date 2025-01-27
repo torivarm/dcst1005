@@ -143,25 +143,46 @@ Invoke-Command -ComputerName srv1 -ScriptBlock {
         $path = "C:\shares\$folder"
         $group = $folderPermissions[$folder]
 
-        # Remove inheritance
+        # Remove inheritance and get clean ACL
         $acl = Get-Acl -Path $path
         $acl.SetAccessRuleProtection($true, $false)
-
-        # Add SYSTEM and Administrators with Full Control
-        $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule("BUILTIN\Administrators", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
-        $systemRule = New-Object System.Security.AccessControl.FileSystemAccessRule("NT AUTHORITY\SYSTEM", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
         
-        # Add department group with Full Control
-        $groupRule = New-Object System.Security.AccessControl.FileSystemAccessRule($group, "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+        # Create new rules
+        $adminRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+            "BUILTIN\Administrators", 
+            "FullControl", 
+            "ContainerInherit,ObjectInherit", 
+            "None", 
+            "Allow"
+        )
+        
+        $systemRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+            "NT AUTHORITY\SYSTEM", 
+            "FullControl", 
+            "ContainerInherit,ObjectInherit", 
+            "None", 
+            "Allow"
+        )
+        
+        $groupRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+            $group, 
+            "FullControl", 
+            "ContainerInherit,ObjectInherit", 
+            "None", 
+            "Allow"
+        )
 
-        # Clear existing rules and add new ones
+        # Create a new empty ACL collection
         $acl.Access.Clear()
+
+        # Add the new rules
         $acl.AddAccessRule($adminRule)
         $acl.AddAccessRule($systemRule)
         $acl.AddAccessRule($groupRule)
 
         # Apply the new ACL
         Set-Acl -Path $path -AclObject $acl
+        Write-Host "Permissions set for $folder"
     }
 
     # Configure NTFS permissions for the DFS root
@@ -169,19 +190,28 @@ Invoke-Command -ComputerName srv1 -ScriptBlock {
     $dfsAcl = Get-Acl -Path $dfsPath
     $dfsAcl.SetAccessRuleProtection($true, $false)
 
-    # Add SYSTEM and Administrators with Full Control
+    # Clear existing permissions
     $dfsAcl.Access.Clear()
+
+    # Add SYSTEM and Administrators
     $dfsAcl.AddAccessRule($adminRule)
     $dfsAcl.AddAccessRule($systemRule)
 
-    # Add all department groups to DFS root with Full Control
+    # Add all department groups to DFS root
     foreach ($group in $folderPermissions.Values) {
-        $groupRule = New-Object System.Security.AccessControl.FileSystemAccessRule($group, "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+        $groupRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+            $group, 
+            "FullControl", 
+            "ContainerInherit,ObjectInherit", 
+            "None", 
+            "Allow"
+        )
         $dfsAcl.AddAccessRule($groupRule)
     }
 
     # Apply the DFS root ACL
     Set-Acl -Path $dfsPath -AclObject $dfsAcl
+    Write-Host "Permissions set for DFS root"
 }
 ```
 
