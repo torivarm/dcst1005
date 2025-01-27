@@ -122,8 +122,6 @@ Important Note: Each department's global group (containing all users from that d
 After creating these groups, you should configure the appropriate NTFS permissions on each share to restrict access to only the relevant local group, replacing the initial "Everyone" Full Access permissions used during setup.
 
 
-# Windows DFS Installation and Configuration Guide (Continued)
-
 ## Configuring NTFS Permissions
 
 After creating the shares, configure the NTFS permissions to ensure proper access control:
