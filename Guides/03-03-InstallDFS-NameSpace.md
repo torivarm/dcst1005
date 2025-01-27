@@ -69,6 +69,8 @@ Invoke-Command -ComputerName srv1 -ScriptBlock {
                  -GrantAdminAccounts "infrait\Domain Admins"
 }
 ```
+This command will give an error within a Invoke-Command. Must run localy on srv1 with an user with domain administrator rights:
+![alt text](New-DFSNRoot-Failed.png)
 
 ## Create DFS Folders (Links)
 
