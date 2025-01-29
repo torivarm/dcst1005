@@ -140,7 +140,7 @@ Get-ADGroupMember -Identity "g_all_sales" | Select-Object Name
 If you need to remove users:
 
 ```powershell
-Remove-ADGroupMember -Identity "g_all_sales-Team" -Members "username" -Confirm:$false
+Remove-ADGroupMember -Identity "g_all_sales" -Members "username" -Confirm:$false
 ```
 
 ## Common Issues and Troubleshooting
