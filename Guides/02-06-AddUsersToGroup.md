@@ -133,14 +133,14 @@ This script:
 To verify the results:
 
 ```powershell
-Get-ADGroupMember -Identity "Marketing-Team" | Select-Object Name
+Get-ADGroupMember -Identity "g_all_sales" | Select-Object Name
 ```
 
 ### Removing Users from Groups
 If you need to remove users:
 
 ```powershell
-Remove-ADGroupMember -Identity "Marketing-Team" -Members "username" -Confirm:$false
+Remove-ADGroupMember -Identity "g_all_sales-Team" -Members "username" -Confirm:$false
 ```
 
 ## Common Issues and Troubleshooting
