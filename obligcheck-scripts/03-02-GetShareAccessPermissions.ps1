@@ -133,6 +133,7 @@ $remoteScriptBlock = {
 
 # Main execution
 $serverName = "srv1"
+$outputPath = "\\$serverName\SharedLogs\FolderPermissions"
 
 # Test connection to server
 if (Test-RemoteComputer -ComputerName $serverName) {
