@@ -1,136 +1,57 @@
-=== Global Groups in OU=Global,OU=InfraIT_Groups,DC=InfraIT,DC=sec ===
+Permissions for HR folder:
 
-Group: g_all_finance
-Description: 
-Distinguished Name: CN=g_all_finance,OU=Global,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - Lars Berntsen (lars.f.berntsen)
-    Title: Financial Controller
-    Department: Finance
+IdentityReference             FileSystemRights
+-----------------             ----------------
+NT AUTHORITY\SYSTEM                FullControl
+BUILTIN\Administrators             FullControl
+InfraIT\l_fullAccess-hr-share      FullControl
 
-Group: g_all_consultants
-Description: 
-Distinguished Name: CN=g_all_consultants,OU=Global,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - Pål Dahl (pal.h.dahl)
-    Title: Security Consultant
-    Department: Consultants
-  - Silje Andersen (silje.k.andersen)
-    Title: Senior Security Consultant
-    Department: Consultants
-  - Øystein Berg (oystein.j.berg)
-    Title: Cloud Security Architect
-    Department: Consultants
-  - Håkon Evensen (hakon.t.evensen)
-    Title: IAM Consultant
-    Department: Consultants
-  - Marte Ødegård (marte.c.odegard)
-    Title: Security Operations Consultant
-    Department: Consultants
-  - Bjørn Hagen (bjorn.a.hagen)
-    Title: Compliance Consultant
-    Department: Consultants
-  - Eva Røed (eva.k.roed)
-    Title: Incident Response Consultant
-    Department: Consultants
-  - Nils Gjerde (nils.e.gjerde)
-    Title: Application Security Consultant
-    Department: Consultants
-  - Åse Viken (ase.m.viken)
-    Title: Digital Forensics Consultant
-    Department: Consultants
 
-Group: g_all_hr
-Description:
-Distinguished Name: CN=g_all_hr,OU=Global,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - Astrid Haugen (astrid.e.haugen)
-    Title: HR Director
-    Department: HR
+Permissions for IT folder:
 
-Group: g_all_it
-Description:
-Distinguished Name: CN=g_all_it,OU=Global,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - Tor Ivar Melling (melling)
-    Title: IT admin
-    Department: IT
-  - Ole Larsen (ole.m.larsen)
-    Title: IT Infrastructure Manager
-    Department: IT
-  - Ingrid Østby (ingrid.m.ostby)
-    Title: System Administrator
-    Department: IT
+IdentityReference             FileSystemRights
+-----------------             ----------------
+NT AUTHORITY\SYSTEM                FullControl
+BUILTIN\Administrators             FullControl
+InfraIT\l_fullAccess-it-share      FullControl
 
-Group: g_all_sales
-Description: 
-Distinguished Name: CN=g_all_sales,OU=Global,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - Erik Solberg (erik.a.solberg)
-    Title: Senior Sales Manager
-    Department: Sales
-  - Kristin Nilsen (kristin.s.nilsen)
-    Title: Sales Representative
-    Department: Sales
 
-=== Local Groups in OU=Local,OU=InfraIT_Groups,DC=InfraIT,DC=sec ===
+Permissions for Sales folder:
 
-Group: l_remoteDesktopNonAdmin
-Description:
-Distinguished Name: CN=l_remoteDesktopNonAdmin,OU=Local,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - g_all_consultants (Group)
-  - g_all_finance (Group)
-  - g_all_sales (Group)
-  - g_all_it (Group)
-  - g_all_hr (Group)
+IdentityReference                FileSystemRights
+-----------------                ----------------
+NT AUTHORITY\SYSTEM                   FullControl
+BUILTIN\Administrators                FullControl
+InfraIT\l_fullAccess-sales-share      FullControl
 
-Group: l_fullAccess-hr-share
-Description:
-Distinguished Name: CN=l_fullAccess-hr-share,OU=Local,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - g_all_hr (Group)
 
-Group: l_fullAccess-it-share
-Description:
+Permissions for Finance folder:
 
-Group: l_fullAccess-it-share
-Description:
-Description:
-Distinguished Name: CN=l_fullAccess-it-share,OU=Local,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-Members:
-  - g_all_it (Group)
-  - g_all_it (Group)
+IdentityReference                  FileSystemRights
+-----------------                  ----------------
+NT AUTHORITY\SYSTEM                     FullControl
+BUILTIN\Administrators                  FullControl
+InfraIT\l_fullAccess-finance-share      FullControl
 
-Group: l_fullAccess-sales-share
-Description:
-Distinguished Name: CN=l_fullAccess-sales-share,OU=Local,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - g_all_sales (Group)
-Group: l_fullAccess-sales-share
-Description:
-Distinguished Name: CN=l_fullAccess-sales-share,OU=Local,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - g_all_sales (Group)
 
-Group: l_fullAccess-finance-share
+Permissions for Consultants folder:
 
-Group: l_fullAccess-finance-share
-Description:
-Distinguished Name: CN=l_fullAccess-finance-share,OU=Local,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - g_all_finance (Group)
+IdentityReference                      FileSystemRights
+-----------------                      ----------------
+NT AUTHORITY\SYSTEM                         FullControl
+BUILTIN\Administrators                      FullControl
+InfraIT\l_fullAccess-consultants-share      FullControl
 
-Group: l_fullAccess-consultants-share
-Description:
-Distinguished Name: CN=l_fullAccess-consultants-share,OU=Local,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - g_all_consultants (Group)
-  - g_all_finance (Group)
 
-Group: l_fullAccess-consultants-share
-Description:
-Distinguished Name: CN=l_fullAccess-consultants-share,OU=Local,OU=InfraIT_Groups,DC=InfraIT,DC=sec
-Members:
-  - g_all_consultants (Group)
+Permissions for DFS root:
+
+IdentityReference                      FileSystemRights
+-----------------                      ----------------
+NT AUTHORITY\SYSTEM                         FullControl
+BUILTIN\Administrators                      FullControl
+InfraIT\adm_melling                         FullControl
+InfraIT\l_fullAccess-hr-share               FullControl
+InfraIT\l_fullAccess-it-share               FullControl
+InfraIT\l_fullAccess-sales-share            FullControl
+InfraIT\l_fullAccess-finance-share          FullControl
+InfraIT\l_fullAccess-consultants-share      FullControl
