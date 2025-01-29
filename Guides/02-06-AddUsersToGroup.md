@@ -46,36 +46,20 @@ This command:
 
 ### Getting Users from a Specific Department
 ```powershell
-$marketingUsers = Get-ADUser -Filter {department -eq "Marketing"} -Properties department
+$salesUsers = Get-ADUser -Filter {department -eq "Sales"} -Properties department
 ```
 
 This command:
-- Creates a variable `$marketingUsers` containing all users from the Marketing department
+- Creates a variable `$salesUsers` containing all users from the Marketing department
 - Uses a filter with the `-eq` (equals) operator to match the department name exactly
 
 ## Working with AD Groups
-
-### Creating a New Department Group
-If the group doesn't exist:
-
-```powershell
-New-ADGroup -Name "Marketing-Team" `
-            -GroupScope Global `
-            -GroupCategory Security `
-            -Path "OU=Groups,DC=company,DC=com"
-```
-
-This command:
-- Creates a new security group
-- `-GroupScope Global`: Sets the group scope
-- `-GroupCategory Security`: Specifies this is a security group
-- `-Path`: Specifies where to create the group in AD
 
 ### Adding Users to Groups
 Basic method to add a single user:
 
 ```powershell
-Add-ADGroupMember -Identity "Marketing-Team" -Members "username"
+Add-ADGroupMember -Identity "g_all_sales" -Members "username"
 ```
 
 ### Automated Department-Based Assignment
@@ -83,8 +67,8 @@ Here's a script that adds all users from a department to their corresponding gro
 
 ```powershell
 # Define department and group names
-$department = "Marketing"
-$groupName = "Marketing-Team"
+$department = "Sales"
+$groupName = "g_all_sales"
 
 # Get all users from the department
 $departmentUsers = Get-ADUser -Filter {department -eq $department} -Properties department
