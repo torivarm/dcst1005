@@ -17,7 +17,7 @@
 7. Group type: Security
 8. Click OK
 
-![alt text](01-NewLocalGroup.png)
+![alt text](NewLocalGroup01.png)
 
 ### 2. Add Users to the Security Group
 1. Double-click the newly created group
@@ -27,7 +27,7 @@
 5. Click OK to add selected
 6. Click Apply and OK
 
-![alt text](02-NewLocalGroup.png)
+![alt text](NewLocalGroup02.png)
 
 ### 3. Create and Configure Group Policy
 1. Add Group Policy Management in MMC through Add/Remove Snap-in

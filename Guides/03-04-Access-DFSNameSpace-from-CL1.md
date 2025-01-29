@@ -4,5 +4,12 @@
 My example: HR, since CL1 computer is in HR OU
 ![alt text](RDP-HR.png)
 
-## Open File Explorer an access department share
+## Open File Explorer and access department share
+Type in \\InfraIT.Sec\files in FileExplorer
+![alt text](ShareInFileExplorer.png)
 
+Verify that you can access the users department share and create a folder and file within that folder
+![alt text](CreateFolderInHR.png)
+
+Verify that you cannot access the other department file share
+![alt text](cannotAccessFileShare.png)
