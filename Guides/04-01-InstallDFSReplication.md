@@ -2,8 +2,7 @@
 
 ## Prerequisites
 Before starting, ensure:
-- Windows Server 2016 or later on DC1 and SRV1
-- Both servers are domain-joined
+- Servers are domain-joined
 - Administrative privileges on both servers
 - PowerShell remoting enabled
 - Existing shares on SRV1 for:
@@ -59,65 +58,6 @@ Invoke-Command -Session $session -ScriptBlock {
 }
 ```
 [New-SmbShare](https://learn.microsoft.com/en-us/powershell/module/smbshare/new-smbshare) - Creates network shares for the folders.
-
-## Configure DFS Replication
-
-### 1. Create Replication Group
-```powershell
-New-DfsReplicationGroup -GroupName "InfraIT_Files" -Description "InfraIT Files Replication"
-```
-[New-DfsReplicationGroup](https://learn.microsoft.com/en-us/powershell/module/dfsr/new-dfsreplicationgroup) - Creates a new replication group.
-
-### 2. Add Members to Replication Group
-```powershell
-Add-DfsrMember -GroupName "InfraIT_Files" -ComputerName "SRV1","DC1"
-```
-[Add-DfsrMember](https://learn.microsoft.com/en-us/powershell/module/dfsr/add-dfsrmember) - Adds both servers to the replication group.
-
-### 3. Create Replicated Folders
-```powershell
-$folders = @('Finance', 'Sales', 'IT', 'Consultants', 'HR')
-foreach ($folder in $folders) {
-    # Create replicated folder
-    New-DfsReplicatedFolder -GroupName "InfraIT_Files" -FolderName $folder -DfsnPath "\\infrait\files\$folder"
-    
-    # Configure SRV1 as primary member (source)
-    Set-DfsrMembership -GroupName "InfraIT_Files" -FolderName $folder `
-        -ComputerName "SRV1" -ContentPath "c:\Shares\$folder" -PrimaryMember $true
-    
-    # Configure DC1 as secondary member (destination)
-    Set-DfsrMembership -GroupName "InfraIT_Files" -FolderName $folder `
-        -ComputerName "DC1" -ContentPath "c:\DFSRoots\$folder"
-}
-```
-[New-DfsReplicatedFolder](https://learn.microsoft.com/en-us/powershell/module/dfsr/new-dfsreplicatedfolder) - Creates replicated folders.
-[Set-DfsrMembership](https://learn.microsoft.com/en-us/powershell/module/dfsr/set-dfsrmembership) - Configures replication membership.
-
-## Verification and Monitoring
-
-### 1. Check Replication Status
-```powershell
-foreach ($folder in $folders) {
-    Get-DfsrBacklog -GroupName "InfraIT_Files" -FolderName $folder `
-        -SourceComputerName "SRV1" -DestinationComputerName "DC1"
-}
-```
-[Get-DfsrBacklog](https://learn.microsoft.com/en-us/powershell/module/dfsr/get-dfsrbacklog) - Shows pending replication items.
-
-### 2. Monitor Health
-```powershell
-# Generate health report
-Write-DfsrHealthReport -GroupName "InfraIT_Files" -Path "C:\DFSReport.html"
-
-# Check replication status
-Get-DfsrState -GroupName "InfraIT_Files" -ComputerName "DC1"
-```
-
-### 3. Force Replication
-```powershell
-Sync-DfsReplicationGroup -GroupName "InfraIT_Files"
-```
-[Sync-DfsReplicationGroup](https://learn.microsoft.com/en-us/powershell/module/dfsr/sync-dfsreplicationgroup) - Forces immediate replication.
 
 ## Cleanup
 ```powershell
