@@ -59,16 +59,23 @@ Add-DfsrMember -GroupName "FileServerGroup" -ComputerName "DC1"
 $folders = @("finance", "sales", "hr", "it", "consultants")
 
 foreach ($folder in $folders) {
-    Add-DfsrFolderMember -GroupName "FileServerGroup" `
+    # Create the replicated folder
+    New-DfsReplicatedFolder -GroupName "FileServerGroup" `
+        -FolderName $folder `
+        -DfsnPath "\\infrait\files\$folder"
+
+    # Set up replication members for the folder
+    Set-DfsrMembership -GroupName "FileServerGroup" `
         -FolderName $folder `
         -ContentPath "c:\shares\$folder" `
         -ComputerName "SRV1" `
         -PrimaryMember $true
 
-    Add-DfsrFolderMember -GroupName "FileServerGroup" `
+    Set-DfsrMembership -GroupName "FileServerGroup" `
         -FolderName $folder `
         -ContentPath "c:\dfsroots\$folder" `
-        -ComputerName "DC1"
+        -ComputerName "DC1" `
+        -PrimaryMember $false
 }
 ```
 
