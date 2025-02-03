@@ -83,11 +83,11 @@ foreach ($folder in $folders) {
     
     # Configure SRV1 as primary member (source)
     Set-DfsrMembership -GroupName "InfraIT_Files" -FolderName $folder `
-        -ComputerName "SRV1" -ContentPath "D:\Shares\$folder" -PrimaryMember $true
+        -ComputerName "SRV1" -ContentPath "c:\Shares\$folder" -PrimaryMember $true
     
     # Configure DC1 as secondary member (destination)
     Set-DfsrMembership -GroupName "InfraIT_Files" -FolderName $folder `
-        -ComputerName "DC1" -ContentPath "D:\DFSRoots\$folder"
+        -ComputerName "DC1" -ContentPath "c:\DFSRoots\$folder"
 }
 ```
 [New-DfsReplicatedFolder](https://learn.microsoft.com/en-us/powershell/module/dfsr/new-dfsreplicatedfolder) - Creates replicated folders.
