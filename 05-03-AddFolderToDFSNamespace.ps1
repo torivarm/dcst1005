@@ -27,7 +27,7 @@ $session = New-PSSession -ComputerName $remoteComputerName
 Invoke-Command -Session $session -ScriptBlock {
     param($DFSNamespace, $folderName, $DFSTargetPath)
     # Add the folder to the DFS Namespace
-    New-DfsnFolder -Path "$DFSNamespace\$folderName" -TargetPath $DFSTargetPath
-    New-DfsnFoldertarget -Path "$DFSNamespace\$folderName" -TargetPath $DFSTargetPath
+    New-DfsnFolder -Path "$DFSNamespace\$folderName" -TargetPath $DFSTargetPath -ErrorAction SilentlyContinue
+    New-DfsnFoldertarget -Path "$DFSNamespace\$folderName" -TargetPath $DFSTargetPath -ErrorAction SilentlyContinue
     Write-Host "Folder added to DFS Namespace"
 } -ArgumentList $DFSNamespace, $folderName, $DFSTargetPath
