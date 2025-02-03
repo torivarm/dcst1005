@@ -1,139 +1,160 @@
-# Remote DFS Replication Installation Guide for DC1
+# DFS Namespace and Replication Setup Guide for \\infrait\files
 
 ## Prerequisites
-Before starting the remote installation, ensure:
-- DC1 is domain-joined
-- Administrative privileges on DC1
-- PowerShell remoting enabled on DC1
-- WinRM configured for remote management
-- Sufficient disk space on DC1 for replicated data
-- Stable network connection to DC1
+Before starting, ensure:
+- Windows Server 2016 or later on DC1 and SRV1
+- Both servers are domain-joined
+- Administrative privileges on both servers
+- PowerShell remoting enabled
+- Existing shares on SRV1 for:
+  - Finance
+  - Sales
+  - IT
+  - Consultants
+  - HR
 
-## Enable PowerShell Remoting (if not enabled)
-```powershell
-# Test connection to DC1
-Test-WSMan -ComputerName "DC1"
+## Install DFS Services on DC1
 
-# If not enabled, enable remotely using psexec or locally on DC1:
-Enable-PSRemoting -Force
-```
-[Test-WSMan](https://learn.microsoft.com/en-us/powershell/module/microsoft.wsman.management/test-wsman) - Tests if WS-Management is configured and running on DC1.
-
-## Installation Steps
-
-### 1. Establish Remote Session
+### 1. Establish Remote Session to DC1
 ```powershell
 $session = New-PSSession -ComputerName "DC1"
 ```
-[New-PSSession](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/new-pssession) - Creates a persistent remote session to DC1 for running commands.
+[New-PSSession](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/new-pssession) - Creates a remote session to DC1.
 
-### 2. Install DFS Replication Role
+### 2. Install DFS Services
 ```powershell
 Invoke-Command -Session $session -ScriptBlock {
-    Install-WindowsFeature FS-DFS-Replication -IncludeManagementTools
+    Install-WindowsFeature FS-DFS-Namespace, FS-DFS-Replication -IncludeManagementTools
 }
 ```
-[Install-WindowsFeature](https://learn.microsoft.com/en-us/powershell/module/servermanager/install-windowsfeature) - Remotely installs the DFS Replication role and management tools on DC1.
+[Install-WindowsFeature](https://learn.microsoft.com/en-us/powershell/module/servermanager/install-windowsfeature) - Installs both DFS Namespace and Replication roles.
 
-### 3. Install DFS Namespaces
+## Create Folders on DC1
+
+### 1. Create Base Directory Structure
 ```powershell
 Invoke-Command -Session $session -ScriptBlock {
-    Install-WindowsFeature FS-DFS-Namespace -IncludeManagementTools
+    $basePath = "D:\DFSRoots"
+    $folders = @('Finance', 'Sales', 'IT', 'Consultants', 'HR')
+    
+    # Create base directory
+    New-Item -Path $basePath -ItemType Directory -Force
+
+    # Create individual folders
+    foreach ($folder in $folders) {
+        New-Item -Path "$basePath\$folder" -ItemType Directory -Force
+        # Set NTFS permissions here if needed
+    }
 }
 ```
 
-## Basic Configuration Steps
-
-### 1. Create a Replication Group
-```powershell
-New-DfsReplicationGroup -GroupName "DC1RepGroup" -Description "DC1 Replication Group" -DomainName "domain.local"
-```
-[New-DfsReplicationGroup](https://learn.microsoft.com/en-us/powershell/module/dfsr/new-dfsreplicationgroup) - Creates a new replication group for DC1.
-
-### 2. Add DC1 as Replication Member
-```powershell
-Add-DfsrMember -GroupName "DC1RepGroup" -ComputerName "DC1"
-```
-[Add-DfsrMember](https://learn.microsoft.com/en-us/powershell/module/dfsr/add-dfsrmember) - Adds DC1 to the replication group.
-
-### 3. Create Replication Folder on DC1
+### 2. Share Folders on DC1
 ```powershell
 Invoke-Command -Session $session -ScriptBlock {
-    # Create the directory if it doesn't exist
-    New-Item -Path "D:\SharedData" -ItemType Directory -Force
-}
-
-New-DfsReplicatedFolder -GroupName "DC1RepGroup" -FolderName "Share1" -ContentPath "D:\SharedData"
-```
-[New-DfsReplicatedFolder](https://learn.microsoft.com/en-us/powershell/module/dfsr/new-dfsreplicatedfolder) - Creates a replicated folder on DC1.
-
-### 4. Set DC1 as Primary Member
-```powershell
-Set-DfsrMembership -GroupName "DC1RepGroup" -FolderName "Share1" -ContentPath "D:\SharedData" -ComputerName "DC1" -PrimaryMember $true
-```
-[Set-DfsrMembership](https://learn.microsoft.com/en-us/powershell/module/dfsr/set-dfsrmembership) - Configures DC1 as the primary member.
-
-## Remote Verification Commands
-
-### Check Replication Status on DC1
-```powershell
-Invoke-Command -ComputerName "DC1" -ScriptBlock {
-    Get-DfsrState -GroupName "DC1RepGroup" -FolderName "Share1"
+    $folders = @('Finance', 'Sales', 'IT', 'Consultants', 'HR')
+    foreach ($folder in $folders) {
+        New-SmbShare -Name $folder -Path "D:\DFSRoots\$folder" -FullAccess "Everyone"
+        # Adjust share permissions according to your security requirements
+    }
 }
 ```
-[Get-DfsrState](https://learn.microsoft.com/en-us/powershell/module/dfsr/get-dfsrstate) - Shows the current replication state on DC1.
+[New-SmbShare](https://learn.microsoft.com/en-us/powershell/module/smbshare/new-smbshare) - Creates network shares for the folders.
 
-### View DC1 Replication Configuration
+## Configure DFS Namespace
+
+### 1. Create DFS Namespace
 ```powershell
-Get-DfsReplicationGroup | Where-Object {$_.Members -contains "DC1"} | Format-List *
+New-DfsnRoot -TargetPath "\\DC1\files" -Type DomainV2 -Path "\\infrait\files"
 ```
-[Get-DfsReplicationGroup](https://learn.microsoft.com/en-us/powershell/module/dfsr/get-dfsreplicationgroup) - Shows detailed information about DC1's replication groups.
+[New-DfsnRoot](https://learn.microsoft.com/en-us/powershell/module/dfsn/new-dfsnroot) - Creates the DFS namespace root.
 
-## Maintenance Commands for DC1
-
-### Update DC1 Configuration
+### 2. Add Folders to Namespace
 ```powershell
-Update-DfsrConfigurationFromAD -ComputerName "DC1"
+$folders = @('Finance', 'Sales', 'IT', 'Consultants', 'HR')
+foreach ($folder in $folders) {
+    # Add namespace folder
+    New-DfsnFolder -Path "\\infrait\files\$folder" -TargetPath "\\SRV1\$folder"
+    # Add DC1 as additional target
+    New-DfsnFolderTarget -Path "\\infrait\files\$folder" -TargetPath "\\DC1\$folder"
+}
 ```
-[Update-DfsrConfigurationFromAD](https://learn.microsoft.com/en-us/powershell/module/dfsr/update-dfsrconfigurationfromad) - Forces a refresh of DFS Replication configuration from AD on DC1.
+[New-DfsnFolder](https://learn.microsoft.com/en-us/powershell/module/dfsn/new-dfsnfolder) - Creates folders in the namespace.
+[New-DfsnFolderTarget](https://learn.microsoft.com/en-us/powershell/module/dfsn/new-dfsntarget) - Adds targets to namespace folders.
 
-### Force Immediate Sync on DC1
+## Configure DFS Replication
+
+### 1. Create Replication Group
 ```powershell
-Sync-DfsReplicationGroup -GroupName "DC1RepGroup"
+New-DfsReplicationGroup -GroupName "InfraIT_Files" -Description "InfraIT Files Replication"
 ```
-[Sync-DfsReplicationGroup](https://learn.microsoft.com/en-us/powershell/module/dfsr/sync-dfsreplicationgroup) - Initiates immediate replication for DC1's group.
+[New-DfsReplicationGroup](https://learn.microsoft.com/en-us/powershell/module/dfsr/new-dfsreplicationgroup) - Creates a new replication group.
 
-## Troubleshooting DC1
-
-### Check DC1 Health Report
+### 2. Add Members to Replication Group
 ```powershell
-Get-DfsrHealthReport -GroupName "DC1RepGroup" -ComputerName "DC1"
+Add-DfsrMember -GroupName "InfraIT_Files" -ComputerName "SRV1","DC1"
 ```
-[Get-DfsrHealthReport](https://learn.microsoft.com/en-us/powershell/module/dfsr/get-dfsrhealthreport) - Generates a health report for DC1's replication.
+[Add-DfsrMember](https://learn.microsoft.com/en-us/powershell/module/dfsr/add-dfsrmember) - Adds both servers to the replication group.
 
-### Create Detailed HTML Report for DC1
+### 3. Create Replicated Folders
 ```powershell
-Write-DfsrHealthReport -GroupName "DC1RepGroup" -Path "\\DC1\C$\DFSReport.html"
+$folders = @('Finance', 'Sales', 'IT', 'Consultants', 'HR')
+foreach ($folder in $folders) {
+    # Create replicated folder
+    New-DfsReplicatedFolder -GroupName "InfraIT_Files" -FolderName $folder -DfsnPath "\\infrait\files\$folder"
+    
+    # Configure SRV1 as primary member (source)
+    Set-DfsrMembership -GroupName "InfraIT_Files" -FolderName $folder `
+        -ComputerName "SRV1" -ContentPath "D:\Shares\$folder" -PrimaryMember $true
+    
+    # Configure DC1 as secondary member (destination)
+    Set-DfsrMembership -GroupName "InfraIT_Files" -FolderName $folder `
+        -ComputerName "DC1" -ContentPath "D:\DFSRoots\$folder"
+}
 ```
-[Write-DfsrHealthReport](https://learn.microsoft.com/en-us/powershell/module/dfsr/write-dfsrhealthreport) - Creates a detailed HTML report of DC1's DFS Replication health.
+[New-DfsReplicatedFolder](https://learn.microsoft.com/en-us/powershell/module/dfsr/new-dfsreplicatedfolder) - Creates replicated folders.
+[Set-DfsrMembership](https://learn.microsoft.com/en-us/powershell/module/dfsr/set-dfsrmembership) - Configures replication membership.
 
-### Clean Up Remote Session
+## Verification and Monitoring
+
+### 1. Check Replication Status
+```powershell
+foreach ($folder in $folders) {
+    Get-DfsrBacklog -GroupName "InfraIT_Files" -FolderName $folder `
+        -SourceComputerName "SRV1" -DestinationComputerName "DC1"
+}
+```
+[Get-DfsrBacklog](https://learn.microsoft.com/en-us/powershell/module/dfsr/get-dfsrbacklog) - Shows pending replication items.
+
+### 2. Monitor Health
+```powershell
+# Generate health report
+Write-DfsrHealthReport -GroupName "InfraIT_Files" -Path "C:\DFSReport.html"
+
+# Check replication status
+Get-DfsrState -GroupName "InfraIT_Files" -ComputerName "DC1"
+```
+
+### 3. Force Replication
+```powershell
+Sync-DfsReplicationGroup -GroupName "InfraIT_Files"
+```
+[Sync-DfsReplicationGroup](https://learn.microsoft.com/en-us/powershell/module/dfsr/sync-dfsreplicationgroup) - Forces immediate replication.
+
+## Cleanup
 ```powershell
 Remove-PSSession $session
 ```
-[Remove-PSSession](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/remove-pssession) - Closes the remote session to DC1.
 
-## Best Practices for DC1
-1. Verify WinRM configuration before starting
-2. Monitor DC1's disk space regularly
-3. Check DC1's event logs for replication errors
-4. Document all configuration changes made to DC1
-5. Keep track of DC1's replication partners
-6. Maintain proper backup of DC1's replicated data
+## Best Practices
+1. Monitor initial replication progress closely
+2. Verify NTFS permissions are correctly set on both servers
+3. Check event logs for replication errors
+4. Monitor disk space on both servers
+5. Document namespace and replication configuration
+6. Regular health checks using DFS Management console
 
 ## Note
-- Ensure proper network connectivity to DC1 before starting
-- Verify DNS resolution for DC1
-- Check firewall rules for remote management
-- Monitor DC1's resource usage during initial sync
-- Consider using robocopy for initial data seeding on DC1
+- Adjust paths and permissions according to your environment
+- Initial replication might take time depending on data volume
+- Configure appropriate staging quota based on file sizes
+- Consider bandwidth between servers for replication timing
