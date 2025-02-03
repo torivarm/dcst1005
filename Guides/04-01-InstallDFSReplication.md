@@ -43,7 +43,7 @@ Invoke-Command -Session $session -ScriptBlock {
     # Create individual folders
     foreach ($folder in $folders) {
         New-Item -Path "$basePath\$folder" -ItemType Directory -Force
-        # Set NTFS permissions here if needed
+        
     }
 }
 ```
