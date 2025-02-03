@@ -48,7 +48,7 @@ Invoke-Command -Session $session -ScriptBlock {
 }
 ```
 
-### 2. Share Folders on DC1
+### 2. Share Folders on DC1 (OPTIONAL)
 ```powershell
 Invoke-Command -Session $session -ScriptBlock {
     $folders = @('Finance', 'Sales', 'IT', 'Consultants', 'HR')
@@ -59,27 +59,6 @@ Invoke-Command -Session $session -ScriptBlock {
 }
 ```
 [New-SmbShare](https://learn.microsoft.com/en-us/powershell/module/smbshare/new-smbshare) - Creates network shares for the folders.
-
-## Configure DFS Namespace
-
-### 1. Create DFS Namespace
-```powershell
-New-DfsnRoot -TargetPath "\\DC1\files" -Type DomainV2 -Path "\\infrait\files"
-```
-[New-DfsnRoot](https://learn.microsoft.com/en-us/powershell/module/dfsn/new-dfsnroot) - Creates the DFS namespace root.
-
-### 2. Add Folders to Namespace
-```powershell
-$folders = @('Finance', 'Sales', 'IT', 'Consultants', 'HR')
-foreach ($folder in $folders) {
-    # Add namespace folder
-    New-DfsnFolder -Path "\\infrait\files\$folder" -TargetPath "\\SRV1\$folder"
-    # Add DC1 as additional target
-    New-DfsnFolderTarget -Path "\\infrait\files\$folder" -TargetPath "\\DC1\$folder"
-}
-```
-[New-DfsnFolder](https://learn.microsoft.com/en-us/powershell/module/dfsn/new-dfsnfolder) - Creates folders in the namespace.
-[New-DfsnFolderTarget](https://learn.microsoft.com/en-us/powershell/module/dfsn/new-dfsntarget) - Adds targets to namespace folders.
 
 ## Configure DFS Replication
 
