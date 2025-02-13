@@ -33,7 +33,7 @@ In this guide, you will learn how to change the flavor of a Virtual Machine (srv
    - Verify the new specifications (4 CPU, 8GB RAM)
    - Click "Resize"
 
-[Image Placeholder: Screenshot of resize dialog]
+![alt text](resize-vm.png)
 
 ### 3. Confirm the Resize
 1. Once the resize operation completes:
