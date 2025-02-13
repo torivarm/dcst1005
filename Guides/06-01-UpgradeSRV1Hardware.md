@@ -42,7 +42,6 @@ In this guide, you will learn how to change the flavor of a Virtual Machine (srv
 2. Wait for the operation to complete
    - Status should return to "Shutoff"
 
-[Image Placeholder: Screenshot of confirming resize]
 
 ### 4. Start the Virtual Machine
 1. Start srv1:
@@ -52,28 +51,6 @@ In this guide, you will learn how to change the flavor of a Virtual Machine (srv
    - Check the instance details
    - Confirm new flavor shows as gx3.4c8r
 
-[Image Placeholder: Screenshot of instance details showing new configuration]
-
-## Verification
-To ensure the resize was successful:
-1. Check the instance details in OpenStack
-2. Log into the VM and verify the resources:
-   ```bash
-   # Check CPU
-   nproc
-   # Check RAM
-   free -h
-   ```
-
-## Troubleshooting
-If you encounter issues:
-- Ensure the VM is completely shut down before attempting the resize
-- Verify you have sufficient quota for the new flavor
-- Check the OpenStack logs for any error messages
-- Contact your instructor if problems persist
 
 ## Next Steps
 With the proper resources now allocated, you can proceed with the installation of VEEAM Backup and Replication.
-
----
-**Note**: Remember to document any issues encountered during this process for future reference.
