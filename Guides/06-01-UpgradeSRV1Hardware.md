@@ -25,9 +25,8 @@ In this guide, you will learn how to change the flavor of a Virtual Machine (srv
 ![alt text](shutdown.png)
 
 ### 2. Change the Flavor
-1. With srv1 shut down:
-   - Click on the instance name "srv1"
-   - From the dropdown menu, select "Resize Instance"
+1. With srv1 shut down (NB! You need to wait for the OS to shut down, refresh page to verify that it is off):
+   - From the dropdown menu of "srv1", select "Resize Instance"
 2. In the Resize Instance dialog:
    - Select the new flavor "gx3.4c8r" from the flavor list
    - Verify the new specifications (4 CPU, 8GB RAM)
