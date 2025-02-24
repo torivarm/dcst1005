@@ -52,7 +52,7 @@
    - Choose required languages: English
 
 5. Choose products to update:
-   - Windows Server 2025
+   - Windows Server 2025 -> Listed as Windows Server 24h2
    - Windows 11
 
 6. Select update classifications:
