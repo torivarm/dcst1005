@@ -25,11 +25,14 @@
 
 1. Complete the installation wizard
 2. Wait for the installation to finish
-3.  Restart the server when prompted
+3. OBS! If it get "stuck", restart the server.
+4.  Restart the server if needed / prompted
+![alt text](done.png)
 
-## Step 2: Configure WSUS Post-Installation
+## Step 2: Post instaall and Configure WSUS Post-Installation
 
 1. Open Server Manager
+![alt text](PostInstall.png)
 2. Click on "Tools" → "Windows Server Update Services"
 3. The WSUS Configuration Wizard will start automatically
 
