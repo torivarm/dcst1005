@@ -26,10 +26,10 @@
 1. Complete the installation wizard
 2. Wait for the installation to finish
 3. OBS! If it get "stuck", wait a bit longer..
-4.  Restart the server if needed / prompted
+4. Start the post install configuration..
 ![alt text](done.png)
 
-## Step 2: Post instaall and Configure WSUS Post-Installation
+## Step 2: Post install and Configure WSUS Post-Installation
 
 1. Open Server Manager
 ![alt text](PostInstall.png)
