@@ -4,15 +4,16 @@
 - Windows Server 2025 (SRV1)
 - Administrator access (administrator@<yourDomain.nn>)
 - Minimum 10GB free disk space (40GB recommended)
-- OPTIONAL: RESTART SRV1 to avoid other setups, configurations affecting the WSUS role install
+- TIPS!! RESTART SRV1 to avoid other setups, configurations affecting the WSUS role install
 
-## Step 1: Install Required Server Roles and Features
+## Step 1: Install Required Server Roles and Features (SRV1)
 
-1. Open Server Manager
-2. Click "Manage" → "Add Roles and Features"
+1. Remember to restart first, my setup got "stuck"
+2. Open Server Manager
+3. Click "Manage" → "Add Roles and Features"
 ![alt text](AddRoles.png)
-3. Click "Next" until you reach "Server Roles"
-4. Select the following roles:
+1. Click "Next" until you reach "Server Roles"
+2. Select the following roles:
 ![alt text](WSUSRole.png)
    - Windows Server Update Services - Select WSUS first, then it will automatically select the necessary roles for WSUS.
    - IIS (if not already installed)
