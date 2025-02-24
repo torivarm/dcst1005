@@ -1,7 +1,7 @@
-# Installing WSUS on Windows Server 2025
+# Installing WSUS on Windows Server 2025 - SRV1
 
 ## Prerequisites
-- Windows Server 2025 with Desktop Experience
+- Windows Server 2025 (SRV1)
 - Administrator access
 - Minimum 10GB free disk space (40GB recommended)
 - .NET Framework 4.8 or later
@@ -18,14 +18,14 @@
    - Windows Server Update Services - Select WSUS first, then it will automatically select the necessary roles for WSUS.
    - IIS (if not already installed)
 
-5. When prompted, add the required features for WSUS
-6. Choose your installation location for WSUS updates
-   - Default: C:\WSUS
+1. Choose your installation location for WSUS updates
+   - Create a new folder on D:\ -> D:\WSUS 
    - Recommended: Separate volume with sufficient space
+![alt text](StoreWSUS.png)
 
-7. Complete the installation wizard
-8. Wait for the installation to finish
-9.  Restart the server when prompted
+1. Complete the installation wizard
+2. Wait for the installation to finish
+3.  Restart the server when prompted
 
 ## Step 2: Configure WSUS Post-Installation
 
