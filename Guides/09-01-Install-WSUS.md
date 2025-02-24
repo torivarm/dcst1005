@@ -59,12 +59,12 @@
    - Critical Updates
    - Security Updates
    - Service Packs
-   - Update Rollups
-   - Add others based on requirements
 
 7. Configure sync schedule:
    - Recommended: Daily at off-peak hours
    - Initial sync may take several hours
+
+# THE REST WILL BE COMPLETED ASAP - Security baseline can be done without this completed
 
 ## Step 3: Configure Client-Side Settings
 
