@@ -45,6 +45,7 @@
 2. No proxy settings
 3. Click "Start Connecting" to test connection
 ![alt text](StartConnection.png)
+![alt text](NextWSUS.png)
 
 4. Choose languages:
    - Select "Download updates only in these languages"
