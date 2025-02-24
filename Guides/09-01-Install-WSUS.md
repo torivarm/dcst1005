@@ -2,10 +2,9 @@
 
 ## Prerequisites
 - Windows Server 2025 (SRV1)
-- Administrator access
+- Administrator access (administrator@<yourDomain.nn>)
 - Minimum 10GB free disk space (40GB recommended)
-- .NET Framework 4.8 or later
-- IIS Web Server role
+- OPTIONAL: RESTART SRV1 to avoid other setups, configurations affecting the WSUS role install
 
 ## Step 1: Install Required Server Roles and Features
 
@@ -25,7 +24,7 @@
 
 1. Complete the installation wizard
 2. Wait for the installation to finish
-3. OBS! If it get "stuck", restart the server.
+3. OBS! If it get "stuck", wait a bit longer..
 4.  Restart the server if needed / prompted
 ![alt text](done.png)
 
