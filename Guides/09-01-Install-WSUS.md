@@ -34,14 +34,17 @@
 1. Open Server Manager
 ![alt text](PostInstall.png)
 2. Click on "Tools" → "Windows Server Update Services"
+![alt text](WSUSstart.png)
 3. The WSUS Configuration Wizard will start automatically
+![alt text](WSUSConfiguration.png)
 
 ### Initial Configuration Steps:
 1. Choose upstream server:
    - Synchronize from Microsoft Update
 
-2. Select proxy settings if required (nope)
+2. No proxy settings
 3. Click "Start Connecting" to test connection
+![alt text](StartConnection.png)
 
 4. Choose languages:
    - Select "Download updates only in these languages"
@@ -50,7 +53,6 @@
 5. Choose products to update:
    - Windows Server 2025
    - Windows 11
-   - Add other Microsoft products as needed
 
 6. Select update classifications:
    - Critical Updates
