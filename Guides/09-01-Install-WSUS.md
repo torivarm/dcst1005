@@ -38,19 +38,16 @@
 ### Initial Configuration Steps:
 1. Choose upstream server:
    - Synchronize from Microsoft Update
-   - Or specify upstream WSUS server
 
-2. Select proxy settings if required
+2. Select proxy settings if required (nope)
 3. Click "Start Connecting" to test connection
 
 4. Choose languages:
    - Select "Download updates only in these languages"
-   - Choose required languages
-   - Recommended: English at minimum
+   - Choose required languages: English
 
 5. Choose products to update:
    - Windows Server 2025
-   - Windows 10
    - Windows 11
    - Add other Microsoft products as needed
 
