@@ -64,29 +64,32 @@
    - Recommended: Daily at off-peak hours
    - Initial sync may take several hours
 
-# THE REST WILL BE COMPLETED ASAP - Security baseline can be done without this completed
+8. WSUS after search and synchronizing
+![alt text](WSUSwithUpdates.png)
 
 ## Step 3: Configure Client-Side Settings
 
 1. Open Group Policy Management Console
 2. Create new GPO or edit existing one
-3. Navigate to:
+![alt text](c_wsus_client.png)
+3. Edit GPO and navigate to:
    ```
    Computer Configuration\Administrative Templates\Windows Components\Windows Update
    ```
 
 4. Configure these key settings:
    - "Configure Automatic Updates": Enabled
+![alt text](EnableAutoDownload.png)
    - "Specify intranet Microsoft update service location": Enabled
-     - Set URL to your WSUS server
-     - Example: http://wsus-server:8530
+     - Set URL to your WSUS server (my example: http://srv1.infrait.sec:8530)
+![alt text](WSUSServerURL-GPO.png)
 
-5. Set update frequency and behavior:
+1. Set update frequency and behavior:
    - "Auto download and notify for install"
    - Or "Auto download and schedule installation"
 
-6. Link GPO to appropriate OU
-7. Force policy update on clients:
+2. Link GPO to appropriate OU
+3. Force policy update on clients:
    ```powershell
    gpupdate /force
    ```
