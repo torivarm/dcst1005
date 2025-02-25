@@ -84,32 +84,33 @@
      - Set URL to your WSUS server (my example: http://srv1.infrait.sec:8530)
 ![alt text](WSUSServerURL-GPO.png)
 
-1. Set update frequency and behavior:
-   - "Auto download and notify for install"
-   - Or "Auto download and schedule installation"
+1. Set update frequency and behavior. NOTE: 1 hour is only for test environments, not good practice for production environment. It creates to much network activity.
+![alt text](UpdateFreq.png)
 
-2. Link GPO to appropriate OU
-3. Force policy update on clients:
+1. Link GPO to appropriate OU
+![alt text](GPOLinkWorkstation.png)
+2. Force policy update on clients:
    ```powershell
    gpupdate /force
    ```
 
-## Step 4: Verify Installation
+## Step 4: Verify GPO and Installation
 
-1. Check WSUS console:
+1. Check Registry on CL1:
+![alt text](REGEdit.png)
    - Open WSUS Management Console
-   - Verify synchronization status
-   - Check for connected clients
+   - NOTE!! It could take up to 30 - 60 minutes before the client reports to the WSUS Server: Check for connected clients, set status to Any and hit refresh.
+![alt text](ClientsWSUS.png)
 
-2. Monitor client reporting:
+1. Monitor client reporting:
    ```powershell
    # On client machine
    wuauclt /detectnow
    wuauclt /reportnow
    ```
 
-3. Verify updates are being offered to clients
-4. Check IIS logs for client connections
+2. Verify updates are being offered to clients
+3. Check IIS logs for client connections
 
 ## Troubleshooting
 
