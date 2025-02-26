@@ -119,6 +119,10 @@
 ![alt text](ApprovalGroup.png)
 NOTE! It will now start to download the update to the WSUS Server and installed based on configured schedule.
 
+6. Verify updates are being offered to clients
+7. Check IIS logs for client connections
+
+## Troubleshooting
 
 
    ```powershell
@@ -126,11 +130,6 @@ NOTE! It will now start to download the update to the WSUS Server and installed 
    wuauclt /detectnow
    wuauclt /reportnow
    ```
-
-6. Verify updates are being offered to clients
-7. Check IIS logs for client connections
-
-## Troubleshooting
 
 ### Common Issues:
 1. Synchronization Failures
