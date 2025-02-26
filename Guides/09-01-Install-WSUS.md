@@ -101,16 +101,34 @@
    - Open WSUS Management Console
    - NOTE!! It could take up to 30 - 60 minutes before the client reports to the WSUS Server: Check for connected clients, set status to Any and hit refresh.
 ![alt text](ClientsWSUS.png)
+   - If it does not show up, wait and hit Refresh again at a later time:
+![alt text](1Client.png)
 
-1. Monitor client reporting:
+2. Create a group for clients in WSUS:
+   - Right click on All Computers and click Add Computer Group
+   - Name it Windows 11 Clients
+   - Right click the CL1 in Unnasigned Computers and move it to the new group
+![alt text](ChangeMembership.png)
+   - Verify the CL1 computer in Windows 11 Clients
+![alt text](Win11ClientGroup.png)
+3. Check for unaproved updates
+![alt text](UnaprovedUpdates.png)
+4. Approve 2025-02 Cumulative Updates for Windows 11 22h2 (KB5051989)
+![alt text](2025-02KB5051989.png)
+5. Select group for approval
+![alt text](ApprovalGroup.png)
+NOTE! It will now start to download the update to the WSUS Server and installed based on configured schedule.
+
+
+
    ```powershell
    # On client machine
    wuauclt /detectnow
    wuauclt /reportnow
    ```
 
-2. Verify updates are being offered to clients
-3. Check IIS logs for client connections
+6. Verify updates are being offered to clients
+7. Check IIS logs for client connections
 
 ## Troubleshooting
 
