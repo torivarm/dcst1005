@@ -118,11 +118,14 @@
 5. Select group for approval
 ![alt text](ApprovalGroup.png)
 NOTE! It will now start to download the update to the WSUS Server and installed based on configured schedule.
-
-6. Verify updates are being offered to clients
-7. Check IIS logs for client connections
+6. Select deadline for update. In my example, I set it to 
+![alt text](Deadline-custom.png)
+7. Now that WSUS is ready for client-side targeting, complete the following steps to use Group Policy to configure client-side targeting
+![alt text](ClientSide.png)
 
 ## Troubleshooting
+- If your CL1 does allow RDP (will not connect), you might need to change the ethernet firewall profile:
+  ![alt text](FirewallProfile.png)
 
 
    ```powershell
