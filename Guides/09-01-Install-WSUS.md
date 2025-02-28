@@ -25,7 +25,7 @@
 
 1. Complete the installation wizard
 2. Wait for the installation to finish
-3. OBS! If it get "stuck", wait a bit longer..
+3. OBS! If it get "stuck", wait a bit longer.. ..if not, soft restart VM and start over
 4. Start the post install configuration..
 ![alt text](done.png)
 
@@ -122,17 +122,17 @@ NOTE! It will now start to download the update to the WSUS Server and installed 
 ![alt text](Deadline-custom.png)
 7. Now that WSUS is ready for client-side targeting, complete the following steps to use Group Policy to configure client-side targeting
 ![alt text](ClientSide.png)
+8. OBS! IT Admins of OpenStack have updated the Windows 11 image before we started with WSUS.
+![alt text](W22h2Update.png)
+
+
 
 ## Troubleshooting
-- If your CL1 does allow RDP (will not connect), you might need to change the ethernet firewall profile:
+- If your CL1 does allow RDP (will not connect), you might need to change the ethernet firewall profile from SkyHigh console:
   ![alt text](FirewallProfile.png)
+- Security Baseline might block your local Admin account to use remote desktop. Make sure to change the necessary policy to allow local admin account to login. Edit the 22h2 Security baseline:
+![alt text](AllowLocalAdmin.png)
 
-
-   ```powershell
-   # On client machine
-   wuauclt /detectnow
-   wuauclt /reportnow
-   ```
 
 ### Common Issues:
 1. Synchronization Failures
