@@ -21,7 +21,7 @@ VM_LOCATION="norwayeast"
 VM_SIZE="Standard_B1s"  # Small VM size
 VM_NAME_PREFIX="vm-ubuntu-tim"
 VM_USERNAME="timubuntu"
-UBUNTU_VERSION="20.04-LTS"  # Ubuntu version
+UBUNTU_VERSION="ubuntu-24_04-lts"  # Ubuntu version
 
 # Prompt for networking resource group
 echo "The VNets and Subnets should be in an existing resource group"
@@ -128,15 +128,18 @@ fi
 # Create VM1
 echo "Creating VM1: ${VM_NAME_PREFIX}-1"
 set +e  # Turn off exit on error for VM creation
+
+# Get subnet ID for VM1
+SUBNET_ID_VM1=$(az network vnet subnet show --resource-group "$NETWORK_RESOURCE_GROUP" --vnet-name "$VNET_VM1" --name "$SUBNET_VM1" --query id -o tsv)
+echo "Using subnet ID for VM1: $SUBNET_ID_VM1"
+
 az vm create \
     --resource-group "$VM_RESOURCE_GROUP" \
     --name "${VM_NAME_PREFIX}-1" \
-    --image "Canonical:UbuntuServer:${UBUNTU_VERSION}:latest" \
+    --image "Canonical:ubuntu-24_04-lts:server:latest" \
     --admin-username "$VM_USERNAME" \
     --admin-password "$VM_PASSWORD" \
-    --vnet-name "$VNET_VM1" \
-    --subnet "$SUBNET_VM1" \
-    --vnet-resource-group "$NETWORK_RESOURCE_GROUP" \
+    --subnet "$SUBNET_ID_VM1" \
     --size "$VM_SIZE" \
     --public-ip-address "" \
     --no-wait
@@ -145,15 +148,18 @@ set -e  # Turn exit on error back on
 # Create VM2
 echo "Creating VM2: ${VM_NAME_PREFIX}-2"
 set +e  # Turn off exit on error for VM creation
+
+# Get subnet ID for VM2
+SUBNET_ID_VM2=$(az network vnet subnet show --resource-group "$NETWORK_RESOURCE_GROUP" --vnet-name "$VNET_VM2" --name "$SUBNET_VM2" --query id -o tsv)
+echo "Using subnet ID for VM2: $SUBNET_ID_VM2"
+
 az vm create \
     --resource-group "$VM_RESOURCE_GROUP" \
     --name "${VM_NAME_PREFIX}-2" \
-    --image "Canonical:UbuntuServer:${UBUNTU_VERSION}:latest" \
+    --image "Canonical:ubuntu-24_04-lts:server:latest" \
     --admin-username "$VM_USERNAME" \
     --admin-password "$VM_PASSWORD" \
-    --vnet-name "$VNET_VM2" \
-    --subnet "$SUBNET_VM2" \
-    --vnet-resource-group "$NETWORK_RESOURCE_GROUP" \
+    --subnet "$SUBNET_ID_VM2" \
     --size "$VM_SIZE" \
     --public-ip-address "" \
     --no-wait
