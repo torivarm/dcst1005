@@ -29,10 +29,11 @@ You will build a simple web application that displays and manages employee data 
 
 ```bash
 # Set variables for resource names
-RESOURCE_GROUP="cloud-lab-rg"
-LOCATION="eastus"
+INITIALS="tim"
+RESOURCE_GROUP="rg-aks-lab-$INITIALS"
+LOCATION="norwayeast"
 ACR_NAME="studentsacr$RANDOM"  # Ensures unique name
-AKS_CLUSTER="students-aks"
+AKS_CLUSTER="students-aks-$INITIALS"
 STORAGE_ACCOUNT="studentstg$RANDOM"  # Ensures unique name
 TABLE_NAME="employees"
 ```
