@@ -24,7 +24,7 @@ You will build a simple web application that displays and manages employee data 
 1. Go to [Azure Portal](https://portal.azure.com)
 2. Click the Cloud Shell icon in the top navigation bar
 3. Choose Bash as your shell environment
-![alt text](azurecli.png)
+
 ### Step 2: Set Up Environment Variables
 
 ```bash
@@ -37,7 +37,7 @@ AKS_CLUSTER="students-aks-$INITIALS"
 STORAGE_ACCOUNT="studentstg$RANDOM"  # Ensures unique name
 TABLE_NAME="employees"
 ```
-![alt text](variables-azcli.png)
+
 ### Step 3: Create Resource Group
 
 ```bash
