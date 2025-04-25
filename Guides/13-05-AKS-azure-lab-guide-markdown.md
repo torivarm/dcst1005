@@ -29,7 +29,7 @@ You will build a simple web application that displays and manages employee data 
 
 ```bash
 # Set variables for resource names
-INITIALS="tim" # <-- PUT YOUR OWN INITIALS OR UNIQUE SUFFIX
+INITIALS="demo" # <-- PUT YOUR OWN INITIALS OR UNIQUE SUFFIX
 RESOURCE_GROUP="rg-aks-lab-$INITIALS"
 LOCATION="norwayeast"
 ACR_NAME="studentsacr$RANDOM"  # Ensures unique name
