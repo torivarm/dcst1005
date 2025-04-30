@@ -586,14 +586,3 @@ When you're done with the lab, clean up your resources to avoid unnecessary char
 # Delete the lab resources
 az group delete --name $RESOURCE_GROUP --yes --no-wait
 ```
-
-## Conclusion
-
-Congratulations! You've successfully built and deployed a containerized web application that interacts with Azure Table Storage, all using Azure Cloud Shell. This lab demonstrates how to use Azure's managed services together to create a scalable, cloud-native application.
-
-## Additional Challenges
-
-1. Add authentication to the application
-2. Implement additional functionality (sorting, filtering, editing)
-3. Add application monitoring with Azure Monitor
-4. Deploy the application through a CI/CD pipeline using Azure DevOps
