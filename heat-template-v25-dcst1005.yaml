@@ -61,13 +61,21 @@ resources:
           protocol: tcp
           port_range_min: 3389
           port_range_max: 3389
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 5985
+          port_range_max: 5985
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 5986
+          port_range_max: 5986
 
   mgr:
     type: OS::Nova::Server
     properties:
       name: mgr
-      image: 'Windows 11 22H2 Enterprise [Evaluation]'
-      flavor: gx3.4c8r
+      image: 'Windows 11 24H2 Enterprise [Evaluation]'
+      flavor: gx3.4c16r
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: mgr_port }
@@ -103,8 +111,8 @@ resources:
     type: OS::Nova::Server
     properties:
       name: cl1
-      image: 'Windows 11 22H2 Enterprise [Evaluation]'
-      flavor: gx1.2c6r
+      image: 'Windows 11 24H2 Enterprise [Evaluation]'
+      flavor: gx3.2c8r
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: cl1_port }
@@ -141,7 +149,7 @@ resources:
     properties:
       name: dc1
       image: 'Windows Server 2025 Standard [Evaluation]'
-      flavor: gx1.2c6r
+      flavor: gx3.4c16r
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: dc1_port }
@@ -165,7 +173,7 @@ resources:
     properties:
       name: srv1
       image: 'Windows Server 2025 Standard [Evaluation]'
-      flavor: gx1.2c4r
+      flavor: gx3.4c8r
       key_name: { get_param: key_name }
       networks:
         - port: { get_resource: srv1_port }
