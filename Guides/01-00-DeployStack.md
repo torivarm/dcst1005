@@ -66,7 +66,7 @@ For å koble til Windows-VM-er med Remote Desktop trenger du administratorpassor
 
 ### Via Dashboard (Horizon)
 
-Skriv ned, for din egen del, informasjon for hver maskin: maskinnavnet, IP-adresse, brukernavn og passord (ikke god praksis å skrive brukernavn og passord i klartekst, men vi trenger den informasjonen nå):
+Skriv ned, for din egen del, informasjon for hver maskin: maskinnavnet, IP-adresse, brukernavn og passord (ikke god praksis å skrive brukernavn og passord i klartekst, men vi trenger den informasjonen nå). Vi starter med passord først:
 ```
 DC1, 10.212.170.139, Admin, dfd2!Dsdfksd_da23rjf
 SRV1, 10.212.170.134, Admin, 3124pgsdlsdjlljfm
@@ -101,12 +101,14 @@ MGR, 10.212.170.114, Admin, R34fdfs234jnc__
    - Søk etter "Remote Desktop" i Start-menyen (På norsk Windows: Eksternt skrivebord)
    - ![alt text](rdp-win11.png)
 2. Trykk på "Show Options":
-   - ![alt text](RDP-Options.png)
-   - **Computer**: Den offentlige IP-adressen (f.eks. `10.x.x.x`)
-   - **Username**: `Admin` (ALLE maskinene har Admin som default bruker)
-3. Klikk **Connect**
-4. Når du blir spurt om passord, lim inn passordet du hentet i steg 6
-5. Godta sertifikatadvarselen (hvis du får en)
+   - ![alt text](highlightShowOptions.png)
+3. Skriv inn informasjonen for en av maskinene, og velg deretter å lagre filen. Gi den et navn som indikerer hvilken maskin du ønsker koble deg til. Eksempelvis CL1, for Client 1, eller DC1 for Domene Controller 1 etc.
+   1. ![alt text](saveRDPfile.png)
+   2. ![alt text](saveRDP.png)
+4. Trykk deretter på Connect. Huk av for ```Don't ask me again for connections for this computer```. Trykk connect igjen, og når du blir spurt om passord, lim inn passordet hentet for maskinen fra steg 6
+5. Godta sertifikatadvarselen, og velg å alltid godta (hvis du får en)
+   1. ![alt text](UserPassword.png)
+   2. ![alt text](cert.png)
 
 ### macOS
 
