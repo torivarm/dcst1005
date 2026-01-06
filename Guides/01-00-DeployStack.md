@@ -66,6 +66,14 @@ For å koble til Windows-VM-er med Remote Desktop trenger du administratorpassor
 
 ### Via Dashboard (Horizon)
 
+Skriv ned, for din egen del, informasjon for hver maskin: maskinnavnet, IP-adresse, brukernavn og passord (ikke god praksis å skrive brukernavn og passord i klartekst, men vi trenger den informasjonen nå):
+```
+DC1, 10.212.170.139, Admin, dfd2!Dsdfksd_da23rjf
+SRV1, 10.212.170.134, Admin, 3124pgsdlsdjlljfm
+CL1, 10.212.170.123, Admin, rfdfks232!mlfsjdfl_
+MGR, 10.212.170.114, Admin, R34fdfs234jnc__
+```
+
 1. Gå til **Compute → Instances**
 2. Finn din VM i listen
 3. Vent til VM-en har status **Active** og har kjørt i minst 10 minutter (Windows trenger tid til å initialisere)
@@ -89,11 +97,13 @@ For å koble til Windows-VM-er med Remote Desktop trenger du administratorpassor
 
 ### Windows
 
-1. Åpne **Remote Desktop Connection** (mstsc.exe)
-   - Søk etter "Remote Desktop" i Start-menyen
-2. Fyll inn:
-   - **Computer**: Den offentlige IP-adressen (f.eks. `158.39.75.123`)
-   - **Username**: `Administrator`
+1. Åpne **Remote Desktop Connection** (mstsc.exe) 
+   - Søk etter "Remote Desktop" i Start-menyen (På norsk Windows: Eksternt skrivebord)
+   - ![alt text](rdp-win11.png)
+2. Trykk på "Show Options":
+   - ![alt text](RDP-Options.png)
+   - **Computer**: Den offentlige IP-adressen (f.eks. `10.x.x.x`)
+   - **Username**: `Admin` (ALLE maskinene har Admin som default bruker)
 3. Klikk **Connect**
 4. Når du blir spurt om passord, lim inn passordet du hentet i steg 6
 5. Godta sertifikatadvarselen (hvis du får en)
