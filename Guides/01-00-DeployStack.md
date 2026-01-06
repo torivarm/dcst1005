@@ -112,24 +112,13 @@ MGR, 10.212.170.114, Admin, R34fdfs234jnc__
 
 ### macOS
 
-1. Last ned **Microsoft Remote Desktop** fra App Store
-2. Klikk **Add PC**
-3. Fyll inn:
-   - **PC name**: Den offentlige IP-adressen
-   - **User account**: `Administrator` og passordet fra steg 6
-4. Klikk **Add** og deretter dobbeltklikk på PC-en for å koble til
-
-### Linux
-
-```bash
-# Installer rdesktop eller remmina først
-sudo apt install remmina
-
-# Koble til
-remmina
-# Eller via kommandolinje:
-xfreerdp /u:Administrator /p:'ditt-passord' /v:158.39.75.123
-```
+1. Last ned **Windows App** fra App Store
+2. Klikk **+ tegnet til høyre**
+3. Velg Add PC:
+   1. ![alt text](MacAddPC.png)
+4. Fyll detter inn:
+   1. ![alt text](AddPCMac.png)
+5. Klikk **Add** og deretter dobbeltklikk på PC-en for å koble til
 
 ## Feilsøking
 
@@ -141,52 +130,25 @@ xfreerdp /u:Administrator /p:'ditt-passord' /v:158.39.75.123
 
 ### Får ikke tilkobling med RDP
 - ✅ Kontroller at du bruker den **offentlige** IP-adressen, ikke den private
-- ✅ Sjekk at sikkerhetsgruppen tillater RDP-trafikk (port 3389)
 - ✅ Vent til VM-en er helt ferdig med oppstarten (10-15 minutter for Windows)
-- ✅ Sjekk at du bruker riktig brukernavn: `Administrator`
+- ✅ Sjekk at du bruker riktig brukernavn: `Admin`
 
 ### Stack-opprettelse feiler
 - ✅ Kontroller at templaten er gyldig YAML/JSON
 - ✅ Sjekk at key pair-navnet eksisterer i OpenStack
-- ✅ Sjekk at du har tilstrekkelig kvote i prosjektet ditt
 - ✅ Les feilmeldingene i Stack-detaljene
 
 ### Mistet private key
 - ❌ Hvis du har mistet .pem-filen, kan du IKKE hente ut passordet
 - 💡 Løsning: Slett stacken og opprett en ny med et nytt key pair
 
-## Opprydding
-
-Når du er ferdig med øvelsen:
-
-1. Gå til **Orchestration → Stacks**
-2. Velg din stack
-3. Klikk **Delete Stack**
-4. Bekreft slettingen
-
-Dette vil automatisk slette alle ressurser som ble opprettet av stacken.
-
-💡 **Merk**: Key pair-et forblir i OpenStack og kan gjenbrukes. Hvis du ønsker å slette det også:
-1. Gå til **Compute → Key Pairs**
-2. Velg key pair-et
-3. Klikk **Delete Key Pair**
-
 ⚠️ **Husk**: Den private nøkkelen (.pem-fil) er lagret lokalt på din maskin. OpenStack har kun den offentlige nøkkelen.
 
 ## Oppsummering
 
-Du har nå lært å:
 - ✅ Opprette et key pair i OpenStack
 - ✅ Laste ned og lagre private key
 - ✅ Opprette en stack fra en Heat template
 - ✅ Hente instance password for Windows-VM med private key
 - ✅ Finne offentlig IP-adresse
 - ✅ Koble til VM via Remote Desktop
-- ✅ Rydde opp etter deg
-
----
-
-**Spørsmål?** Ta kontakt hvis du står fast! 🚀
-```
-
-Nå er key pair-opprettelsen med som første steg, og jeg har også lagt til mer informasjon om hvordan key pair-et brukes i de andre stegene. Trenger du noen flere justeringer?
