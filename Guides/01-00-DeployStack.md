@@ -14,7 +14,7 @@ En Heat template er en YAML- eller JSON-fil som beskriver ressursene du ønsker 
 
 ### Opprett Key Pair via Dashboard (Horizon)
 
-1. Logg inn på OpenStack Dashboard
+1. Logg inn på OpenStack Dashboard (https://skyhigh.iik.ntnu.no/)
 2. Naviger til **Compute → Key Pairs** i venstremenyen
 3. Klikk på **Create Key Pair**
    1. ![alt text](CreateKeyPair.png)
