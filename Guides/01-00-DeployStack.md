@@ -10,7 +10,7 @@ En Heat template er en YAML- eller JSON-fil som beskriver ressursene du ønsker 
 
 ## Steg 1: Opprett Key Pair
 
-⚠️ **Viktig**: Du må opprette et key pair FØR du oppretter stacken. Dette er nødvendig for å kunne hente ut Administrator-passordet fra Windows-instansene senere.
+⚠️ **Viktig**: Du må opprette et key pair FØR du oppretter stacken. Dette er nødvendig for å kunne hente ut passordet fra Windows-instansene senere.
 
 ### Opprett Key Pair via Dashboard (Horizon)
 
@@ -62,7 +62,7 @@ En Heat template er en YAML- eller JSON-fil som beskriver ressursene du ønsker 
 
 ## Steg 6: Hent Instance Password
 
-For å koble til Windows-VM-er med Remote Desktop trenger du administratorpassordet. Dette passordet er kryptert og må dekrypteres med den private nøkkelen du lastet ned i steg 1.
+For å koble til Windows-VM-er med Remote Desktop trenger du passordet. Dette passordet er kryptert og må dekrypteres med den private nøkkelen du lastet ned i steg 1.
 
 ### Via Dashboard (Horizon)
 
