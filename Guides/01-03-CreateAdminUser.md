@@ -270,7 +270,7 @@ For å opprette samme bruker via PowerShell (raskere for flere brukere):
 
 ```powershell
 # Definer variabler
-$firstName = "Ola"
+$firstName = "Adm Ola"
 $lastName = "Nordmann"
 $username = "adm_ola"
 $password = ConvertTo-SecureString "Admin2025!Passord" -AsPlainText -Force
