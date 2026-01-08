@@ -206,35 +206,12 @@ Hvis noe går galt, viser scriptet en tydelig feilmelding og avslutter med `exit
 
 ## Steg 4: Kjør scriptet
 
-Nå skal vi konfigurere serveren som en ny domain controller i et nytt forest.
-
-### 4.1: Kjør oppgraderingskommandoen
-
-```powershell
-Install-ADDSForest -DomainName "InfraIT.sec" -InstallDns
-```
-
-**Domene:** InfraIT.sec (NetBIOS-navn blir automatisk "InfraIT")
-
-### 4.2: Sett SafeModeAdministratorPassword
-
-Etter at du har kjørt kommandoen over, vil du bli bedt om å oppgi et **Directory Services Restore Mode (DSRM)** passord.
-
-**Passordkrav:**
-- Minst 12 tegn
-- Store bokstaver (A-Z)
-- Små bokstaver (a-z)
-- Tall (0-9)
-- Spesialtegn (!@#$%^&* etc.)
-
-**VIKTIG:** Dette passordet blir også brukt for å logge inn som `InfraIT\Administrator` etter installasjonen!
-
-- Skriv inn et sterkt passord
-- Bekreft passordet
-
-### 4.3: Bekreft advarsler
-
-Du vil se noen advarsler om DNS-delegering. Dette er normalt når du oppretter et nytt forest. Skriv **Y** og trykk Enter for å fortsette.
+1. Gå til riktig mappe i terminalen i PowerShell ISE og kjør scriptet:
+   1. ![alt text](runScript.png)
+2. **Passordkonfigurasjon: HUSK PASSORDET, skriv ned :D (sikkerhet sist)** Skriv deretter inn ønsket passord på Administrator (Må være komplekst)
+   1. ![alt text](setPassord.png)
+3. **DC1 vil deretter fortsette installasjon med en påfølgende restart, denne tar tid, 5-7 minutter**
+   1. ![alt text](installForts.png)
 
 ---
 
@@ -248,82 +225,39 @@ Du vil se noen advarsler om DNS-delegering. Dette er normalt når du oppretter e
 
 ## Steg 6: Koble til igjen etter restart
 
-1. Vent 2-3 minutter etter at forbindelsen ble brutt
+1. Vent 5-7-10 minutter etter at forbindelsen ble brutt
 2. Åpne Remote Desktop Connection igjen
-3. Koble til DC1
-4. **Viktig - ny påloggingsinformasjon:**
+3. **Viktig - ny påloggingsinformasjon for DC1:**
    - **Brukernavn:** `InfraIT\Administrator`
    - **Passord:** Det samme passordet du oppga under installasjonen (DSRM-passordet)
    - **Merk:** Du logger ikke lenger inn med "Admin", men med domene-administrator-kontoen
+   - **Endre til korrekt brukernavn og passord før du logger inn på nytt**
 
 ---
 
-## Steg 7: Verifiser installasjonen
-
+## Steg 7: Logg inn og Verifiser installasjonen
+For å verifisere at en har logget på med korrekt bruker, trykk på Windows Startmeny og se hvilket brukernavn som står i startmenyen:
+![alt text](WinStartMeny.png)
 Åpne PowerShell som administrator og kjør følgende kommandoer for å verifisere at Active Directory er korrekt installert:
 
 ### Sjekk domenekontroller-status
 ```powershell
 Get-ADDomainController
 ```
-
+![alt text](GetADDomainController.png)
 ### Sjekk domene-informasjon
 ```powershell
 Get-ADDomain
 ```
+![alt text](GetAdDomain1.png)
 
 ### Sjekk forest-informasjon
 ```powershell
 Get-ADForest
 ```
+![alt text](GetAdForest.png)
 
 Hvis disse kommandoene returnerer informasjon om ditt domene, er installasjonen vellykket!
-
----
-
-## Alternativ metode: Komplett installasjonscript
-
-Du kan også bruke et ferdig script som inkluderer passordvalidering og alle innstillinger.
-
-Last ned scriptet: `Install-ADDS.ps1`
-
-**Scriptet inkluderer:**
-- Automatisk installasjon av AD DS og DNS
-- Passordkompleksitetssjekk (12+ tegn, store/små bokstaver, tall, spesialtegn)
-- Promovering til Domain Controller
-- Automatisk restart
-
-**Kjør scriptet:**
-```powershell
-.\Install-ADDS.ps1
-```
-
-**Manuell versjon med alle parametere:**
-
-```powershell
-# Definer passord (erstatt med ditt eget sikre passord)
-$SafeModePassword = ConvertTo-SecureString "MittSikre!Passord123" -AsPlainText -Force
-
-# Installer AD DS og DNS
-Install-WindowsFeature AD-Domain-Services, DNS -IncludeManagementTools
-
-# Konfigurer domain controller
-$Params = @{
-    DomainMode = 'WinThreshold'
-    DomainName = 'InfraIT.sec'
-    DomainNetbiosName = 'InfraIT'
-    ForestMode = 'WinThreshold'
-    InstallDns = $true
-    NoRebootOnCompletion = $true
-    SafeModeAdministratorPassword = $SafeModePassword
-    Force = $true
-}
-
-Install-ADDSForest @Params
-Restart-Computer
-```
-
-**Husk:** Bytt ut `MittSikre!Passord123` med ditt eget passord som oppfyller kompleksitetskravene.
 
 ---
 
@@ -348,12 +282,6 @@ Restart-Computer
 - Vent litt lenger (restart kan ta opptil 5 minutter)
 - Sjekk at du bruker riktig påloggingsformat: `InfraIT\Administrator`
 - Bruk DSRM-passordet du oppga under installasjonen
-
-### Problem: Passordet oppfyller ikke kompleksitetskravene
-**Løsning:**
-- Passordet må være minst 12 tegn
-- Må inneholde: store bokstaver, små bokstaver, tall og spesialtegn
-- Eksempel på gyldig passord: `AdminPass123!`
 
 ### Problem: DNS-advarsler under installasjon
 **Løsning:** Dette er normalt når du oppretter et nytt forest. Trykk Y for å fortsette.
