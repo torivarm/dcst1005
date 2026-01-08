@@ -54,17 +54,6 @@ Chocolatey-installasjonen krever administratorrettigheter.
 4. Velg **Run as administrator**
 5. Klikk **Yes** i UAC-dialogen
 
-### Metode 2: Via Windows Terminal (anbefalt)
-1. Høyreklikk på **Start**-knappen
-2. Velg **Terminal (Admin)**
-3. Hvis Windows Terminal åpnes med Command Prompt, klikk på ▼ ved siden av fanen og velg **Windows PowerShell**
-
-### Metode 3: Tastatursnarvei
-1. Trykk `Win + X`
-2. Velg **Windows PowerShell (Admin)** eller **Terminal (Admin)**
-
-**Verifiser:** Du skal se "Administrator" i tittelen på PowerShell-vinduet.
-
 ---
 
 ## Steg 2: Sjekk Execution Policy
@@ -160,7 +149,7 @@ Chocolatey installed 1/1 packages.
 ```
 
 ### Verifiser installasjonen:
-
+Start PowerShell 7.x ved å søke på PowerShell i Start menyen
 ```powershell
 pwsh --version
 ```
@@ -263,7 +252,7 @@ git config --global user.email "din.epost@example.com"
 
 **Eksempel:**
 ```powershell
-git config --global user.email "ola.nordmann@infrait.sec"
+git config --global user.email "ola.nordmann@stud.ntnu.no"
 ```
 
 ### 7.3: Verifiser Git-konfigurasjonen
@@ -371,31 +360,6 @@ Her er noen anbefalte innstillinger for PowerShell-utvikling i VS Code.
 1. Åpne VS Code Settings: `Ctrl + ,`
 2. Søk etter: `terminal.integrated.defaultProfile.windows`
 3. Velg **PowerShell** (ikke "Windows PowerShell")
-
-**Alternativt via settings.json:**
-
-1. Trykk `Ctrl + Shift + P` (Command Palette)
-2. Skriv: `Preferences: Open Settings (JSON)`
-3. Legg til:
-
-```json
-{
-    "terminal.integrated.defaultProfile.windows": "PowerShell"
-}
-```
-
-### 10.2: Aktiver formatering ved lagring (valgfritt)
-
-I settings.json, legg til:
-
-```json
-{
-    "editor.formatOnSave": true,
-    "[powershell]": {
-        "editor.formatOnSave": true
-    }
-}
-```
 
 ---
 
