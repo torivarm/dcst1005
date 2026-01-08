@@ -143,24 +143,6 @@ Invoke-Command -Session $session -ScriptBlock {
 
 **Tid:** Installasjonen tar vanligvis 1-2 minutter.
 
-### 2.5: Verifiser installasjonen
-
-```powershell
-Invoke-Command -Session $session -ScriptBlock { $PSVersionTable }
-```
-
-**Forklaring:**
-- Kjører `$PSVersionTable` på DC1
-- Viser PowerShell-versjon og platform-info
-
-**Forventet resultat:**
-```
-Name                           Value
-----                           -----
-PSVersion                      7.5.4
-PSEdition                      Core
-...
-```
 
 ### 2.6: Lukk sesjonen (valgfritt)
 
