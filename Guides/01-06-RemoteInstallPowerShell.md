@@ -15,11 +15,11 @@ Denne guiden viser hvordan du installerer PowerShell Core på domenemaskinene **
 ## Forutsetninger
 
 1. **Last ned PowerShell Core MSI** på MGR-maskinen
-   - Gå til: https://github.com/PowerShell/PowerShell/releases
-   - Last ned: `PowerShell-7.5.4-win-x64.msi` (eller nyeste versjon)
+   - Gå til: https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-windows?view=powershell-7.5#msi 
+   - Klikk på MSI Last ned: `PowerShell-7.5.4-win-x64.msi` (eller nyeste versjon)
    - Lagre i: `C:\install\`
 
-2. **Logg inn på MGR** som domain admin: `InfraIT\adm_<dittbrukernavn>`
+2. **Logg inn på MGR** som din domain admin
 
 3. **Åpne PowerShell som Administrator** på MGR
 
