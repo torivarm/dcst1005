@@ -50,18 +50,157 @@ Etter at Active Directory er installert, må du bytte påloggingsbruker:
 
 ## Steg 3: Enkel forklaring av scriptet
 
-Kjør følgende kommando for å installere Active Directory Domain Services:
+# Forklaring av AD DS-installasjonscriptet
 
+## Hva gjør scriptet?
+Dette PowerShell-scriptet automatiserer installasjonen av Active Directory Domain Services (AD DS) på Windows Server 2025 og konfigurerer serveren som en Domain Controller for domenet **InfraIT.sec**.
+
+---
+
+## Scriptets hovedfunksjoner
+
+### 1. Installasjon av AD DS og DNS (linje 5-12)
 ```powershell
-Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+Install-WindowsFeature AD-Domain-Services, DNS -IncludeManagementTools
 ```
+**Hva skjer:** Installerer to Windows Server-roller:
+- **AD DS** (Active Directory Domain Services) - kjernen i Active Directory
+- **DNS** (Domain Name System) - nødvendig for at Active Directory skal fungere
+- `-IncludeManagementTools` installerer også GUI-verktøy som "Active Directory Users and Computers"
 
-**Forklaring:**
-- `Install-WindowsFeature`: Installerer Windows Server-funksjoner
-- `-Name AD-Domain-Services`: Spesifiserer AD DS-rollen
-- `-IncludeManagementTools`: Inkluderer administrasjonsverktøy som Active Directory Users and Computers
+**Feilhåndtering:** Hvis installasjonen feiler, stopper scriptet og viser en feilmelding.
 
-**Forventet resultat:** Installasjonen tar noen minutter. Du vil se en fremdriftsindikator, og kommandoen returnerer status når den er ferdig.
+---
+
+### 2. Passordkompleksitetssjekk (linje 14-40)
+```powershell
+function Test-PasswordComplexity { ... }
+```
+**Hvorfor:** Active Directory krever sterke passord for å beskytte domenet mot angrep.
+
+**Krav scriptet sjekker:**
+- Minst 12 tegn langt
+- Inneholder store bokstaver (A-Z)
+- Inneholder små bokstaver (a-z)
+- Inneholder tall (0-9)
+- Inneholder spesialtegn (!@#$%^&* etc.)
+
+Funksjonen returnerer `$true` hvis passordet oppfyller alle kravene, ellers `$false`.
+
+---
+
+### 3. Innhenting av passord (linje 42-68)
+```powershell
+$Password = Read-Host -Prompt 'Oppgi DSRM-passord' -AsSecureString
+```
+**Hva er DSRM?** Directory Services Restore Mode - en spesiell oppstartsmodus for å gjenopprette Active Directory hvis noe går galt.
+
+**Sikkerhetsdetaljer:**
+- `-AsSecureString` sørger for at passordet ikke vises på skjermen når du skriver det inn
+- Passordet konverteres midlertidig til vanlig tekst for validering
+- Etter validering slettes klartekst-versjonen umiddelbart fra minnet med `ZeroFreeBSTR`
+- Hvis passordet ikke oppfyller kravene, må du prøve igjen (do-while loop)
+
+---
+
+### 4. Definering av installasjonparametere (linje 70-80)
+```powershell
+$Params = @{
+    DomainMode = 'Win2025'
+    DomainName = 'InfraIT.sec'
+    ...
+}
+```
+**Splatting:** En PowerShell-teknikk som gjør koden mer lesbar ved å definere parametere i en hashtable.
+
+**Viktige parametere:**
+- `DomainMode` / `ForestMode`: Funksjonsnivå - `Win2025` aktiverer Windows Server 2025-funksjoner
+- `DomainName`: Fullt kvalifisert domenenavn (FQDN) - `InfraIT.sec`
+- `DomainNetbiosName`: Kort domenenavn for eldre systemer - `InfraIT`
+- `InstallDns`: Installerer DNS-server automatisk
+- `NoRebootOnCompletion`: Scriptet kontrollerer restart selv (etter 10 sekunder)
+- `SafeModeAdministratorPassword`: DSRM-passordet
+- `Force`: Hopper over bekreftelsesdialog
+
+---
+
+### 5. Aktivering av lokal Administrator (linje 82-91)
+```powershell
+Set-LocalUser -Password $Password Administrator
+```
+**Hvorfor dette steget?** 
+- Den lokale Administrator-kontoen på serveren er deaktivert og har blankt passord som standard
+- Vi setter samme passord som DSRM-passordet på den lokale Administrator-kontoen
+- Når serveren blir en Domain Controller, blir denne kontoen til domenets Administrator-konto
+- Etter restart kan du logge inn med `InfraIT\Administrator` og dette passordet
+
+**Merk:** Dette er et viktig steg som sørger for at du kan logge inn etter at serveren er promoveret til DC.
+
+---
+
+### 6. Promovering til Domain Controller (linje 93-110)
+```powershell
+Install-ADDSForest @Params
+```
+**Hva skjer nå:**
+1. Serveren konfigureres som en Domain Controller
+2. Et nytt Active Directory-forest opprettes (InfraIT.sec)
+3. DNS-soner for domenet opprettes automatisk
+4. Active Directory-databasen (NTDS.dit) opprettes
+5. SYSVOL-mappen opprettes for Group Policy
+
+**Tid:** Dette tar vanligvis 5-10 minutter.
+
+**Etter fullført installasjon:**
+- Scriptet venter 10 sekunder
+- Serveren restarter automatisk
+- Remote Desktop-forbindelsen din blir brutt
+
+---
+
+### 7. Restart og pålogging (linje 105-108)
+```powershell
+Restart-Computer -Force
+```
+**Etter restart:** (SE EGET STEG LENGRE NED)
+- Etter restart må en logge inn med: `InfraIT\Administrator`
+- Bruk passordet du oppga i scriptet
+- Du er nå pålogget som domene-administrator, ikke lokal bruker
+- Det kommer et eget steg senere for akkurat denne biten
+
+---
+
+## Viktige konsepter
+
+### DSRM (Directory Services Restore Mode)
+- Et sikkerhetspassord for å gjenopprette AD hvis databasen blir korrupt
+- Brukes sjelden, men **må** dokumenteres og oppbevares sikkert
+- I dette scriptet blir det også domene-administratorpassordet
+
+### Forest vs Domain
+- **Forest:** Toppnivå i AD-hierarkiet - kan inneholde flere domener
+- **Domain:** En sikkerhetsboundary i AD - InfraIT.sec er både forest root og domene
+
+### Functional Level (DomainMode/ForestMode)
+- Bestemmer hvilke AD-funksjoner som er tilgjengelige
+- `Win2025` aktiverer de nyeste funksjonene i Windows Server 2025
+- Kan ikke nedgraderes etter at det er satt
+
+### DNS og Active Directory
+- AD er helt avhengig av DNS for å fungere
+- DNS brukes til å finne Domain Controllers, services og ressurser
+- Derfor installerer vi alltid DNS sammen med AD DS
+
+---
+
+## Feilhåndtering i scriptet
+
+Scriptet bruker `try-catch` blokker tre steder:
+1. **AD DS-installasjon:** Stopper hvis rolleinstallasjonen feiler
+2. **Passordkonfigurasjon:** Stopper hvis vi ikke kan sette passord på Administrator
+3. **DC-promovering:** Stopper hvis promoveringen feiler
+
+Hvis noe går galt, viser scriptet en tydelig feilmelding og avslutter med `exit 1`.
 
 ---
 
