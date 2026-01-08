@@ -13,8 +13,8 @@ Denne guiden viser hvordan du installerer og konfigurerer Active Directory Domai
 - Remote Desktop-tilgang til serveren DC1
 - Pålogget med Admin-brukeren
 
-### ⚠️ VIKTIG: Bytte av påloggingsbruker etter installasjon
-Etter at Active Directory er installert, må du bytte påloggingsbruker:
+### ⚠️ VIKTIG: Bytte av påloggingsbruker ETTER installasjon
+ETTER at Active Directory er installert, må du bytte påloggingsbruker:
 - **Før installasjon:** Logg inn med `Admin`
 - **Etter installasjon:** Logg inn med `InfraIT\Administrator` (MERK: InfraIT hvis en benytter samme navn i scriptet)
 - **Passord:** Det samme passordet du oppgir under installasjonen
@@ -23,8 +23,9 @@ Etter at Active Directory er installert, må du bytte påloggingsbruker:
 
 ## Steg 1: Koble til serveren
 
-1. Koble deg til DC1 med Remote Desktop Connection som opprettet i del 1 av den praktiske øvingen
+1. Koble deg til DC1 med Remote Desktop Connection som opprettet i del 1 av den praktiske øvingen. Her vist med Windows App. For den med Windows klikk på Remote Desktop-fil / Eksternt skrivebord-fil opprettet for DC1
    1. ![alt text](dc1rdp.png)
+
 
 ---
 
@@ -208,7 +209,7 @@ Hvis noe går galt, viser scriptet en tydelig feilmelding og avslutter med `exit
 
 1. Gå til riktig mappe i terminalen i PowerShell ISE og kjør scriptet:
    1. ![alt text](runScript.png)
-2. **Passordkonfigurasjon: HUSK PASSORDET, skriv ned :D (sikkerhet sist)** Skriv deretter inn ønsket passord på Administrator (Må være komplekst)
+2. **Passordkonfigurasjon: HUSK PASSORDET, skriv ned :D - sikkerhet sist** (Må være komplekst: minst 12 tegn, store og små bokstaver og spesialtegn)
    1. ![alt text](setPassord.png)
 3. **DC1 vil deretter fortsette installasjon med en påfølgende restart, denne tar tid, 5-7 minutter**
    1. ![alt text](installForts.png)
@@ -223,7 +224,7 @@ Hvis noe går galt, viser scriptet en tydelig feilmelding og avslutter med `exit
 
 ---
 
-## Steg 6: Koble til igjen etter restart
+## Steg 6: Koble til igjen etter restart (kan ta litt tid)
 
 1. Vent 5-7-10 minutter etter at forbindelsen ble brutt
 2. Åpne Remote Desktop Connection igjen
@@ -232,7 +233,17 @@ Hvis noe går galt, viser scriptet en tydelig feilmelding og avslutter med `exit
    - **Passord:** Det samme passordet du oppga under installasjonen (DSRM-passordet)
    - **Merk:** Du logger ikke lenger inn med "Admin", men med domene-administrator-kontoen
    - **Endre til korrekt brukernavn og passord før du logger inn på nytt**
+   - Her vist med Windows App for MacOS. 
+   - ![alt text](dc1rdp.png)
+   - Velg Configure..
+   - Legg deretter til ny påloggingsinformasjon.
+   - ![alt text](editLogin.png)
 
+**For Windows**:
+- En må endre på Remote Desktop filen opprettet for DC1. Høyreklikk på Remote Desktop filen og velg Show more options, og deretter Edit.
+-  ![alt text](ShowMoreOptions.png)
+-  ![alt text](edit.png)
+-  ![alt text](EditLoginRDP.png)
 ---
 
 ## Steg 7: Logg inn og Verifiser installasjonen
