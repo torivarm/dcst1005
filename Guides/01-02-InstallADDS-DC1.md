@@ -37,11 +37,18 @@ Etter at Active Directory er installert, må du bytte påloggingsbruker:
 4. Klikk deretter på delt vindu (horisontalt eller vertikalt, alt etter hva en liker best) i toppen for å få opp både editor og kommandolinje.
    1. ![alt text](ISE-horisontalVertical.png)
 5. Kopier deretter inn scriptet for installasjon av Active Directory inn i editor-visningen av PowerShell ISE:
-   1. 
+   1. https://github.com/torivarm/dcst1005/blob/main/01-01-Install_AD.ps1
+   2. ![alt text](pasteScript.png)
+6. Lagre filen som InstallAD.ps1 på en mappe ved navn script på c:\
+   1. ![alt text](SaveAs.png)
+   2. ![alt text](newFolder.png)
+   3. ![alt text](scriptfolder.png)
+   4. ![alt text](saveScript.png)
+   5. 
 
 ---
 
-## Steg 3: Installer AD DS-rollen
+## Steg 3: Enkel forklaring av scriptet
 
 Kjør følgende kommando for å installere Active Directory Domain Services:
 
@@ -58,7 +65,7 @@ Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
 
 ---
 
-## Steg 4: Oppgrader serveren til Domain Controller
+## Steg 4: Kjør scriptet
 
 Nå skal vi konfigurere serveren som en ny domain controller i et nytt forest.
 
