@@ -189,7 +189,11 @@ Remove-PSSession $session
 
 ---
 
-## Steg 4: Installer på CL1
+## Steg 4: Installer på CL1 (Her må en Aktiver PSRemoting først)
+Logg inn på CL1 via Remote Desktop og kjør følgende kommando i PowerShell som administrator:
+```powershell
+Enable-PSRemoting -Force
+```
 
 Gjenta samme prosess for CL1:
 

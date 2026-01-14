@@ -39,7 +39,7 @@ Now, let's make our script more robust by checking if the OU exists before tryin
 ```powershell
 # First command: Check if OU exists
 if (-not(Get-ADOrganizationalUnit -Filter "Name -eq 'TestOU'" -SearchBase "DC=infrait,DC=sec")) {
-    New-ADOrganizationalUnit -Name "TestOU" -Path "DC=infrait,DC=sec"
+    New-ADOrganizationalUnit -Name "TestOU" -Path "DC=infrait,DC=sec" -ProtectedFromAccidentalDeletion $false
 }
 ```
 
