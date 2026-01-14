@@ -92,10 +92,10 @@ Get-ADOrganizationalUnit -Filter "Name -eq 'ParentOU'" -SearchBase "DC=infrait,D
 ### Creating an OU Inside Another OU
 ```powershell
 # First, create the parent OU
-New-ADOrganizationalUnit -Name "ParentOU" -Path "DC=infrait,DC=sec"
+New-ADOrganizationalUnit -Name "ParentOU" -Path "DC=infrait,DC=sec" -ProtectedFromAccidentalDeletion $false
 
 # Then create a child OU inside the parent OU
-New-ADOrganizationalUnit -Name "ChildOU" -Path "OU=ParentOU,DC=infrait,DC=sec"
+New-ADOrganizationalUnit -Name "ChildOU" -Path "OU=ParentOU,DC=infrait,DC=sec" -ProtectedFromAccidentalDeletion $false
 ```
 
 ### Complete Example with Nested OUs and Error Handling
@@ -114,7 +114,7 @@ function Create-ADOU {
     
     try {
         if (-not(Get-ADOrganizationalUnit -Filter "Name -eq '$Name'" -SearchBase $Path)) {
-            New-ADOrganizationalUnit -Name $Name -Path $Path
+            New-ADOrganizationalUnit -Name $Name -Path $Path -ProtectedFromAccidentalDeletion $false
             Write-Host "Successfully created OU: $Name" -ForegroundColor Green
             return $true
         } else {
