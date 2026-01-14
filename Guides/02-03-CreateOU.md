@@ -66,7 +66,7 @@ $ouPath = "OU=$ouName,$domainPath"
 try {
     # Check if OU exists
     if (-not(Get-ADOrganizationalUnit -Filter "Name -eq '$ouName'" -SearchBase $domainPath)) {
-        New-ADOrganizationalUnit -Name $ouName -Path $domainPath
+        New-ADOrganizationalUnit -Name $ouName -Path $domainPath -ProtectedFromAccidentalDeletion $false
         Write-Host "Successfully created OU: $ouName" -ForegroundColor Green
     } else {
         Write-Host "OU already exists: $ouName" -ForegroundColor Yellow
