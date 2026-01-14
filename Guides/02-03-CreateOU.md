@@ -54,6 +54,7 @@ if (Get-ADOrganizationalUnit -Filter "Name -eq 'TestOU'" -SearchBase "DC=infrait
 ## Advanced Error Handling with Try-Catch
 
 Let's enhance our script with proper error handling using try-catch blocks.
+NOTE: $_ is not “the error message”, but a rich error object of type
 
 ```powershell
 # Define the OU details
