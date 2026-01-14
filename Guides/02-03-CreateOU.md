@@ -85,7 +85,7 @@ When working with nested OUs, it's important to understand the correct path stru
 To find the path of an existing OU:
 ```powershell
 # Get the Distinguished Name of an existing OU
-Get-ADOrganizationalUnit -Filter "Name -eq 'ParentOU'" -SearchBase "DC=infrait,DC=sec" | 
+Get-ADOrganizationalUnit -Filter "Name -eq 'TestOU'" -SearchBase "DC=infrait,DC=sec" | 
     Select-Object -ExpandProperty DistinguishedName
 ```
 
