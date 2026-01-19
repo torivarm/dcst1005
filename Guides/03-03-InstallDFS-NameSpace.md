@@ -75,6 +75,11 @@ Invoke-Command -ComputerName srv1 -ScriptBlock {
     New-SmbShare -Name "files" -Path "C:\dfsroots\files" -FullAccess "Everyone"
 }
 ```
+This is the same as right click a folder and selecting properties, then Shareing tab. With PowerShell we are looping through all folders and selecting share, and giving "Everyone" full access.
+![alt text](ShareEveryone.png)
+
+
+
 ## Create DFS Namespace Root
 
 First, create the DFS Namespace root: (make sure to edit the domain name, if you don't have the same name)
