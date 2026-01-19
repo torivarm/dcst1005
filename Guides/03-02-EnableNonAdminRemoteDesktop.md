@@ -69,3 +69,6 @@ gpupdate /force
 3. Log in on Cl1 with Remote Desktop and your test NON ADMIN user.
    1. ![alt text](HR-Test-User.png)
    2. ![alt text](LoginHR.png)
+4. ‼️ NOTE ‼️ If you get an permission error, try to login as domain admin and run the command `gpupdate /force` with PowerShell as Administrator
+   1. Log out
+   2. Then log back in with your test user (Astrid E.H. in my example)
