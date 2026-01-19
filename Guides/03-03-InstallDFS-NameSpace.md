@@ -95,6 +95,7 @@ Invoke-Command -ComputerName srv1 -ScriptBlock {
     }
 }
 ```
+![alt text](everyoneShare.png)
 
 ## Create DFS Namespace Root
 
