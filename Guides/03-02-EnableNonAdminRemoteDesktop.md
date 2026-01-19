@@ -38,6 +38,7 @@
    1. ![alt text](createGP.png)
 4. Name it "RDP Access Policy"
 5. Right-click the new GPO and select Edit
+   1. ![alt text](RightClickEdit.png)
 
 ### 4. Configure Remote Desktop Settings
 1. Navigate to:
