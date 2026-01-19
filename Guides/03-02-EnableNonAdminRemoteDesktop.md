@@ -11,6 +11,7 @@
 1. Open Active Directory Users and Computers
 2. Drag n drop cl1 machine into a department OU under your computers OU, for example HR under InfraIT_Computers -> Workstations
 3. Right-click the OU where you want to create the group (My example InfraIT_Groups -> Local)
+   1. ‼️ NOTE ‼️ You don't need a OU for global and local groups. Use InfraIT_Groups as root OU for all groups 
 4. Select New > Group
 5. Name: l_remoteDesktopNonAdmin
 6. Group scope: local
