@@ -16,7 +16,7 @@ To verify the features are installed correctly, run:
 
 ```powershell
 Invoke-Command -ComputerName srv1 -ScriptBlock {
-    Get-WindowsFeature | Where-Object {$_.Name -in ('FS-DFS-Namespace','FS-DFS-Replication','RSAT-DFS-Mgmt-Con')}
+    Get-WindowsFeature | Where-Object {$_.Name -in ('FS-DFS-Namespace','FS-DFS-Replication','RSAT-DFS-Mgmt-Con')} | Select-Object DisplayName,InstallState
 }
 ```
 
