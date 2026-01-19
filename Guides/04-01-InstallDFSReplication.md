@@ -33,7 +33,7 @@ Invoke-Command -Session $session -ScriptBlock {
 ### 1. Create Base Directory Structure
 ```powershell
 Invoke-Command -Session $session -ScriptBlock {
-    $basePath = "D:\DFSRoots"
+    $basePath = "C:\DFSRoots"
     $folders = @('Finance', 'Sales', 'IT', 'Consultants', 'HR')
     
     # Create base directory
@@ -52,7 +52,7 @@ Invoke-Command -Session $session -ScriptBlock {
 Invoke-Command -Session $session -ScriptBlock {
     $folders = @('Finance', 'Sales', 'IT', 'Consultants', 'HR')
     foreach ($folder in $folders) {
-        New-SmbShare -Name $folder -Path "D:\DFSRoots\$folder" -FullAccess "Everyone"
+        New-SmbShare -Name $folder -Path "C:\DFSRoots\$folder" -FullAccess "Everyone"
         # Adjust share permissions according to your security requirements
     }
 }
