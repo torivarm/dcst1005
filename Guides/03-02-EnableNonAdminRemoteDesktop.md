@@ -30,7 +30,7 @@
 ![alt text](NewLocalGroup02.png)
 
 ### 3. Create and Configure Group Policy
-1. Add Group Policy Management in MMC through Add/Remove Snap-in
+1. Add Group Policy Management in MMC through Add/Remove Snap-in (you can have both Active Directory Users and Computers together with Group Policy in the same MMC user interface. Remember to save the file, so you don't have to add snapins every time (file Save As..))
    1. ![alt text](gpSnapIn.png)
 2. Navigate to the OU where you want to allow non admin users to Remote Desktop in
 3. Right-click and select "Create a GPO in this domain, and Link it here"
