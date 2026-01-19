@@ -39,6 +39,25 @@ Invoke-Command -ComputerName srv1 -ScriptBlock {
     New-Item -Path "C:\dfsroots\files" -ItemType Directory -Force
 }
 ```
+Verify that the folders was created.
+1. From File Explorer through RDP on SRV1:
+   1. ![alt text](foldersSRV1.png)
+2. With a PowerShell script from MGR:
+   1. 
+```powershell
+Invoke-Command -ComputerName srv1 -ScriptBlock {
+    Write-Host "`n=== C:\dfsroots ===" -ForegroundColor Cyan
+    Get-ChildItem -Path C:\dfsroots -Directory -Recurse | ForEach-Object {
+        Write-Host "  $($_.FullName)" -ForegroundColor Green
+    }
+    
+    Write-Host "`n=== C:\shares ===" -ForegroundColor Cyan
+    Get-ChildItem -Path C:\shares -Directory | ForEach-Object {
+        Write-Host "  $($_.FullName)" -ForegroundColor Green
+    }
+}
+```
+![alt text](verifyFodersPWSH.png)
 
 ## Creating SMB Shares
 
