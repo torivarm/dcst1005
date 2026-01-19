@@ -51,6 +51,8 @@
 4. Under "Members of this group", add your l_remoteDektopNonAdmin group
    1. ![alt text](MembersOfGroup.png)
 5. Click Apply and OK
+   1. Verify the name and group:
+      1. ![alt text](verifygroup.png)
 
 ### 5. Update group policy
 1. Start a remote PS session against Cl1. Run the following commands
