@@ -1,6 +1,6 @@
 try {
     
-    $department = "Sales"
+    $department = "finance"
     $groupName = "g_all_$department"
 
     $users = Get-ADUser -Filter "Department -eq '$department'" -ErrorAction Stop
