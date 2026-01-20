@@ -163,40 +163,9 @@ Create additional mapped drives for each department with the following configura
 
 ---
 
-## Method 2: Traditional GPO Drive Mapping with Security Filtering (Alternative)
-
-This method uses separate GPOs for each department, filtered by security group membership. While functional, it requires more administrative overhead.
-
-### Creating Individual GPOs
-
-For each department, create a separate GPO:
-
-1. Create GPO: `Drive Mapping - HR`
-2. Edit the GPO
-3. Navigate to: `User Configuration → Preferences → Windows Settings → Drive Maps`
-4. Create mapped drive:
-   - Location: `\\infrait\files\hr`
-   - Drive Letter: `H:`
-   - Label: `HR Department Files`
-   - **Do NOT use Item-Level Targeting**
-
-5. Close the editor
-6. In Group Policy Management:
-   - Select the GPO
-   - In **Security Filtering** section, remove **Authenticated Users**
-   - Click **Add** → enter `g_all_hr` → **OK**
-
-7. Link the GPO to `OU=InfraIT_Users`
-
-**Repeat for each department** with their respective groups and drive letters.
-
-> **Why Item-Level Targeting is Preferred:** Using a single GPO with item-level targeting is cleaner, easier to manage, and reduces GPO processing overhead compared to multiple filtered GPOs.
-
----
-
 ## Testing and Verification
 
-### On DC1 (Domain Controller)
+### On MGR
 
 #### 1. Verify GPO Replication
 
@@ -219,10 +188,11 @@ Invoke-Command -ComputerName CL1 -ScriptBlock { gpupdate /force }
 
 #### 1. User Testing
 
-1. Log in as a test user from the HR department (e.g., `infrait\hr_user1`)
+1. Log in as a test user from the HR department
 2. Open **File Explorer**
 3. Verify that drive **H:** appears with the label "HR Department Files"
 4. Attempt to access other department drives - they should **not** appear
+   1. ![alt text](DriveDiskMap.png)
 
 #### 2. Verify GPO Application
 
