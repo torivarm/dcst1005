@@ -98,12 +98,13 @@ This modern approach allows for flexible, granular control and is the preferred 
 5. **Drive Letter**: `H:`
 6. **Show this drive**: ☑ Checked
 7. **Show all drives**: ☑ Checked
+   1. ![alt text](DriveExample.png)
 
 8. Click the **Common** tab:
    - ☑ **Run in logged-on user's security context**
    - ☑ **Item-level targeting** → Click **Targeting...**
 
-9. In the Targeting Editor:
+9.  In the Targeting Editor:
    - Click **New Item** → **Security Group**
    - Click **...** (browse button)
    - Enter: `g_all_hr`
