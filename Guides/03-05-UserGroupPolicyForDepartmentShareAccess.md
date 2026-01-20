@@ -156,9 +156,10 @@ Create additional mapped drives for each department with the following configura
 
 ### Step 4: Verify GPO Settings
 
-1. Right-click the GPO → **Settings**
+1. Click the GPO → **Settings**
 2. In the report, expand **User Configuration → Preferences → Windows Settings**
 3. Verify all five mapped drives are listed with correct paths and targeting
+   1. ![alt text](ShowGPO-Info.png)
 
 ---
 
