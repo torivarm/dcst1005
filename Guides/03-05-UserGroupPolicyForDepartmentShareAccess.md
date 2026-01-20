@@ -103,6 +103,7 @@ This modern approach allows for flexible, granular control and is the preferred 
 8. Click the **Common** tab:
    - ☑ **Run in logged-on user's security context**
    - ☑ **Item-level targeting** → Click **Targeting...**
+     - ![alt text](targeting.png)
 
 9.  In the Targeting Editor:
    - Click **New Item** → **Security Group**
@@ -110,6 +111,7 @@ This modern approach allows for flexible, granular control and is the preferred 
    - Enter: `g_all_hr`
    - Click **Check Names** → **OK**
    - Click **OK** to close Targeting Editor
+     - ![alt text](BrowsGroup.png)
 
 10. Click **OK** to save the mapped drive
 
