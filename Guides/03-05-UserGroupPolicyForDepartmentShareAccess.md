@@ -87,6 +87,7 @@ This modern approach allows for flexible, granular control and is the preferred 
 1. Right-click the newly created GPO → **Edit**
 2. Navigate to: `User Configuration → Preferences → Windows Settings → Drive Maps`
 3. Right-click in the right pane → **New → Mapped Drive**
+   1. ![alt text](MapDrive.png)
 
 #### Configure HR Department Mapping
 
