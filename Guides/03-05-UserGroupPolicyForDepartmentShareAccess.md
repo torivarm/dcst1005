@@ -152,6 +152,7 @@ Create additional mapped drives for each department with the following configura
 3. Select `Drive Mapping - Department Shares`
 4. Click **OK**
    1. ![alt text](LinkGPO.png)
+   2. ![alt text](MapDriveGPO.png)
 
 ### Step 4: Verify GPO Settings
 
