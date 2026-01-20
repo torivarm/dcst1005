@@ -158,7 +158,7 @@ The following local groups should be created in Active Directory:
 - l_fullAccess-finance-share
 - l_fullAccess-consultants-share
 
-Important Note: Each department's global group (containing all users from that department) should be made a member of their respective local full access group. For example, the global group "g__all_hr" should be a member of "l_fullAccess-hr-share".
+‼️Important Note‼️: Each department's global group (containing all users from that department) should be made a member of their respective local full access group. For example, the global group "g_all_hr" should be a member of "l_fullAccess-hr-share".
 
 After creating these groups, you should configure the appropriate NTFS permissions on each share to restrict access to only the relevant local group, replacing the initial "Everyone" Full Access permissions used during setup.
 
