@@ -151,6 +151,7 @@ Create additional mapped drives for each department with the following configura
 2. Right-click **InfraIT_Users** → **Link an Existing GPO...**
 3. Select `Drive Mapping - Department Shares`
 4. Click **OK**
+   1. ![alt text](LinkGPO.png)
 
 ### Step 4: Verify GPO Settings
 
