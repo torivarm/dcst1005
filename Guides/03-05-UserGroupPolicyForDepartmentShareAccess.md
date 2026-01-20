@@ -80,6 +80,7 @@ This modern approach allows for flexible, granular control and is the preferred 
 3. Right-click **Group Policy Objects** → **New**
 4. Name: `Drive Mapping - Department Shares`
 5. Click **OK**
+   1. ![alt text](GPOdepartmentShare.png)
 
 ### Step 2: Configure Drive Mappings
 
