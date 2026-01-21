@@ -13,6 +13,7 @@ Get-Module -ListAvailable -Name DFSR
 # If not installed, install the modules (requires admin privileges)
 Add-WindowsFeature -Name RSAT-DFS-Mgmt-Con
 ```
+![alt text](SRV1-WindowsFeature.png)
 
 ## Environment Overview
 
@@ -43,6 +44,7 @@ Add-WindowsFeature -Name RSAT-DFS-Mgmt-Con
 # Create a new replication group
 New-DfsReplicationGroup -GroupName "FileServerGroup" -Description "Replication between SRV1 and DC1"
 ```
+![alt text](FileServerGroup.png)
 
 ### 2. Add Replication Group Members
 
