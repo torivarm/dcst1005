@@ -93,6 +93,7 @@ Add-DfsrConnection -GroupName "FileServerGroup" `
     -SourceComputerName "SRV1" `
     -DestinationComputerName "DC1"
 ```
+![alt text](DFSRConnection.png)
 
 ### 5. Verify Configuration
 
@@ -106,6 +107,9 @@ Get-DfsrConnection -GroupName "FileServerGroup"
 # Check folder configuration
 Get-DfsReplicatedFolder -GroupName "FileServerGroup"
 ```
+
+![alt text](CheckDFS.png)
+![alt text](CheckRepF.png)
 
 ## Monitoring and Maintenance
 
