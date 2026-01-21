@@ -1,7 +1,7 @@
 # DFS Replication Configuration Guide with PowerShell
 
 ## Prerequisites
-First, verify that the required PowerShell module is installed on your management PC:
+First, verify that the required PowerShell module is installed on your **SRV1** VM:
 
 ```powershell
 # Check if DFSN module is installed
