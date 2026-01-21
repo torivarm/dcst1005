@@ -53,6 +53,7 @@ New-DfsReplicationGroup -GroupName "FileServerGroup" -Description "Replication b
 Add-DfsrMember -GroupName "FileServerGroup" -ComputerName "SRV1"
 Add-DfsrMember -GroupName "FileServerGroup" -ComputerName "DC1"
 ```
+![alt text](GroupMemeber.png)
 
 ### 3. Create Replication Folders
 
@@ -80,6 +81,9 @@ foreach ($folder in $folders) {
         -PrimaryMember $false
 }
 ```
+**NOTE! Press Y when prompted (many times)**
+![alt text](DFSR-Membership.png)
+
 
 ### 4. Configure Replication Connections
 
