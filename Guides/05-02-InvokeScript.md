@@ -540,7 +540,7 @@ $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrato
 2. **Bruk riktig administratorkonto:**
 ```powershell
 # Spesifiser credentials
-$cred = Get-Credential -UserName "InfraIT\adm_torivli" -Message "Enter admin password"
+$cred = Get-Credential -UserName "InfraIT\adm_<dittbrukernavn>" -Message "Enter admin password"
 Invoke-Command -ComputerName dc1 -Credential $cred -ScriptBlock { $env:COMPUTERNAME }
 ```
 
