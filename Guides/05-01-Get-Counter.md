@@ -157,7 +157,9 @@ Processor
 Processor Information
 Per Processor Network Activity Cycles
 Hyper-V Hypervisor Logical Processor
+...
 ```
+![alt text](GetCPU.png)
 
 **Hvorfor er dette nyttig?**  
 I stedet for å bla gjennom hundrevis av counter sets, finner vi raskt det vi trenger!
