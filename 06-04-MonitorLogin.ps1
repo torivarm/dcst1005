@@ -1,6 +1,3 @@
-# THIS POWERSHELL COMMAND MUST BE RUN ON THE DC1 SERVER
-# Set-NetFirewallRule -Name "RemoteEventLogSvc-In-TCP" -Enabled True
-
 
 $ClientMachines = "Cl1", "DC1", "SRV1", "mgr" # Add your client machine names here
 $ScriptBlock = {
