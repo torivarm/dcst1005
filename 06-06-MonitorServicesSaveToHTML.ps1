@@ -1,3 +1,5 @@
+# NOTE! This script requires SRV1 to have IIS installed!
+
 $rootpath = "C:\Logs"
 $DC1 = "DC1"
 $services = @("NTDS", "DNS", "Kdc", "DFSR", "Netlogon")
@@ -56,4 +58,4 @@ Write-Host "Service status report saved to: $filePath"
 
 
 $session = New-PSSession -ComputerName srv1
-Copy-Item -Path "C:\git-projects\dcst1005\dcst1005\serviceStatusReport.html" -Destination "C:\inetpub\wwwroot" -ToSession $session
+Copy-Item -Path "C:\Logs\serviceStatusReport.html" -Destination "C:\inetpub\wwwroot" -ToSession $session
