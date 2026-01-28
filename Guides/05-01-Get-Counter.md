@@ -410,7 +410,7 @@ Get-Counter -Counter "\Processor(_Total)\% Processor Time" -ComputerName "SRV1" 
 
 ---
 
-## Øvingsoppgaver
+## Frivillige øvingsoppgaver (teste/prøve med PowerShell)
 
 ### Oppgave 1: Grunnleggende utforskning
 1. Kjør kommandoen for å liste alle Counter Sets
