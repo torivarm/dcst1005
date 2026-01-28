@@ -47,6 +47,7 @@
    - Trykk `Windows + R`
    - Skriv: `eventvwr.msc`
    - Trykk Enter
+![alt text](EventVWR.png)
 
 2. **Naviger til Security-loggen:**
    ```
@@ -54,10 +55,12 @@
    └── Windows Logs
        └── Security
    ```
+![alt text](SecLogs.png)
 
 3. **Se hendelser:**
    - Dobbeltklikk på en hendelse for detaljer
    - Høyreklikk → Filter Current Log for å filtrere
+
 
 **Hurtigtast:** `Windows + X` → Event Viewer
 
@@ -79,19 +82,12 @@
 
 ---
 
-### Metode 3: Server Manager
-
-1. **Åpne Server Manager** (starter automatisk ved pålogging)
-2. Klikk **Tools** → **Event Viewer**
-3. Naviger til **Windows Logs → Security**
-
----
-
 ## 🔍 Filtrere i GUI
 
 ### Filter Current Log
 
 **Høyreklikk på Security → Filter Current Log**
+![alt text](FilterLogs.png)
 
 **Vanlige filtre:**
 
@@ -102,6 +98,8 @@
 | Event ID | `4740` | Account lockouts |
 | Logged | `Last hour` | Siste timen |
 | User | `Administrator` | Kun administrator-hendelser |
+
+![alt text](FailedLoginFilter.png)
 
 **Tips:** Flere Event IDs samtidig: `4624,4625,4634` (kommaseparert)
 
@@ -114,7 +112,7 @@
 ```powershell
 Get-EventLog -LogName Security -Newest 10
 ```
-
+![alt text](PWSHEventLog.png)
 **Output:**
 ```
 Index Time          Type  Source                 EventID Message
