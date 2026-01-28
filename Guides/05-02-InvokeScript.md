@@ -298,9 +298,9 @@ Invoke-Command -ComputerName (1..100 | ForEach-Object { "Server$_" }) `
 
 ---
 
-## Praktiske forbedringer
+## Forslag til videreutvikling av script
 
-### Forbedring 1: Strukturert output med objekter
+### Strukturert output med objekter
 
 I stedet for `Write-Host`, returner objekter for videre prosessering:
 
@@ -337,7 +337,7 @@ SRV1         2026-01-29 14:30:15        8.93          38.12              4523.00
 
 ---
 
-### Forbedring 2: Feilhåndtering
+### Feilhåndtering
 
 Legg til robust error handling:
 
@@ -380,7 +380,7 @@ $results | Where-Object Status -eq "Failed" | Format-Table ComputerName, ErrorMe
 
 ---
 
-### Forbedring 3: Fargekodet output med terskelverdier
+### Fargekodet output med terskelverdier
 
 ```powershell
 $scriptblock = { 
@@ -427,7 +427,7 @@ foreach ($server in $results) {
 
 ---
 
-### Forbedring 4: Kontinuerlig overvåking med loop
+### Kontinuerlig overvåking med loop
 
 ```powershell
 $scriptblock = { 
@@ -462,7 +462,7 @@ while ($true) {
 
 ---
 
-### Forbedring 5: Logging til fil
+### Logging til fil
 
 ```powershell
 $logPath = "C:\Logs\ServerMonitoring"
