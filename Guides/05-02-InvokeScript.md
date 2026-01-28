@@ -636,75 +636,6 @@ Invoke-Command -ComputerName dc1 -ScriptBlock {
 
 ---
 
-## Øvingsoppgaver
-
-### Oppgave 1: Grunnleggende remote monitoring
-
-1. Aktiver WinRM på DC1 og SRV1 (hvis ikke allerede aktivert)
-2. Test remote connectivity med `Test-WSMan`
-3. Kjør det grunnleggende scriptet og verifiser output
-4. Identifiser hvilken server som har høyest CPU-bruk
-
-**Forventet tidsbruk:** 10-15 minutter
-
----
-
-### Oppgave 2: Utvid med disk-overvåking
-
-Utvid scriptet til også å inkludere disk-informasjon:
-- `\PhysicalDisk(_Total)\% Disk Time`
-- `\PhysicalDisk(_Total)\Current Disk Queue Length`
-
-**Hint:**
-```powershell
-$disk = (Get-Counter '\PhysicalDisk(_Total)\% Disk Time').CounterSamples
-```
-
----
-
-### Oppgave 3: Lag strukturert output
-
-Modifiser scriptet til å returnere objekter i stedet for `Write-Host`:
-1. Bruk `[PSCustomObject]` for strukturert data
-2. Eksporter resultatene til CSV
-3. Åpne CSV-filen i Excel og analyser dataene
-
-**Bonus:** Legg til fargekodet konsoll-output basert på terskelverdier
-
----
-
-### Oppgave 4: Implementer feilhåndtering
-
-Legg til error handling i scriptet:
-1. Bruk `try/catch` rundt Get-Counter kommandoer
-2. Håndter situasjonen hvor en server er offline
-3. Logg feil til en separat fil
-
-**Test:** Legg til en ikke-eksisterende server i listen og se at scriptet håndterer det
-
----
-
-### Oppgave 5: Avansert - Multi-server dashboard
-
-Lag et komplett overvåkningsscript som:
-1. Leser serverliste fra en tekstfil
-2. Kjører kontinuerlig overvåking (hvert 10. sekund)
-3. Viser fargekodet dashboard i konsollen
-4. Logger til CSV når verdier overskrider terskler
-5. Sender e-postvarsel ved kritiske hendelser (bonus)
-
-**Struktur:**
-```
-C:\Scripts\
-  ├── Monitor-Servers.ps1
-  ├── ServerList.txt
-  └── Logs\
-      ├── ServerHealth_20260129.csv
-      └── Alerts_20260129.txt
-```
-
----
-
 ## Oppsummering
 
 I denne modulen har du lært:
@@ -716,13 +647,6 @@ I denne modulen har du lært:
 ✅ **Parallell kjøring:** Effektiv skalerbar administrasjon  
 ✅ **Feilhåndtering:** Robust error handling i enterprise-scripts  
 ✅ **Best practices:** Strukturert output og logging  
-
-### Neste steg
-
-- Utforsk **PowerShell Sessions** (`New-PSSession`) for persistent connections
-- Lær om **PowerShell Jobs** for asynkron kjøring
-- Studer **PowerShell Desired State Configuration (DSC)** for konfigurasjonsstyring
-- Implementer **Just Enough Administration (JEA)** for sikker delegering
 
 ---
 
