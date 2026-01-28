@@ -473,7 +473,7 @@ $scriptBlock = {
 Invoke-Command -ComputerName DC1 -ScriptBlock $scriptBlock
 ```
 
-**Resultat:** Alle hendelser logges til `C:\Logs\NTDS_Monitor.log` på DC1
+**Resultat:** Alle hendelser logges til `C:\Logs\NTDS_Monitor.log` på DC1 (burde lagt det på et delt felles område for logging som det tas backup av)
 
 **Eksempel loggfil:**
 ```
