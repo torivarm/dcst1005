@@ -1,4 +1,4 @@
-$rootpath = "C:\git-projects\dcst1005\dcst1005"
+$rootpath = "C:\Logs"
 $DC1 = "DC1"
 $services = @("NTDS", "DNS", "Kdc", "DFSR", "Netlogon")
 
