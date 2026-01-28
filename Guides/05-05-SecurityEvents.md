@@ -302,7 +302,7 @@ Get-WinEvent -FilterHashtable @{
 
 ---
 
-## 🚀 Avansert eksempel: Overvåk pålogginger live
+## 🚀 Avansert eksempel: Overvåk pålogginger live på en maskin
 
 ```powershell
 Write-Host "Monitoring failed logons... Press Ctrl+C to stop`n" -ForegroundColor Yellow
