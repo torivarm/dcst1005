@@ -65,28 +65,6 @@ Dette scriptet demonstrerer hvordan du kan:
 - 🎫 Utsteding av Kerberos-tickets
 - 📋 Håndtering av LDAP-forespørsler
 
-### Andre kritiske AD-tjenester
-
-```powershell
-# Vis alle AD-relaterte tjenester
-Get-Service | Where-Object {
-    $_.DisplayName -like "*Active Directory*" -or 
-    $_.DisplayName -like "*DNS*" -or 
-    $_.Name -in @("NTDS", "DNS", "KDC", "Netlogon", "W32Time")
-} | Select-Object DisplayName, Name, Status | Format-Table -AutoSize
-```
-
-**Output eksempel:**
-```
-DisplayName                              Name      Status
------------                              ----      ------
-Active Directory Domain Services         NTDS      Running
-DNS Server                               DNS       Running
-Kerberos Key Distribution Center         KDC       Running
-Netlogon                                 Netlogon  Running
-Windows Time                             W32Time   Running
-```
-
 ---
 
 ## Script-gjennomgang
