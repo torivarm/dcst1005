@@ -339,12 +339,35 @@ Du får målinger av både CPU og tilgjengelig minne samtidig, nyttig for å se 
 
 ---
 
-### Eksempel 2: Eksportere data til CSV for analyse
+### Eksempel 2: Eksportere data til CSV for analyse (MERK, mappen Logs må eksistere fra før, scriptet oppretter eller sjekker ikke)
 
 ```powershell
 Get-Counter -Counter "\Processor(_Total)\% Processor Time" -SampleInterval 2 -MaxSamples 30 | 
-    Export-Counter -Path "C:\Logs\CPU_Monitoring.csv" -FileFormat CSV
+    ForEach-Object {
+        [PSCustomObject]@{
+            Timestamp = $_.Timestamp
+            Computer = $_.CounterSamples[0].Path.Split('\')[2]
+            Counter = $_.CounterSamples[0].Path
+            Value = [math]::Round($_.CounterSamples[0].CookedValue, 2)
+        }
+    } | Export-Csv -Path "C:\Logs\CPU_Monitoring.csv" -NoTypeInformation
 ```
+
+**Hva skjer her?**
+1. `Get-Counter` henter dataene
+2. `ForEach-Object` prosesserer hvert sample og lager et custom objekt med:
+   - `Timestamp` - Når målingen ble tatt
+   - `Computer` - Navnet på serveren
+   - `Counter` - Full path til telleren
+   - `Value` - Selve verdien (avrundet til 2 desimaler)
+3. `Export-Csv` eksporterer til CSV-format
+
+**Output i CSV:**
+```
+Timestamp,Computer,Counter,Value
+29.01.2026 10:30:00,DC1,\Processor(_Total)\% Processor Time,15.23
+29.01.2026 10:30:02,DC1,\Processor(_Total)\% Processor Time,18.67
+29.01.2026 10:30:04,DC1,\Processor(_Total)\% Processor Time,12.45
 
 **Fordeler:**
 - Data kan analyseres i Excel
