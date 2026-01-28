@@ -368,7 +368,7 @@ Timestamp,Computer,Counter,Value
 29.01.2026 10:30:00,DC1,\Processor(_Total)\% Processor Time,15.23
 29.01.2026 10:30:02,DC1,\Processor(_Total)\% Processor Time,18.67
 29.01.2026 10:30:04,DC1,\Processor(_Total)\% Processor Time,12.45
-
+```
 **Fordeler:**
 - Data kan analyseres i Excel
 - Lag trendrapporter
