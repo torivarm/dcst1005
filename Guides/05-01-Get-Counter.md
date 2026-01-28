@@ -238,13 +238,13 @@ Denne kommandoen vil kjøre i 20 sekunder (10 samples × 2 sekunder)
 ```
 Timestamp                 CounterSamples
 ---------                 --------------
-29.01.2026 10:15:32      \\DC1\processor(0)\% processor time : 15.2
-                          \\DC1\processor(1)\% processor time : 18.7
-                          \\DC1\processor(_total)\% processor time : 16.95
+29.01.2026 10:15:32      \\MGR\processor(0)\% processor time : 15.2
+                          \\MGR\processor(1)\% processor time : 18.7
+                          \\MGR\processor(_total)\% processor time : 16.95
 
-29.01.2026 10:15:34      \\DC1\processor(0)\% processor time : 12.1
-                          \\DC1\processor(1)\% processor time : 14.3
-                          \\DC1\processor(_total)\% processor time : 13.2
+29.01.2026 10:15:34      \\MGR\processor(0)\% processor time : 12.1
+                          \\MGR\processor(1)\% processor time : 14.3
+                          \\MGR\processor(_total)\% processor time : 13.2
 ...
 ```
 
