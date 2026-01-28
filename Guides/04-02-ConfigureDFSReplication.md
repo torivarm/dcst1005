@@ -111,20 +111,7 @@ Get-DfsReplicatedFolder -GroupName "FileServerGroup"
 ![alt text](CheckDFS.png)
 ![alt text](CheckRepF.png)
 
-## Monitoring and Maintenance
-
-### Check Replication Status
-
-```powershell
-# View replication backlog
-Get-DfsrBacklog -GroupName "FileServerGroup" `
-    -SourceComputerName "SRV1" `
-    -DestinationComputerName "DC1" `
-    -FolderName "finance"
-
-# Check replication health
-Write-DfsrHealth -SourceComputerName "SRV1" -DestinationComputerName "DC1"
-```
+---
 
 ### Common Troubleshooting Commands
 
