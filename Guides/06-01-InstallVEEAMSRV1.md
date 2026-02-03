@@ -93,56 +93,40 @@ Du skal nå se to filer:
 1. I File Explorer, naviger til **D:\VEEAM**
 2. **Dobbeltklikk på ISO-filen** (VeeamBackup&Replication_XX.X.X.XXXX.iso)
 3. Windows vil automatisk "montere" ISO-en som et virtuelt DVD-drev
-   1. 
+   1. ![alt text](MountISO.png)
+   2. ![alt text](SetupEXE.png)
+   3. ![alt text](run.png)
+4. Hvis du får en "User Account Control"-melding, klikk **Yes**
 
 **Hva skjer:**
 - ISO-filen blir behandlet som om du satte inn en DVD
 - Et nytt drev dukker opp i **This PC** (f.eks. E:\ eller F:\)
 - File Explorer åpner automatisk det nye drevet
 
-### Steg 2: Finn installasjonsveiviseren
-Når ISO-en er montert, skal du se innholdet av installasjonsmediet:
-- **Setup.exe** - Dette er installasjonsprogrammet
-- Flere mapper med navn som "Backup", "Redistr", "Packages", osv.
-
-### Steg 3: Start installasjonen
-1. **Dobbeltklikk på Setup.exe**
-2. Hvis du får en "User Account Control"-melding, klikk **Yes** eller **Ja**
-3. VEEAM Backup & Replication installasjonsveiviser starter
-
 ---
 
-## Del 6: Følg installasjonsveiviseren
+## Del 5: Følg installasjonsveiviseren
 
 ### Steg 1: Velkomstsiden
 1. Du vil se VEEAM-velkomstsiden
-2. Klikk **Install** under "Veeam Backup & Replication"
-
-### Steg 2: Lisensavtale
-1. Les gjennom lisensavtalen
-2. Huk av for **"I accept the terms in the license agreement"**
-3. Klikk **Next**
-
-### Steg 3: Lisensinstallasjon
-1. Du vil bli bedt om å velge en lisensfil
-2. Klikk **Browse** eller **Bla gjennom**
-3. Naviger til **D:\VEEAM\veeam_backup_nfr_XX_XXXXX.lic**
-4. Velg lisensfilen og klikk **Open**
-5. Klikk **Next**
+2. Klikk **Install** under "Veeam ONE"
+   1. ![alt text](VEEAMOneInstall.png)
+3. Velg **Install Veeam ONE**
+   1. ![alt text](InstallOne.png)
+4. **"License agreement"**
+5. Klikk **I Accept**
+6. Velg deretter å finne frem til lisensfilen som en har lastet ned tidligere:
+   1. ![alt text](BrowsLicense.png)
+   2. ![alt text](LicenseFile.png)
+7. Klikk **Next**
 
 > **Viktig**: Hvis du hopper over dette steget, vil VEEAM installeres i trial-modus (30 dager).
 
-### Steg 4: Program Features
-1. Her kan du velge hvilke komponenter som skal installeres
-2. **Anbefaling for lab-miljø**: La alle standardvalg stå
-3. Klikk **Next**
+### Steg 2: Angi domenekonto for Veeam ONE
+![alt text](domainAccountVEEAM.png)
+Vent deretter på **System Configuration Check** (kan ta litt tid)
 
-### Steg 5: System Configuration Check
-1. Installasjonsveiviseren sjekker systemkrav
-2. Hvis alt er grønt (OK), klikk **Next**
-3. Hvis det er advarsler (gult), les dem nøye - de fleste kan ignoreres i lab-miljø
-
-### Steg 6: Default Backup Repository
+### Steg 3: Default Backup Repository
 
 **Dette er viktig - vi skal bruke D:\ for backup-lagring!**
 
