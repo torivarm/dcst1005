@@ -25,7 +25,7 @@
 
 ## Del 2: Last ned VEEAM-filer fra filesender.sikt.no
 
-### Steg 2: Få tilgang til nedlastingslenken
+### Steg 1: Få tilgang til nedlastingslenken
 1. Lenken for nedlasting ligger i BlackBoard under Undervisningsmateriell.
    1. MERK! Last ned filen på SRV1 maskinen, ikke til din egen maskin. Kopier lenken inn til SRV1.
    2. ![alt text](CopyLinkSRV1.png)
@@ -42,7 +42,7 @@
 > **Viktig**: Mens nedlastingen pågår:
 > - **Ikke lukk nettleseren**
 
-### Steg 3: Sjekk nedlastingsfremdrift
+### Steg 2: Sjekk nedlastingsfremdrift
 
 **Slik ser du fremdriften:**
 1. Klikk på **nedlastingsikonet** (pil ned) i øvre høyre hjørne av Edge
@@ -55,7 +55,7 @@
 ![alt text](DownloadISO.png)
 
 
-### Steg 4: Last ned lisensfilen
+### Steg 3: Last ned lisensfilen
 
 **Mens ISO-filen lastes ned** (eller etter at den er ferdig), last ned lisensfilen:
 
@@ -63,7 +63,7 @@
 
 > **Merk**: Lisensfilen er veldig liten (5 KB) og lastes ned umiddelbart (under 1 sekund).
 
-### Steg 7: Vent til ISO-filen er ferdig nedlastet
+### Steg 4: Vent til ISO-filen er ferdig nedlastet
 
 **Hvordan vet du at nedlastingen er fullført?**
 1. Åpne nedlastingsoversikten (Ctrl+J)
@@ -74,43 +74,26 @@
 
 ---
 
-## Del 4: Verifiser nedlastede filer
+## Del 3: Verifiser nedlastede filer
 
 ### Steg 1: Åpne File Explorer og gå til D:\VEEAM
 1. Åpne File Explorer (Windows + E)
-2. Naviger til **D:\VEEAM**
+2. Naviger til **D:\InstallFiles**
 
 ### Steg 2: Sjekk at begge filene er der
 Du skal nå se to filer:
-- **VeeamBackup&Replication_XX.X.X.XXXX.iso** (ca. 4-6 GB)
+- **VeeamBackup&Replication_XX.X.X.XXXX.iso** (ca. 3-6 GB)
 - **veeam_backup_nfr_XX_XXXXX.lic** (ca. 5 KB)
-
-**Slik sjekker du filstørrelsen:**
-1. Høyreklikk på ISO-filen
-2. Velg **Properties** eller **Egenskaper**
-3. Sjekk **Size**-feltet:
-   - Skal være rundt **4,800 MB - 6,000 MB**
-   - Hvis filen er mye mindre, kan nedlastingen ha feilet
-
-### Steg 3: Sjekk at lisensfilen er gyldig
-1. Høyreklikk på lisensfilen (.lic)
-2. Velg **Open with** → **Notepad** eller **Notisblokk**
-3. Filen skal inneholde XML-kode som starter med:
-   ```xml
-   <?xml version="1.0" encoding="utf-8"?>
-   <LicenseInformation>
-   ```
-4. Hvis du ser dette, er lisensfilen gyldig
-5. Lukk Notepad
-
+- 
 ---
 
-## Del 5: Monter ISO-filen og start installasjonen
+## Del 4: Monter ISO-filen og start installasjonen
 
 ### Steg 1: Monter ISO-filen
 1. I File Explorer, naviger til **D:\VEEAM**
 2. **Dobbeltklikk på ISO-filen** (VeeamBackup&Replication_XX.X.X.XXXX.iso)
 3. Windows vil automatisk "montere" ISO-en som et virtuelt DVD-drev
+   1. 
 
 **Hva skjer:**
 - ISO-filen blir behandlet som om du satte inn en DVD
