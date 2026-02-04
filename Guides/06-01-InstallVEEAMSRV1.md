@@ -127,10 +127,28 @@ Du skal nå se to filer:
 Vent deretter på **System Configuration Check** (kan ta litt tid)
 
 ### Steg 3: Velg installasjonsplassering
-1. Customize Settings
+### 1. Customize Settings
 ![alt text](CustomizeSettings.png)
-2. Klikk **Next**, med alle Components markert for installasjon
+### 2. Klikk **Next**, med alle Components markert for installasjon
 ![alt text](Components.png)
+### 3. La Monitoring Database stå til default valg:
+![alt text](MonitoringDatabase.png)
+### 4. La Reporting Database stå til default valg:
+![alt text](ReportingDatabase.png)
+### 5. Velg deretter å installere det på D:\ i stedet for på C:\
+![alt text](BrowseLocation.png)
+### 6. Velg D:\ -> Høyreklikk, og velg New Folder. Navngi mappen VEEAM
+![alt text](NewFOlderD.png)
+### 7. Dobbeltklikk på mappen VEEAM og velg deretter Select Folder:
+![alt text](SelectFolderVEEAM.png)
+### 8. Når den er ferdig med å sjekke tilgjengelig diskplass, sjekk at det står til D:\ og trykk deretter Next
+![alt text](DriveCorrect.png)
+### 9. La det stå til Veeam backup data only
+![alt text](VeeamDataOnly.png)
+### 10. La alle porter stå til default
+![alt text](Ports.png)
+### 11. Install - Vil ta litt tid! Det er mye som skal installeres.. Database, applikasjon etc. etc..
+![alt text](Install.png)
 
 ### Steg 3: Default Backup Repository
 
