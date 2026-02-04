@@ -1,4 +1,4 @@
-# Laste ned og installere VEEAM på SRV1
+# Laste ned og installere VEEAM ONE på SRV1
 
 ## Innledning
 
