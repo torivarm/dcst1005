@@ -126,6 +126,12 @@ Du skal nå se to filer:
 ![alt text](domainAccountVEEAM.png)
 Vent deretter på **System Configuration Check** (kan ta litt tid)
 
+### Steg 3: Velg installasjonsplassering
+1. Customize Settings
+![alt text](CustomizeSettings.png)
+2. Klikk **Next**, med alle Components markert for installasjon
+![alt text](Components.png)
+
 ### Steg 3: Default Backup Repository
 
 **Dette er viktig - vi skal bruke D:\ for backup-lagring!**
