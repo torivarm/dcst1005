@@ -83,23 +83,4 @@ Du har nå:
 
 ---
 
-## Neste Steg
-
-Nå som VEEAM Agent er installert på DC1, er du klar for neste fase:
-
-### I neste øvelse vil du lære:
-1. **Koble VEEAM Agent til VEEAM Backup & Replication** på SRV1
-2. **Opprette en backup job** for DC1 som inkluderer:
-   - System State (Active Directory)
-   - C:\ disk
-   - Kritiske systemfiler
-3. **Konfigurere backup schedule** (daglig, ukentlig, etc.)
-4. **Teste backup og restore** av filer og System State
-5. **Overvåke backup-status** og feilsøke problemer
-
-### Forberedelse til neste øvelse:
-- VEEAM Backup & Replication må kjøre på SRV1
-- DC1 må ha nettverkstilgang til SRV1
-- D:\VeeamBackup må ha tilstrekkelig ledig plass (minimum 20 GB anbefalt)
-
 **Gratulerer!** Du har nå installert VEEAM Agent på domenekontrolleren og er klar til å konfigurere enterprise-grade backup.
