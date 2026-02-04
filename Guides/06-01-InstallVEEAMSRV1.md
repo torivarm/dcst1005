@@ -149,7 +149,10 @@ Vent deretter på **System Configuration Check** (kan ta litt tid)
 ![alt text](Ports.png)
 ### 11. Install - Vil ta litt tid! Det er mye som skal installeres.. Database, applikasjon etc. etc..
 ![alt text](Install.png)
-
+### 12. Når installasjonen er ferdig, FINISH (Merk: Min installasjon tok 62 minutter)
+![alt text](VeeamFINISH.png)
+### 13. Logg ut og inn igjen etter installasjon er ferdig:
+![alt text](LogOut.png)
 ---
 
 ## Del 7: Verifiser installasjonen
@@ -157,14 +160,14 @@ Vent deretter på **System Configuration Check** (kan ta litt tid)
 ### Steg 1: Sjekk at VEEAM er installert
 1. Åpne **Start-menyen**
 2. Søk etter **"Veeam"**
+![alt text](VeeamOneClient.png)
+![alt text](Connect.png)
+3. **Frivillig:** Test om det er mulig med e-postvarsel til sin NTNU-konto. Logg på med NTNU-brukere for Microsoft 365. (MERK: har ikke testet selv)
+![alt text](M365Mail.png)
 
-## Beste Praksis og Tips
+## ALT ER KLART 🎉
+![alt text](DONEVEEAM.png)
 
-### Skal jeg slette ISO-filen?
-**Anbefaling:**
-- **Behold ISO-filen** hvis du har plass (for re-installasjon eller reparasjon)
-- **Slett ISO-filen** hvis du trenger diskplass
-- **Alltid behold lisensfilen** - den er liten og nødvendig
 ---
 
 
