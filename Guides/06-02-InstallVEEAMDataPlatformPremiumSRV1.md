@@ -13,7 +13,7 @@
 > **Hvorfor D:\?** I vårt testmiljø er C:\-disken (boot-disk) begrenset i størrelse. VEEAM-installasjonsfiler er store (20 GB), og installasjonen krever betydelig diskplass. Derfor bruker vi D:\-volumet som har mer tilgjengelig plass.
 
 **SJEKK C:\ Siden det vil også opprettes filer og database på C:\ underveis i installasjonen** 
-- Hvis det ikke lite ledig plass på C:\, slett unna eventuelle filer som ligger på mappen Downloads, og "tøm søppelbøtten"
+- **UTFØR FØLGENDE STEG:**
 > ![alt text](SjekkC.png)
 > ![alt text](EmptyBin.png)
 
@@ -26,6 +26,8 @@ Steps to Clean Up Update Files
   - Select all files and folders, and delete them (use Shift+Delete for permanent removal / Shift + Right Click with Mouse and Delete).
     - ![alt text](DeleteAll.png)
     - ![alt text](DeleteFiles.png)
+    - Om det ligger filer i Søppelbøtta etter at du har slettet installasjonsfiler, Empty Recycle Bin igjen:
+    - ![alt text](EmptyBin.png)
 
 ---
 
@@ -138,103 +140,20 @@ Når ISO-en er montert, skal du se innholdet av installasjonsmediet:
    19. ![alt text](InstallV4.png)
    20. ![alt text](TakeForever.png)
 
-### Steg 20 føles ut som vil ta evig. Sett på, la det stå i mange timer
+### Steg 20 føles ut som vil ta evig. Sett på, la det stå.
 
-**Dette er viktig - vi skal bruke D:\ for backup-lagring!**
-
-1. Du vil se en sti for "Default backup repository"
-2. **Standard er C:\Backup** - dette må endres!
-3. Klikk **Browse** eller **Bla gjennom**
-4. Naviger til **D:\**
-5. Klikk **Make New Folder** eller **Opprett ny mappe**
-6. Gi mappen navnet **VeeamBackup**
-7. Velg denne mappen (D:\InstallFilesBackup)
-8. Klikk **OK** og deretter **Next**
-
-> **Hvorfor D:\?** Backup-filer kan bli svært store og C:\ har begrenset plass.
-
-### Steg 7: Database Configuration
-1. VEEAM bruker en database for å holde oversikt over backups
-2. **Standard**: VEEAM installerer sin egen SQL Server Express-instans
-3. **Anbefaling**: La standardvalgene stå for lab-miljø
-4. Klikk **Next**
-
-### Steg 8: Service Account
-1. VEEAM trenger en tjenestekonto
-2. **Anbefaling for lab**: Bruk **Local System account**
-3. I produksjonsmiljø ville man brukt en dedikert domenekonto
-4. Klikk **Next**
-
-### Steg 9: Default Gateway Server Ports
-1. Her konfigureres porter for kommunikasjon
-2. **Anbefaling**: La standardportene stå (9392, 9395, osv.)
-3. Klikk **Next**
-
-### Steg 10: Ready to Install
-1. Du vil nå se en oppsummering av installasjonsvalg
-2. **Verifiser at backup repository er på D:\InstallFilesBackup**
-3. Klikk **Install** for å starte installasjonen
-
-### Steg 11: Installasjonsprosess
-- Installasjonen tar **10-20 minutter**
-- Du vil se fremdrift for ulike komponenter
-- Ikke avbryt installasjonen
 
 ### Steg 12: Installation Complete
 1. Når installasjonen er ferdig, vil du se "Installation Complete"
-2. Huk av for **"Launch Veeam Backup & Replication Console"** hvis du vil åpne programmet
-3. Klikk **Finish**
+1. Klikk **Finish**
 
 ---
 
-## Del 7: Verifiser installasjonen
-
-### Steg 1: Sjekk at VEEAM er installert
-1. Åpne **Start-menyen**
-2. Søk etter **"Veeam"**
-3. Du skal se:
-   - **Veeam Backup & Replication Console**
-   - **Veeam Backup & Replication Documentation**
-
-### Steg 2: Åpne VEEAM Console
-1. Klikk på **Veeam Backup & Replication Console**
-2. Hvis du får en User Account Control-melding, klikk **Yes**
-3. VEEAM Console åpner
-4. Du skal se hovedvinduet med menylinjer og verktøy
-
-### Steg 3: Verifiser lisens
-1. I VEEAM Console, klikk på **Menu** (øverst til venstre)
-2. Velg **License** eller **Lisens**
-3. Sjekk at:
-   - Lisenstype vises (NFR - Not For Resale)
-   - Utløpsdato vises
-   - Status er **Valid**
-
-### Steg 4: Sjekk diskforbruk
-1. Åpne File Explorer (Windows + E)
-2. Høyreklikk på **D:\**
-3. Velg **Properties** eller **Egenskaper**
-4. Sjekk **Free space** - du skal fortsatt ha flere GB ledig
-
----
-
-## Beste Praksis og Tips
-
-### Mappestruktur etter installasjon
-Etter installasjonen vil D:\ ha følgende struktur:
-```
-D:\
-├── VEEAM\
-│   ├── VeeamDataPlatformPremim_XX.X.X.XXXX.iso  (kan slettes etter installasjon)
-│   └── veeam_backup_nfr_XX_XXXXX.lic            (behold denne!)
-└── VeeamBackup\                                  (opprettet under installasjon)
-    └── (backup-filer vil lagres her)
-```
 
 ### Skal jeg slette ISO-filen?
 **Anbefaling:**
 - **Behold ISO-filen** hvis du har plass (for re-installasjon eller reparasjon)
-- **Slett ISO-filen** hvis du trenger diskplass
+- **Slett ISO-filen** Vi trenger diskplassen, slett filen :D
 - **Alltid behold lisensfilen** - den er liten og nødvendig
 
 **Slik sletter du ISO-filen:**
@@ -245,14 +164,8 @@ D:\
 2. Gå til **D:\InstallFiles**
 3. Høyreklikk på ISO-filen
 4. Velg **Delete**
-
-### Sikkerhetskopiering av lisensfil
-**Viktig:**
-1. Lisensfilen er verdifull og bør sikkerhetskopieres
-2. Kopier **veeam_backup_nfr_XX_XXXXX.lic** til en trygg lokasjon:
-   - Lagre en kopi på din lokale PC
-   - Eller send til deg selv på e-post
-   - Eller lagre i et delt område som ikke slettes
+5. Velg deretter å Empyt Recycle Bin
+   1. ![alt text](EmptyBin.png)
 
 ---
 
@@ -264,25 +177,7 @@ D:\
 2. Velg **Mount** eller **Monter**
 3. Hvis dette alternativet ikke finnes:
    - Høyreklikk → **Open with** → **Windows Explorer**
-
-### Problem: "Setup.exe kjører ikke - 'Access Denied'"
-**Løsning:**
-- Sørg for at du er logget inn med administratorkonto (adm_<brukernavn>)
-- Høyreklikk på Setup.exe → **Run as administrator**
-
-### Problem: "Ikke nok plass til installasjon"
-**Løsning:**
-- Sjekk ledig plass på D:\ (høyreklikk → Properties)
-- Du trenger minimum 10 GB ledig for en komfortabel installasjon
-- Slett unødvendige filer eller utvid D:\-volumet
-
-### Problem: "Kan ikke finne lisensfilen under installasjon"
-**Løsning:**
-1. Under installasjon, når du blir bedt om lisensfil
-2. Klikk **Browse**
-3. Naviger til **D:\InstallFiles\**
-4. Endre filtype-filteret nederst til **"All Files (*.*)"**
-5. Nå skal du se .lic-filen
+   - 
 
 ### Problem: "Installasjonen feiler under Database Configuration"
 **Løsning:**
