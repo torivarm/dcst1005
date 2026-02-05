@@ -1,4 +1,6 @@
 # Laste ned og installere VEEAM Data Platform Permium (tidligere Backup & Replication) på SRV1
+# - Denne gjennomgangen vil ta tid, og det er en del venting.. 
+# - Gjør den samtidig som noe annet :D
 
 ## Innledning
 
@@ -31,8 +33,6 @@
 > **Viktig**: Bruk alltid din personlige administrative konto (adm_<brukernavn>) for administrative oppgaver, ikke den delte Admin-kontoen.
 
 ---
-
-## Del 2: Last ned VEEAM-filer fra filesender.sikt.no
 
 ## Del 2: Last ned VEEAM filer fra filesender.sikt.no
 
@@ -83,7 +83,7 @@ Når ISO-en er montert, skal du se innholdet av installasjonsmediet:
 
 ---
 
-## Del 6: Følg installasjonsveiviseren
+## Del 4: Følg installasjonsveiviseren
 
 ### Steg 1: Velkomstsiden
 1. Du vil se VEEAM-velkomstsiden
@@ -91,30 +91,36 @@ Når ISO-en er montert, skal du se innholdet av installasjonsmediet:
    1. ![alt text](DataPlatformPremium13.png)
 
 ### Steg 2: Lisensavtale
-1. Les gjennom lisensavtalen
-2. Huk av for **"I accept the terms in the license agreement"**
-3. Klikk **Next**
+1. **"I accept the terms in the license agreement"**
+1. Klikk **I Accept**
 
-### Steg 3: Lisensinstallasjon
+### Steg 3: Program Features
+1. Her kan du velge hvilke komponenter som skal installeres
+2. **Anbefaling for lab-miljø**: La alle standardvalg stå
+3. Klikk **Next**
+   1. ![alt text](ProgramFeatures.png)
+
+### Steg 4: Lisensinstallasjon
 1. Du vil bli bedt om å velge en lisensfil
 2. Klikk **Browse** eller **Bla gjennom**
+   1. ![alt text](BrowsLicense2.png)
 3. Naviger til **D:\InstallFiles\veeam_backup_nfr_XX_XXXXX.lic**
 4. Velg lisensfilen og klikk **Open**
 5. Klikk **Next**
 
 > **Viktig**: Hvis du hopper over dette steget, vil VEEAM installeres i trial-modus (30 dager).
 
-### Steg 4: Program Features
-1. Her kan du velge hvilke komponenter som skal installeres
-2. **Anbefaling for lab-miljø**: La alle standardvalg stå
-3. Klikk **Next**
+### Steg 5: Service Account
+1. Skriv inn passordet til din adm_bruker for domenet. Dobbeltsjekk at du også er innlogget som denne brukeren ved å trykke på Windows-iconet nede på startmenyen.
+   1. ![alt text](PasswordAdmDomain.png)
 
-### Steg 5: System Configuration Check
-1. Installasjonsveiviseren sjekker systemkrav
-2. Hvis alt er grønt (OK), klikk **Next**
-3. Hvis det er advarsler (gult), les dem nøye - de fleste kan ignoreres i lab-miljø
-
-### Steg 6: Default Backup Repository
+## Del 5: System Configuration Check
+1. Denne tar fort 15 minutter +. Hvis den sier Reboot, reboot.
+   1. ![alt text](reboot.png)
+2. Godta at den rebooter for å fullføre required components.
+3. Remote Desktop vil avsluttes ved reboot. Gi maskinen litt tid til å restarte, og start deretter Remote Desktop igjen mot maskinen igjen og fortsett installasjonen.
+4. Finn frem til D:\InstallFiles og klikk på installasjonsfilen for Veeam Data Platform Premium. **MERK! Tar litt tid**
+5. Når det vises VEEAM i File Explorer, start **Setup** igjen
 
 **Dette er viktig - vi skal bruke D:\ for backup-lagring!**
 
