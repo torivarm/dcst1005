@@ -38,7 +38,7 @@ I dette dokumentet lærer du hvordan du oppretter et volume og kobler det til en
    | **Availability Zone** | nova (vanligvis standard) | Hvor volumet fysisk lagres |
 
 ‼️ **MERK! Bildet viser 40 GB, som er kun for å illustrere, velg 100 GB** ‼️
-![alt text](VolumeInput.png)
+![alt text](VolumeInputv2.png)
 3. Klikk **Create Volume**
 
 ### Steg 4: Verifiser opprettelsen
