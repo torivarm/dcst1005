@@ -76,7 +76,8 @@ Når ISO-en er montert, skal du se innholdet av installasjonsmediet:
 ### Steg 3: Start installasjonen
 1. **Dobbeltklikk på Setup.exe**
 2. Hvis du får en "User Account Control"-melding, klikk **Yes** eller **Ja**
-3. VEEAM Backup & Replication installasjonsveiviser starter
+3. VEEAM Data Platform Premium installasjonsveiviser starter
+   1. ![alt text](VEEAMSetupDPP.png)
 
 ---
 
@@ -94,7 +95,7 @@ Når ISO-en er montert, skal du se innholdet av installasjonsmediet:
 ### Steg 3: Lisensinstallasjon
 1. Du vil bli bedt om å velge en lisensfil
 2. Klikk **Browse** eller **Bla gjennom**
-3. Naviger til **D:\VEEAM\veeam_backup_nfr_XX_XXXXX.lic**
+3. Naviger til **D:\InstallFiles\veeam_backup_nfr_XX_XXXXX.lic**
 4. Velg lisensfilen og klikk **Open**
 5. Klikk **Next**
 
@@ -120,7 +121,7 @@ Når ISO-en er montert, skal du se innholdet av installasjonsmediet:
 4. Naviger til **D:\**
 5. Klikk **Make New Folder** eller **Opprett ny mappe**
 6. Gi mappen navnet **VeeamBackup**
-7. Velg denne mappen (D:\VeeamBackup)
+7. Velg denne mappen (D:\InstallFilesBackup)
 8. Klikk **OK** og deretter **Next**
 
 > **Hvorfor D:\?** Backup-filer kan bli svært store og C:\ har begrenset plass.
@@ -144,7 +145,7 @@ Når ISO-en er montert, skal du se innholdet av installasjonsmediet:
 
 ### Steg 10: Ready to Install
 1. Du vil nå se en oppsummering av installasjonsvalg
-2. **Verifiser at backup repository er på D:\VeeamBackup**
+2. **Verifiser at backup repository er på D:\InstallFilesBackup**
 3. Klikk **Install** for å starte installasjonen
 
 ### Steg 11: Installasjonsprosess
@@ -214,7 +215,7 @@ D:\
    - Gå til **This PC** i File Explorer
    - Høyreklikk på det virtuelle DVD-drevet (f.eks. E:\)
    - Velg **Eject** eller **Løs ut**
-2. Gå til **D:\VEEAM**
+2. Gå til **D:\InstallFiles**
 3. Høyreklikk på ISO-filen
 4. Velg **Delete**
 
@@ -229,17 +230,6 @@ D:\
 ---
 
 ## Vanlige Problemer og Løsninger
-
-### Problem: "Nedlastingen stopper ved 50%"
-**Mulige årsaker:**
-- Nettverksproblemer
-- RDP-tilkobling ble brutt
-
-**Løsning:**
-1. Sjekk nettverkstilkobling til SRV1
-2. Gjenopprett RDP-tilkobling hvis den ble brutt
-3. Gå til filesender.sikt.no-lenken igjen
-4. Last ned på nytt - de fleste nettlesere fortsetter nedlastingen
 
 ### Problem: "ISO-filen monteres ikke når jeg dobbeltklikker"
 **Løsning:**
@@ -263,7 +253,7 @@ D:\
 **Løsning:**
 1. Under installasjon, når du blir bedt om lisensfil
 2. Klikk **Browse**
-3. Naviger til **D:\VEEAM\**
+3. Naviger til **D:\InstallFiles\**
 4. Endre filtype-filteret nederst til **"All Files (*.*)"**
 5. Nå skal du se .lic-filen
 
@@ -279,9 +269,9 @@ D:\
 
 Du har nå:
 1. ✅ Koblet til SRV1 via Remote Desktop
-2. ✅ Opprettet D:\VEEAM-mappe for nedlastede filer
-3. ✅ Lastet ned VEEAM ISO-installasjonsfil (4-6 GB) til D:\VEEAM
-4. ✅ Lastet ned VEEAM-lisensfil til D:\VEEAM
+2. ✅ Opprettet D:\InstallFiles-mappe for nedlastede filer
+3. ✅ Lastet ned VEEAM ISO-installasjonsfil (4-6 GB) til D:\InstallFiles
+4. ✅ Lastet ned VEEAM-lisensfil til D:\InstallFiles
 5. ✅ Montert ISO-filen ved å dobbeltklikke på den
 6. ✅ Startet installasjonsveiviseren (Setup.exe)
 7. ✅ Fulgt installasjonsveiviseren med fokus på å bruke D:\ for lagring
