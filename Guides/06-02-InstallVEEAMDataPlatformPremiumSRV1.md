@@ -10,27 +10,22 @@
 - Laster ned VEEAMDataPlatformPremim-installasjonsfil (.iso) direkte til D:\
 - Starter installasjonen ved å dobbeltklikke på ISO-filen
 
-> **Hvorfor D:\?** I vårt testmiljø er C:\-disken (boot-disk) begrenset i størrelse. VEEAM-installasjonsfiler er store (4-6 GB), og installasjonen krever betydelig diskplass. Derfor bruker vi D:\-volumet som har mer tilgjengelig plass.
+> **Hvorfor D:\?** I vårt testmiljø er C:\-disken (boot-disk) begrenset i størrelse. VEEAM-installasjonsfiler er store (20 GB), og installasjonen krever betydelig diskplass. Derfor bruker vi D:\-volumet som har mer tilgjengelig plass.
 
----
+**SJEKK C:\ Siden det vil også opprettes filer og database på C:\ underveis i installasjonen** 
+- Hvis det ikke lite ledig plass på C:\, slett unna eventuelle filer som ligger på mappen Downloads, og "tøm søppelbøtten"
+> ![alt text](SjekkC.png)
+> ![alt text](EmptyBin.png)
 
-## Del 1: Koble til SRV1 via Remote Desktop
+**FJERN WINDOWS UPDATE FILES**
+>To remove downloaded Windows update files on Windows Server, stop the Windows Update service, delete the contents of C:\Windows\SoftwareDistribution\Download, and restart the service. This clears pending, failed, or downloaded update cache files to free up disk space. 
 
-### Steg 1: Åpne Remote Desktop Connection
-1. På din lokale PC, trykk **Windows + R**
-2. Skriv `mstsc` og trykk **Enter**
-3. Remote Desktop Connection åpnes
-
-### Steg 2: Koble til SRV1
-1. I **Computer**-feltet, skriv inn:
-   - `SRV1.InfraIT.sec` (hvis du er koblet til domenet)
-   - Eller IP-adressen til SRV1
-2. Klikk **Connect**
-3. Logg inn med din administrative konto:
-   - Brukernavn: `InfraIT\adm_<dittbrukernavn>` eller `adm_<dittbrukernavn>`
-   - Passord: ditt administrative passord
-
-> **Viktig**: Bruk alltid din personlige administrative konto (adm_<brukernavn>) for administrative oppgaver, ikke den delte Admin-kontoen.
+Steps to Clean Up Update Files
+- Delete Downloaded Files
+  - Navigate to C:\Windows\SoftwareDistribution\Download.
+  - Select all files and folders, and delete them (use Shift+Delete for permanent removal / Shift + Right Click with Mouse and Delete).
+    - ![alt text](DeleteAll.png)
+    - ![alt text](DeleteFiles.png)
 
 ---
 
@@ -120,7 +115,30 @@ Når ISO-en er montert, skal du se innholdet av installasjonsmediet:
 2. Godta at den rebooter for å fullføre required components.
 3. Remote Desktop vil avsluttes ved reboot. Gi maskinen litt tid til å restarte, og start deretter Remote Desktop igjen mot maskinen igjen og fortsett installasjonen.
 4. Finn frem til D:\InstallFiles og klikk på installasjonsfilen for Veeam Data Platform Premium. **MERK! Tar litt tid**
-5. Når det vises VEEAM i File Explorer, start **Setup** igjen
+5. Når det vises VEEAM i File Explorer, start **Setup** igjen. **MERK!** Det vil ta litt tid før selve installasjonsvinduet dukker opp etter at har klikket på Setup.
+6. Når installasjonsvinduet endelig kommer opp igjen, Klikk INSTALL og følg veiviseren:
+   1. ![alt text](InstallV2.png)
+   2. ![alt text](WaitForSetup.png)
+   3. ![alt text](LicenseV2.png)
+   4. ![alt text](Nextv2.png)
+   5. ![alt text](LicenseV22.png)
+   6. ![alt text](LicenseV3.png)
+   7. ![alt text](NextV3.png)
+   8. ![alt text](CredentialsV2.png)
+   9. ![alt text](CustomizationV2.png)
+   10. ![alt text](Nextv4.png)
+   11. ![alt text](Nextv5.png)
+   12. ![alt text](Nextv6.png)
+   13. ![alt text](ViktigV3.png)
+   14. ![alt text](NewFolderV4.png)
+   15. ![alt text](SelectFolderV2.png)
+   16. ![alt text](Nextv7.png)
+   17. ![alt text](Nextv8.png)
+   18. ![alt text](Nextv9.png)
+   19. ![alt text](InstallV4.png)
+   20. ![alt text](TakeForever.png)
+
+### Steg 20 føles ut som vil ta evig. Sett på, la det stå i mange timer
 
 **Dette er viktig - vi skal bruke D:\ for backup-lagring!**
 
