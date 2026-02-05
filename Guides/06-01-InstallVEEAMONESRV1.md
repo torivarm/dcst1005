@@ -2,7 +2,7 @@
 
 ## Innledning
 
-**VEEAM Backup & Replication** er en profesjonell backup-løsning som brukes i mange enterprise-miljøer for sikkerhetskopi av servere, VM-er og data. I denne guiden lærer du hvordan du:
+**VEEAM One** Veeam ONE er et omfattende overvåkings-, rapporterings- og analyseverktøy utviklet for Veeam Backup & Replication-miljøer, virtuell infrastruktur (VMware vSphere/Hyper-V) og fysiske/skybaserte arbeidsbelastninger. Det gir sanntidsoversikt, intelligent diagnostikk og AI-drevet innsikt for proaktivt å administrere sikkerhetskopier, sikre databeskyttelse og optimalisere ressursytelsen.
 
 - Kobler til SRV1 via Remote Desktop
 - Laster ned VEEAM-installasjonsfil (.iso) og lisensfil direkte til D:\
@@ -23,7 +23,7 @@
    1. ![alt text](newFolderVEEAM.png)
 ---
 
-## Del 2: Last ned VEEAM-filer fra filesender.sikt.no
+## Del 2: Last ned VEEAM filer fra filesender.sikt.no
 
 ### Steg 1: Få tilgang til nedlastingslenken
 1. Lenken for nedlasting ligger i BlackBoard under Undervisningsmateriell.
@@ -82,7 +82,7 @@
 
 ### Steg 2: Sjekk at begge filene er der
 Du skal nå se to filer:
-- **VeeamBackup&Replication_XX.X.X.XXXX.iso** (ca. 3-6 GB)
+- **VeeamONE_XX.X.X.XXXX.iso** (ca. 3-6 GB)
 - **veeam_backup_nfr_XX_XXXXX.lic** (ca. 5 KB)
 - 
 ---
@@ -91,7 +91,7 @@ Du skal nå se to filer:
 
 ### Steg 1: Monter ISO-filen
 1. I File Explorer, naviger til **D:\VEEAM**
-2. **Dobbeltklikk på ISO-filen** (VeeamBackup&Replication_XX.X.X.XXXX.iso)
+2. **Dobbeltklikk på ISO-filen** (VeeamONE_XX.X.X.XXXX.iso)
 3. Windows vil automatisk "montere" ISO-en som et virtuelt DVD-drev
    1. ![alt text](MountISO.png)
    2. ![alt text](SetupEXE.png)
@@ -185,12 +185,4 @@ Du har nå:
 
 ---
 
-## Neste Steg
-
-I neste øvelse vil du lære:
-- Hvordan konfigurere backup jobs i VEEAM
-- Hvordan legge til servere og VM-er for backup
-- Hvordan utføre restore-operasjoner
-- Hvordan overvåke backup-status
-
-**Gratulerer!** Du har nå installert enterprise backup-software på en profesjonell måte i lab-miljøet. 🥳
+**Gratulerer!** Du har nå installert Veeam ONE. 🥳
