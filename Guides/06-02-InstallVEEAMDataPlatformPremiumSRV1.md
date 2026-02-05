@@ -41,26 +41,28 @@
 2. MERK! Last ned filen på SRV1 maskinen, ikke til din egen maskin. Kopier lenken inn til SRV1.
 3. Åpne deretter lenken på SRV1 i Edge, og **høyreklikk på Donwnload-knappen og velg Save link as..**
    1. ![alt text](RightClickDownload.png)
-4. Velg å **laste ned til D:\InstallFiles mappen som tidligere opprettet**
+4. Opprett en mappe på D:\ som heter InstallFiles å **laste ned til D:\InstallFiles** (se bort i fra VeeamONE filen, ikke relevant for oss)
    1. ![alt text](VEEAMBandRDL.png)
+
+### Steg 2: Last ned lisensfil
+1. Kopier lenken for lisensfilen fra BlackBoard over til SRV1
+2. Last ned filen på SRV1, kan også legges på InstallFiles-mappen på D:\
 
 ### Steg 3: Se oversikt over tilgjengelige filer
 Du vil nå se en liste over filer som kan lastes ned:
-- **VeeamDataPlatformPremim_XX.X.X.XXXX.iso** - Installasjonsfil (ca. 20+ GB) - Stor fil, vil ta litt tid!
+- **VeeamDataPlatformPremim_XX.X.X.XXXX.iso** - Installasjonsfil (ca. 20+ GB) - Stor fil, vil ta litt tid før den er ferdig nedlastet
+- **Veeam_data_platform_premium_evalution_1000.lic** - Lisensfil. (ca 2KB)
 - Klikk på **nedlastingsikonet** (pil ned) i øvre høyre hjørne av Edge
 - Eller trykk **Ctrl+J** for å åpne nedlastingsoversikten
-![alt text](FileAndSize.png)
+![alt text](FileAndSize2.png)
+
 
 
 ## Del 3: Monter ISO-filen og start installasjonen
 
 ### Steg 1: Monter ISO-filen
 1. I File Explorer, naviger til **D:\InstallFiles**
-   1. MERK! For å unngå eventuelle forvirringer kan du Unmounte VeeamONE først:
-   2. ![alt text](EjectISO.png)
-   3. Det kan ta litt tid før det oppdateres, men lukk og åpne File Explorer om det ikke er noen forskjell på visningen.
 2. **Dobbeltklikk på ISO-filen** (VeeamDataPlatformPremim_XX.X.X.XXXX.iso)
-   1. 
 3. Windows vil automatisk "montere" ISO-en som et virtuelt DVD-drev
 
 **Hva skjer:**
@@ -85,7 +87,8 @@ Når ISO-en er montert, skal du se innholdet av installasjonsmediet:
 
 ### Steg 1: Velkomstsiden
 1. Du vil se VEEAM-velkomstsiden
-2. Klikk **Install** under "Veeam Backup & Replication"
+2. Klikk **Install** og velg deretter Data Platform Premium
+   1. ![alt text](DataPlatformPremium13.png)
 
 ### Steg 2: Lisensavtale
 1. Les gjennom lisensavtalen
