@@ -294,6 +294,30 @@ DeferFeatureUpdatesPeriodInDays  : 180
 ```
 
 ---
+### Steg 3.2: Tvinge Windows Update Scan
+La Windows Update søke etter nye oppdateringer umiddelbart:
+powershell# Tvinge update scan på alle maskiner
+```powershell
+$Computers = @('cl1')
+
+foreach ($Computer in $Computers) {
+    Write-Host "`nTvinger update scan på $Computer.infrait.sec..." -ForegroundColor Yellow
+    
+    Invoke-Command -ComputerName "$Computer.infrait.sec" -ScriptBlock {
+        # Start Windows Update scan
+        $UpdateSession = New-Object -ComObject Microsoft.Update.Session
+        $UpdateSearcher = $UpdateSession.CreateUpdateSearcher()
+        
+        Write-Host "Søker etter updates..." -ForegroundColor Cyan
+        $SearchResult = $UpdateSearcher.Search("IsInstalled=0 and Type='Software'")
+        
+        Write-Host "Fant $($SearchResult.Updates.Count) tilgjengelige updates" -ForegroundColor Green
+    }
+}
+```
+Dette kan ta 2-5 minutter per maskin.
+
+---
 
 ### Steg 3.2: Komplett Update Status Script
 
@@ -302,19 +326,11 @@ Lagre dette scriptet som `C:\Scripts\Get-WindowsUpdateStatus.ps1` på **mgr.infr
 ```powershell
 <#
 .SYNOPSIS
-    Henter Windows Update status fra domene-maskiner
-    
-.DESCRIPTION
-    Sjekker update compliance, pending updates, siste installerte update,
-    og siste reboot tidspunkt for alle maskiner i InfraIT.sec domenet.
-    
-.EXAMPLE
-    .\Get-WindowsUpdateStatus.ps1
+    Henter Windows Update status via Event Log
 #>
-
 [CmdletBinding()]
 param(
-    [string[]]$ComputerName = @('dc1.infrait.sec', 'srv1.infrait.sec', 'cl1.infrait.sec', 'mgr.infrait.sec')
+    [string[]]$ComputerName = @('cl1.infrait.sec')
 )
 
 $Results = foreach ($Computer in $ComputerName) {
@@ -322,19 +338,48 @@ $Results = foreach ($Computer in $ComputerName) {
     
     try {
         $UpdateInfo = Invoke-Command -ComputerName $Computer -ErrorAction Stop -ScriptBlock {
-            # Opprett Windows Update Session
-            $UpdateSession = New-Object -ComObject Microsoft.Update.Session
-            $UpdateSearcher = $UpdateSession.CreateUpdateSearcher()
             
-            # Søk etter pending updates
-            $SearchResult = $UpdateSearcher.Search("IsInstalled=0")
-            $PendingUpdates = $SearchResult.Updates
+            # Hent pending updates fra registry (uten COM!)
+            $PendingUpdatesPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\Results\Install'
             
-            # Hent siste installerte update
-            $HistoryCount = $UpdateSearcher.GetTotalHistoryCount()
-            if ($HistoryCount -gt 0) {
-                $History = $UpdateSearcher.QueryHistory(0, 1)
-                $LastUpdate = $History | Select-Object -First 1
+            if (Test-Path $PendingUpdatesPath) {
+                $LastInstallResult = Get-ItemProperty -Path $PendingUpdatesPath
+            }
+            
+            # Sjekk om updates venter på reboot
+            $RebootRequired = $false
+            $RebootPaths = @(
+                'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired',
+                'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'
+            )
+            
+            foreach ($Path in $RebootPaths) {
+                if (Test-Path $Path) {
+                    $RebootRequired = $true
+                    break
+                }
+            }
+            
+            # Hent siste successful update fra Event Log
+            $LastSuccessfulUpdate = Get-WinEvent -FilterHashtable @{
+                LogName = 'System'
+                ProviderName = 'Microsoft-Windows-WindowsUpdateClient'
+                ID = 19  # Installation Successful
+            } -MaxEvents 1 -ErrorAction SilentlyContinue
+            
+            # Hent pending updates count fra Event Log
+            $PendingUpdatesEvent = Get-WinEvent -FilterHashtable @{
+                LogName = 'System'
+                ProviderName = 'Microsoft-Windows-WindowsUpdateClient'
+                ID = 44  # Updates detected
+            } -MaxEvents 1 -ErrorAction SilentlyContinue
+            
+            # Parse message for update count
+            $PendingCount = 0
+            if ($PendingUpdatesEvent) {
+                if ($PendingUpdatesEvent.Message -match '(\d+) updates') {
+                    $PendingCount = [int]$Matches[1]
+                }
             }
             
             # Hent siste reboot
@@ -344,10 +389,10 @@ $Results = foreach ($Computer in $ComputerName) {
             # Return object
             [PSCustomObject]@{
                 Computer = $env:COMPUTERNAME
-                PendingUpdateCount = $PendingUpdates.Count
-                PendingUpdates = ($PendingUpdates | Select-Object -First 5 -ExpandProperty Title) -join "; "
-                LastInstalledUpdate = $LastUpdate.Title
-                LastUpdateDate = $LastUpdate.Date
+                PendingUpdateCount = $PendingCount
+                RebootRequired = $RebootRequired
+                LastSuccessfulUpdate = if ($LastSuccessfulUpdate) { $LastSuccessfulUpdate.Message } else { "Ingen nylige updates funnet" }
+                LastUpdateDate = if ($LastInstallResult) { $LastInstallResult.LastSuccessTime } else { "N/A" }
                 LastReboot = $LastBoot
                 DaysSinceReboot = [math]::Round(((Get-Date) - $LastBoot).TotalDays, 1)
             }
@@ -361,8 +406,8 @@ $Results = foreach ($Computer in $ComputerName) {
         [PSCustomObject]@{
             Computer = $Computer
             PendingUpdateCount = 'ERROR'
-            PendingUpdates = $_.Exception.Message
-            LastInstalledUpdate = 'N/A'
+            RebootRequired = 'ERROR'
+            LastSuccessfulUpdate = $_.Exception.Message
             LastUpdateDate = $null
             LastReboot = $null
             DaysSinceReboot = 'N/A'
@@ -370,14 +415,14 @@ $Results = foreach ($Computer in $ComputerName) {
     }
 }
 
-# Vis resultater i tabell
-$Results | Format-Table -AutoSize
+# Vis resultater
+$Results | Format-Table -AutoSize -Wrap
 
 # Generer HTML rapport
 $HTML = $Results | ConvertTo-Html -Title "Windows Update Status - InfraIT.sec" -PreContent "<h1>Windows Update Compliance Report</h1><p>Generated: $(Get-Date)</p>"
-$HTML | Out-File "C:\Reports\UpdateStatus_$(Get-Date -Format 'yyyyMMdd_HHmm').html"
+$HTML | Out-File "C:\temp\UpdateStatus_$(Get-Date -Format 'yyyyMMdd_HHmm').html"
 
-Write-Host "`nRapport generert: C:\Reports\UpdateStatus_$(Get-Date -Format 'yyyyMMdd_HHmm').html" -ForegroundColor Green
+Write-Host "`nRapport generert: C:\temp\UpdateStatus_$(Get-Date -Format 'yyyyMMdd_HHmm').html" -ForegroundColor Green
 ```
 
 **Kjør scriptet:**
