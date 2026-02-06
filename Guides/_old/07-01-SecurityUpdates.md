@@ -211,7 +211,7 @@ Fra **mgr.infrait.sec**, kjør PowerShell som Administrator:
 
 ```powershell
 # Definer alle domene-maskiner
-$Computers = @('dc1', 'srv1', 'cl1', 'mgr')
+$Computers = @('dc1', 'srv1', 'cl1')
 
 # Tvinge GPO-oppdatering på alle maskiner
 foreach ($Computer in $Computers) {
@@ -238,7 +238,7 @@ User Policy update has completed successfully.
 
 ### Steg 2.2: Verifiser at GPO er applisert
 
-Sjekk hvilke GPO-er som faktisk er aktive på en maskin:
+Sjekk hvilke GPO-er som faktisk er aktive på en maskin.
 
 ```powershell
 # Kjør på en av maskinene (f.eks. cl1)
@@ -253,7 +253,8 @@ COMPUTER SETTINGS
 ...
 Applied Group Policy Objects
 -----------------------------
-    Corporate - Windows Update Policy
+    RDP Access Policy
+    Corporate - Windows Update Policy <---
     Default Domain Policy
 ```
 
@@ -294,35 +295,7 @@ DeferFeatureUpdatesPeriodInDays  : 180
 
 ---
 
-### Steg 3.2: Tvinge Windows Update Scan
-
-La Windows Update søke etter nye oppdateringer umiddelbart:
-
-```powershell
-# Tvinge update scan på alle maskiner
-$Computers = @('dc1', 'srv1', 'cl1', 'mgr')
-
-foreach ($Computer in $Computers) {
-    Write-Host "`nTvinger update scan på $Computer.infrait.sec..." -ForegroundColor Yellow
-    
-    Invoke-Command -ComputerName "$Computer.infrait.sec" -ScriptBlock {
-        # Start Windows Update scan
-        $UpdateSession = New-Object -ComObject Microsoft.Update.Session
-        $UpdateSearcher = $UpdateSession.CreateUpdateSearcher()
-        
-        Write-Host "Søker etter updates..." -ForegroundColor Cyan
-        $SearchResult = $UpdateSearcher.Search("IsInstalled=0 and Type='Software'")
-        
-        Write-Host "Fant $($SearchResult.Updates.Count) tilgjengelige updates" -ForegroundColor Green
-    }
-}
-```
-
-**Dette kan ta 2-5 minutter per maskin.**
-
----
-
-### Steg 3.3: Komplett Update Status Script
+### Steg 3.2: Komplett Update Status Script
 
 Lagre dette scriptet som `C:\Scripts\Get-WindowsUpdateStatus.ps1` på **mgr.infrait.sec**:
 
