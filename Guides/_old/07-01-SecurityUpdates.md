@@ -428,8 +428,8 @@ Write-Host "`nRapport generert: C:\temp\UpdateStatus_$(Get-Date -Format 'yyyyMMd
 **Kjør scriptet:**
 
 ```powershell
-# Opprett Reports-mappe først
-New-Item -Path C:\Reports -ItemType Directory -Force
+# Opprett temp-mappe først (om den ikke eksisterer)
+New-Item -Path C:\temp -ItemType Directory -Force
 
 # Kjør status script
 .\Get-WindowsUpdateStatus.ps1
@@ -501,38 +501,6 @@ Invoke-Command -ComputerName srv1.infrait.sec -ScriptBlock {
 
 ---
 
-### Scenario 3: Differential Policy for Servers vs Clients
-
-**Oppgave:** Lag separate update windows for servere (søndager kl 02:00) og klienter (daglig kl 03:00).
-
-**Løsning:**
-
-1. Opprett to OUer:
-   ```powershell
-   New-ADOrganizationalUnit -Name "Servers" -Path "DC=infrait,DC=sec"
-   New-ADOrganizationalUnit -Name "Workstations" -Path "DC=infrait,DC=sec"
-   ```
-
-2. Flytt maskiner til riktige OUer:
-   ```powershell
-   # Flytt servere
-   Get-ADComputer -Filter {Name -like 'DC1' -or Name -like 'SRV1'} | Move-ADObject -TargetPath "OU=Servers,DC=infrait,DC=sec"
-   
-   # Flytt workstations
-   Get-ADComputer -Filter {Name -like 'CL1' -or Name -like 'MGR'} | Move-ADObject -TargetPath "OU=Workstations,DC=infrait,DC=sec"
-   ```
-
-3. Opprett to GPO-er:
-   - `Corporate - Server Updates` (link til Servers OU)
-     - Scheduled install day: **0 (Sunday)**
-     - Scheduled install time: **02:00**
-   
-   - `Corporate - Workstation Updates` (link til Workstations OU)
-     - Scheduled install day: **0 (Every day)**
-     - Scheduled install time: **03:00**
-
----
-
 ## Troubleshooting
 
 ### Problem 1: GPO appliseres ikke
@@ -568,10 +536,18 @@ Invoke-Command -ComputerName cl1.infrait.sec -ScriptBlock {
     # Sjekk Windows Update Service
     Get-Service wuauserv
     
-    # Sjekk siste update søk
-    $UpdateSession = New-Object -ComObject Microsoft.Update.Session
-    $UpdateSearcher = $UpdateSession.CreateUpdateSearcher()
-    $UpdateSearcher.GetTotalHistoryCount()
+    # Hent update history fra Event Log (ingen COM!)
+    $UpdateHistory = Get-WinEvent -FilterHashtable @{
+        LogName = 'System'
+        ProviderName = 'Microsoft-Windows-WindowsUpdateClient'
+        ID = 19, 20, 43, 44  # Installation events
+    } -MaxEvents 100 -ErrorAction SilentlyContinue
+    
+    Write-Host "Antall update events (siste 100): $($UpdateHistory.Count)" -ForegroundColor Green
+    
+    # Vis siste 5 updates
+    Write-Host "`nSiste 5 update events:" -ForegroundColor Yellow
+    $UpdateHistory | Select-Object -First 5 TimeCreated, Id, Message | Format-List
 }
 ```
 
