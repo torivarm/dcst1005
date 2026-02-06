@@ -111,7 +111,7 @@ New-Partition -DiskNumber 1 -UseMaximumSize -AssignDriveLetter
 
 ```powershell
 # Formater partisjonen med NTFS
-# Bytt ut "E" med den stasjonsbokstaven som ble tildelt
+# Bytt ut "D" med den stasjonsbokstaven som ble tildelt
 Format-Volume -DriveLetter D -FileSystem NTFS -NewFileSystemLabel "DataDisk" -Confirm:$false
 ```
 ![alt text](DriveDone.png)
