@@ -435,7 +435,7 @@ New-Item -Path C:\Reports -ItemType Directory -Force
 .\Get-WindowsUpdateStatus.ps1
 ```
 
-**Forventet output:**
+**Forventet output (MERK‼️: en vil kun se CL1 så lenge en ikke har lagt til de andre maskinene i PowerShell scriptene selv):**
 ```
 Computer PendingUpdateCount PendingUpdates                        LastInstalledUpdate           LastUpdateDate        LastReboot           DaysSinceReboot
 -------- ------------------ --------------                        -------------------           --------------        ----------           ---------------
