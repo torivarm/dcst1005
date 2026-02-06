@@ -1,0 +1,41 @@
+# InfraIT.sec Environment Parameters
+# 
+# Kopier denne filen til parameters.yaml og rediger verdiene:
+#   cp parameters.yaml.example parameters.yaml
+#   nano parameters.yaml
+#
+# Deploy med:
+#   openstack stack create -t infraitsec-automated.yaml -e parameters.yaml infraitsec-lab
+
+parameters:
+  # SSH key som allerede eksisterer i OpenStack
+  # List tilgjengelige: openstack keypair list
+  key_name: my-openstack-key
+  
+  # Ditt brukernavn (brukes for adm_<brukernavn> konto)
+  # Kun alfanumeriske tegn, 3-20 karakterer
+  admin_username: student
+  
+  # Passord for domain Administrator og adm_<brukernavn>
+  # Minimum 8 karakterer
+  # ENDRE DETTE FOR PRODUKSJON!
+  domain_admin_password: 'P@ssw0rd2025!'
+  
+  # Lokalt Administrator-passord (før domain join)
+  # Kan være samme som domain_admin_password
+  local_admin_password: 'LocalP@ss2025!'
+  
+  # Standard-passord for alle 15 domenebrukere
+  # Brukere må endre dette ved første pålogging
+  user_default_password: 'UserP@ss2025!'
+
+# Tips for sikre passord:
+# - Minimum 12 karakterer
+# - Kombiner store/små bokstaver, tall og symboler
+# - Ikke gjenbruk passord fra andre systemer
+# - Bruk passordgenerator eller passordmanager
+#
+# Eksempel på sterke passord:
+#   domain_admin_password: 'K0mpl3ks!P@ssord#2025$ADMIN'
+#   local_admin_password: 'L0k@lt!Adm1n#P@ss$789'
+#   user_default_password: 'St@nd@rd!Bruk3r#2025$XYZ'

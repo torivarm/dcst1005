@@ -1,0 +1,1042 @@
+heat_template_version: 2015-10-15
+
+description: >
+  Automated deployment of InfraIT.sec Active Directory environment.
+  Deploys DC1 as Domain Controller, SRV1 with DFS role, CL1 as client,
+  and MGR as IT administrator workstation with RSAT and development tools.
+  
+  All machines are automatically joined to the InfraIT.sec domain with
+  complete OU structure, groups, and user accounts pre-configured.
+
+parameters:
+  key_name:
+    type: string
+    description: Name of keypair to assign to servers
+    
+  admin_username:
+    type: string
+    description: Username for administrative account (creates adm_<username>)
+    default: student
+    constraints:
+      - length: { min: 3, max: 20 }
+        description: Username must be between 3 and 20 characters
+      - allowed_pattern: "[a-zA-Z0-9]+"
+        description: Username must contain only alphanumeric characters
+    
+  domain_admin_password:
+    type: string
+    description: Password for domain Administrator and adm_<username> account
+    hidden: true
+    default: "P@ssw0rd2025!"
+    constraints:
+      - length: { min: 8 }
+        description: Password must be at least 8 characters
+        
+  local_admin_password:
+    type: string
+    description: Local Administrator password (used before domain join)
+    hidden: true
+    default: "LocalP@ss2025!"
+    constraints:
+      - length: { min: 8 }
+        description: Password must be at least 8 characters
+        
+  user_default_password:
+    type: string
+    description: Default password for all domain users
+    hidden: true
+    default: "UserP@ss2025!"
+    constraints:
+      - length: { min: 8 }
+        description: Password must be at least 8 characters
+
+resources:
+  # Network infrastructure
+  private_net:
+    type: OS::Neutron::Net
+    properties:
+      name: infraitsec-network
+
+  private_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      name: infraitsec-subnet
+      network_id: { get_resource: private_net }
+      cidr: 192.168.111.0/24
+      gateway_ip: 192.168.111.1
+      allocation_pools:
+        - start: 192.168.111.101
+          end: 192.168.111.200
+      dns_nameservers:
+        - 8.8.8.8
+        - 8.8.4.4
+
+  router:
+    type: OS::Neutron::Router
+    properties:
+      name: infraitsec-router
+      external_gateway_info:
+        network: ntnu-internal
+
+  router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: router }
+      subnet_id: { get_resource: private_subnet }
+
+  # Security group
+  sec_core:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Security group for InfraIT.sec lab environment
+      name: sec_infraitsec
+      rules:
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: icmp
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 80
+          port_range_max: 80
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 443
+          port_range_max: 443
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 3389
+          port_range_max: 3389
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 5985
+          port_range_max: 5985
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+          port_range_min: 5986
+          port_range_max: 5986
+        # AD/DNS ports
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: tcp
+          port_range_min: 53
+          port_range_max: 53
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: udp
+          port_range_min: 53
+          port_range_max: 53
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: tcp
+          port_range_min: 88
+          port_range_max: 88
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: udp
+          port_range_min: 88
+          port_range_max: 88
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: tcp
+          port_range_min: 135
+          port_range_max: 135
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: tcp
+          port_range_min: 389
+          port_range_max: 389
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: udp
+          port_range_min: 389
+          port_range_max: 389
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: tcp
+          port_range_min: 445
+          port_range_max: 445
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: tcp
+          port_range_min: 464
+          port_range_max: 464
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: udp
+          port_range_min: 464
+          port_range_max: 464
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: tcp
+          port_range_min: 636
+          port_range_max: 636
+        - remote_ip_prefix: 192.168.111.0/24
+          protocol: tcp
+          port_range_min: 3268
+          port_range_max: 3269
+
+  # Wait condition for DC1 readiness
+  dc1_wait_handle:
+    type: OS::Heat::WaitConditionHandle
+
+  dc1_wait_condition:
+    type: OS::Heat::WaitCondition
+    properties:
+      handle: { get_resource: dc1_wait_handle }
+      timeout: 1800  # 30 minutes
+      count: 1
+
+  # DC1 - Domain Controller
+  dc1_port:
+    type: OS::Neutron::Port
+    properties:
+      name: dc1-port
+      network_id: { get_resource: private_net }
+      security_groups: 
+        - default
+        - { get_resource: sec_core }
+      fixed_ips:
+        - subnet_id: { get_resource: private_subnet }
+
+  dc1_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ntnu-internal
+      port_id: { get_resource: dc1_port }
+
+  dc1:
+    type: OS::Nova::Server
+    properties:
+      name: dc1
+      image: 'Windows Server 2025 Standard [Evaluation]'
+      flavor: gx3.4c16r
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: dc1_port }
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: |
+            #ps1_sysnative
+            
+            # DC1 - Domain Controller Configuration Script
+            # InfraIT.sec Automated Deployment
+            
+            $ErrorActionPreference = "Stop"
+            $LogFile = "C:\cloud-init-dc1.log"
+            
+            function Write-Log {
+                param($Message)
+                $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                "$timestamp - $Message" | Out-File -FilePath $LogFile -Append
+                Write-Host $Message
+            }
+            
+            try {
+                Write-Log "=== Starting DC1 Configuration ==="
+                
+                # Set hostname
+                $name = (New-Object System.Net.WebClient).DownloadString("http://169.254.169.254/latest/meta-data/hostname")
+                $shortname = $name.split('.',2)[0]
+                if ( $env:computername -ne $shortname ) {
+                    Write-Log "Setting hostname to $shortname"
+                    Rename-Computer -NewName $shortname -Force
+                    Write-Log "Rebooting to apply hostname change"
+                    exit 1003
+                }
+                
+                Write-Log "Hostname is correct: $shortname"
+                
+                # Set local Administrator password
+                Write-Log "Setting local Administrator password"
+                $LocalAdminPassword = ConvertTo-SecureString "LOCALADMINPASSWORD" -AsPlainText -Force
+                Get-LocalUser -Name "Administrator" | Set-LocalUser -Password $LocalAdminPassword
+                
+                # Check if AD DS is already installed
+                $ADFeature = Get-WindowsFeature -Name AD-Domain-Services
+                if ($ADFeature.Installed) {
+                    Write-Log "AD DS is already installed"
+                } else {
+                    Write-Log "Installing AD DS and Management Tools"
+                    Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+                    Write-Log "AD DS installed successfully"
+                    Write-Log "Rebooting after AD DS installation"
+                    exit 1003
+                }
+                
+                # Check if domain exists
+                try {
+                    $domain = Get-ADDomain -ErrorAction SilentlyContinue
+                    Write-Log "Domain already exists: $($domain.DNSRoot)"
+                    $DomainExists = $true
+                } catch {
+                    $DomainExists = $false
+                }
+                
+                if (-not $DomainExists) {
+                    Write-Log "Promoting server to Domain Controller"
+                    $DomainAdminPassword = ConvertTo-SecureString "DOMAINADMINPASSWORD" -AsPlainText -Force
+                    
+                    Install-ADDSForest `
+                        -DomainName "InfraIT.sec" `
+                        -DomainNetbiosName "INFRAIT" `
+                        -ForestMode "WinThreshold" `
+                        -DomainMode "WinThreshold" `
+                        -InstallDns `
+                        -SafeModeAdministratorPassword $DomainAdminPassword `
+                        -Force `
+                        -NoRebootOnCompletion:$false
+                    
+                    Write-Log "Domain promotion initiated - server will reboot"
+                    exit 1003
+                }
+                
+                # Wait for AD services to be ready
+                Write-Log "Waiting for AD services to be ready"
+                Start-Sleep -Seconds 30
+                
+                Import-Module ActiveDirectory
+                
+                # Create OU structure
+                Write-Log "Creating OU structure"
+                
+                $OUs = @(
+                    "OU=InfraIT_Groups,DC=InfraIT,DC=sec",
+                    "OU=InfraIT_Users,DC=InfraIT,DC=sec",
+                    "OU=InfraIT_Computers,DC=InfraIT,DC=sec",
+                    "OU=Consultants,OU=InfraIT_Users,DC=InfraIT,DC=sec",
+                    "OU=Finance,OU=InfraIT_Users,DC=InfraIT,DC=sec",
+                    "OU=HR,OU=InfraIT_Users,DC=InfraIT,DC=sec",
+                    "OU=IT,OU=InfraIT_Users,DC=InfraIT,DC=sec",
+                    "OU=Sales,OU=InfraIT_Users,DC=InfraIT,DC=sec",
+                    "OU=Servers,OU=InfraIT_Computers,DC=InfraIT,DC=sec",
+                    "OU=Workstations,OU=InfraIT_Computers,DC=InfraIT,DC=sec",
+                    "OU=Consultants,OU=Workstations,OU=InfraIT_Computers,DC=InfraIT,DC=sec",
+                    "OU=Finance,OU=Workstations,OU=InfraIT_Computers,DC=InfraIT,DC=sec",
+                    "OU=HR,OU=Workstations,OU=InfraIT_Computers,DC=InfraIT,DC=sec",
+                    "OU=IT,OU=Workstations,OU=InfraIT_Computers,DC=InfraIT,DC=sec",
+                    "OU=Sales,OU=Workstations,OU=InfraIT_Computers,DC=InfraIT,DC=sec"
+                )
+                
+                foreach ($OU in $OUs) {
+                    if (-not (Get-ADOrganizationalUnit -Filter "DistinguishedName -eq '$OU'" -ErrorAction SilentlyContinue)) {
+                        New-ADOrganizationalUnit -Path ($OU -replace '^OU=[^,]+,', '') -Name ($OU -replace '^OU=([^,]+),.*', '$1') -ProtectedFromAccidentalDeletion $false
+                        Write-Log "Created OU: $OU"
+                    }
+                }
+                
+                # Create Global Groups
+                Write-Log "Creating Global Security Groups"
+                $GlobalGroups = @("g_all_consultants", "g_all_finance", "g_all_hr", "g_all_it", "g_all_sales")
+                
+                foreach ($group in $GlobalGroups) {
+                    if (-not (Get-ADGroup -Filter "Name -eq '$group'" -ErrorAction SilentlyContinue)) {
+                        New-ADGroup -Name $group -GroupScope Global -GroupCategory Security -Path "OU=InfraIT_Groups,DC=InfraIT,DC=sec"
+                        Write-Log "Created group: $group"
+                    }
+                }
+                
+                # Create Domain Local Groups
+                Write-Log "Creating Domain Local Security Groups"
+                $DomainLocalGroups = @(
+                    "l_fullAccess-consultants-share",
+                    "l_fullAccess-finance-share",
+                    "l_fullAccess-hr-share",
+                    "l_fullAccess-it-share",
+                    "l_fullAccess-sales-share",
+                    "l_remoteDesktopNonAdmin"
+                )
+                
+                foreach ($group in $DomainLocalGroups) {
+                    if (-not (Get-ADGroup -Filter "Name -eq '$group'" -ErrorAction SilentlyContinue)) {
+                        New-ADGroup -Name $group -GroupScope DomainLocal -GroupCategory Security -Path "OU=InfraIT_Groups,DC=InfraIT,DC=sec"
+                        Write-Log "Created group: $group"
+                    }
+                }
+                
+                # Add Global Groups to Domain Local Groups
+                Write-Log "Configuring group memberships"
+                Add-ADGroupMember -Identity "l_fullAccess-consultants-share" -Members "g_all_consultants" -ErrorAction SilentlyContinue
+                Add-ADGroupMember -Identity "l_fullAccess-finance-share" -Members "g_all_finance" -ErrorAction SilentlyContinue
+                Add-ADGroupMember -Identity "l_fullAccess-hr-share" -Members "g_all_hr" -ErrorAction SilentlyContinue
+                Add-ADGroupMember -Identity "l_fullAccess-it-share" -Members "g_all_it" -ErrorAction SilentlyContinue
+                Add-ADGroupMember -Identity "l_fullAccess-sales-share" -Members "g_all_sales" -ErrorAction SilentlyContinue
+                
+                $remoteDesktopGroups = @("g_all_consultants", "g_all_finance", "g_all_hr", "g_all_it", "g_all_sales")
+                foreach ($group in $remoteDesktopGroups) {
+                    Add-ADGroupMember -Identity "l_remoteDesktopNonAdmin" -Members $group -ErrorAction SilentlyContinue
+                }
+                
+                # Create domain users
+                Write-Log "Creating domain users"
+                $UserPassword = ConvertTo-SecureString "USERDEFAULTPASSWORD" -AsPlainText -Force
+                
+                $Users = @(
+                    @{GivenName="Ole";MiddleName="Magnus";Surname="Larsen";Department="IT";Title="IT Infrastructure Manager";SamAccountName="ole.m.larsen"},
+                    @{GivenName="Ingrid";MiddleName="Marie";Surname="Østby";Department="IT";Title="System Administrator";SamAccountName="ingrid.m.ostby"},
+                    @{GivenName="Astrid";MiddleName="Elisabeth";Surname="Haugen";Department="HR";Title="HR Director";SamAccountName="astrid.e.haugen"},
+                    @{GivenName="Erik";MiddleName="André";Surname="Solberg";Department="Sales";Title="Senior Sales Manager";SamAccountName="erik.a.solberg"},
+                    @{GivenName="Kristin";MiddleName="Sofie";Surname="Nilsen";Department="Sales";Title="Sales Representative";SamAccountName="kristin.s.nilsen"},
+                    @{GivenName="Lars";MiddleName="Fredrik";Surname="Berntsen";Department="Finance";Title="Financial Controller";SamAccountName="lars.f.berntsen"},
+                    @{GivenName="Pål";MiddleName="Henrik";Surname="Dahl";Department="Consultants";Title="Security Consultant";SamAccountName="pal.h.dahl"},
+                    @{GivenName="Silje";MiddleName="Kristine";Surname="Andersen";Department="Consultants";Title="Senior Security Consultant";SamAccountName="silje.k.andersen"},
+                    @{GivenName="Øystein";MiddleName="Johan";Surname="Berg";Department="Consultants";Title="Cloud Security Architect";SamAccountName="oystein.j.berg"},
+                    @{GivenName="Håkon";MiddleName="Thomas";Surname="Evensen";Department="Consultants";Title="IAM Consultant";SamAccountName="hakon.t.evensen"},
+                    @{GivenName="Marte";MiddleName="Cecilie";Surname="Ødegård";Department="Consultants";Title="Security Operations Consultant";SamAccountName="marte.c.odegard"},
+                    @{GivenName="Bjørn";MiddleName="Andreas";Surname="Hagen";Department="Consultants";Title="Compliance Consultant";SamAccountName="bjorn.a.hagen"},
+                    @{GivenName="Eva";MiddleName="Kristin";Surname="Røed";Department="Consultants";Title="Incident Response Consultant";SamAccountName="eva.k.roed"},
+                    @{GivenName="Nils";MiddleName="Erik";Surname="Gjerde";Department="Consultants";Title="Application Security Consultant";SamAccountName="nils.e.gjerde"},
+                    @{GivenName="Åse";MiddleName="Maria";Surname="Viken";Department="Consultants";Title="Digital Forensics Consultant";SamAccountName="ase.m.viken"}
+                )
+                
+                foreach ($user in $Users) {
+                    $OU = "OU=$($user.Department),OU=InfraIT_Users,DC=InfraIT,DC=sec"
+                    $DisplayName = "$($user.GivenName) $($user.MiddleName) $($user.Surname)"
+                    
+                    if (-not (Get-ADUser -Filter "SamAccountName -eq '$($user.SamAccountName)'" -ErrorAction SilentlyContinue)) {
+                        New-ADUser `
+                            -Name $DisplayName `
+                            -GivenName $user.GivenName `
+                            -Surname $user.Surname `
+                            -DisplayName $DisplayName `
+                            -SamAccountName $user.SamAccountName `
+                            -UserPrincipalName "$($user.SamAccountName)@InfraIT.sec" `
+                            -Title $user.Title `
+                            -Department $user.Department `
+                            -Office "Trondheim" `
+                            -Company "InfraIT Sec" `
+                            -Country "NO" `
+                            -City "Trondheim" `
+                            -Path $OU `
+                            -AccountPassword $UserPassword `
+                            -Enabled $true `
+                            -ChangePasswordAtLogon $true
+                        
+                        Write-Log "Created user: $($user.SamAccountName)"
+                        
+                        # Add to department group
+                        $GroupName = "g_all_$($user.Department.ToLower())"
+                        Add-ADGroupMember -Identity $GroupName -Members $user.SamAccountName
+                    }
+                }
+                
+                # Create administrative account
+                Write-Log "Creating administrative account: adm_ADMINUSERNAME"
+                $AdminOU = "OU=IT,OU=InfraIT_Users,DC=InfraIT,DC=sec"
+                $AdminSamAccountName = "adm_ADMINUSERNAME"
+                $AdminPassword = ConvertTo-SecureString "DOMAINADMINPASSWORD" -AsPlainText -Force
+                
+                if (-not (Get-ADUser -Filter "SamAccountName -eq '$AdminSamAccountName'" -ErrorAction SilentlyContinue)) {
+                    New-ADUser `
+                        -Name $AdminSamAccountName `
+                        -SamAccountName $AdminSamAccountName `
+                        -UserPrincipalName "$AdminSamAccountName@InfraIT.sec" `
+                        -DisplayName "Administrator (ADMINUSERNAME)" `
+                        -Title "IT Administrator" `
+                        -Department "IT" `
+                        -Office "Trondheim" `
+                        -Company "InfraIT Sec" `
+                        -Path $AdminOU `
+                        -AccountPassword $AdminPassword `
+                        -Enabled $true `
+                        -PasswordNeverExpires $true `
+                        -ChangePasswordAtLogon $false
+                    
+                    Write-Log "Created admin account: $AdminSamAccountName"
+                    
+                    # Add to administrative groups
+                    Add-ADGroupMember -Identity "Domain Admins" -Members $AdminSamAccountName
+                    Add-ADGroupMember -Identity "Enterprise Admins" -Members $AdminSamAccountName
+                    Add-ADGroupMember -Identity "Schema Admins" -Members $AdminSamAccountName
+                    
+                    Write-Log "Added $AdminSamAccountName to administrative groups"
+                }
+                
+                Write-Log "=== DC1 Configuration Completed Successfully ==="
+                
+                # Signal Heat that DC1 is ready
+                $SignalUrl = "WAITCONDITIONHANDLE"
+                $SignalData = '{"status": "SUCCESS", "reason": "DC1 configuration completed", "data": "Domain controller is ready"}'
+                
+                try {
+                    Invoke-WebRequest -Uri $SignalUrl -Method PUT -Body $SignalData -UseBasicParsing
+                    Write-Log "Sent success signal to Heat"
+                } catch {
+                    Write-Log "Failed to send signal to Heat: $_"
+                }
+                
+            } catch {
+                $ErrorMessage = $_.Exception.Message
+                Write-Log "ERROR: $ErrorMessage"
+                Write-Log $_.ScriptStackTrace
+                
+                # Signal Heat about failure
+                try {
+                    $SignalUrl = "WAITCONDITIONHANDLE"
+                    $SignalData = "{`"status`": `"FAILURE`", `"reason`": `"$ErrorMessage`"}"
+                    Invoke-WebRequest -Uri $SignalUrl -Method PUT -Body $SignalData -UseBasicParsing
+                } catch {}
+                
+                exit 1
+            }
+          params:
+            LOCALADMINPASSWORD: { get_param: local_admin_password }
+            DOMAINADMINPASSWORD: { get_param: domain_admin_password }
+            USERDEFAULTPASSWORD: { get_param: user_default_password }
+            ADMINUSERNAME: { get_param: admin_username }
+            WAITCONDITIONHANDLE: { get_resource: dc1_wait_handle }
+
+  # SRV1 - File Server with DFS
+  srv1_port:
+    type: OS::Neutron::Port
+    properties:
+      name: srv1-port
+      network_id: { get_resource: private_net }
+      security_groups: 
+        - default
+        - { get_resource: sec_core }
+      fixed_ips:
+        - subnet_id: { get_resource: private_subnet }
+
+  srv1_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ntnu-internal
+      port_id: { get_resource: srv1_port }
+
+  srv1:
+    type: OS::Nova::Server
+    depends_on: dc1_wait_condition
+    properties:
+      name: srv1
+      image: 'Windows Server 2025 Standard [Evaluation]'
+      flavor: gx3.4c8r
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: srv1_port }
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: |
+            #ps1_sysnative
+            
+            # SRV1 - File Server Configuration Script
+            # InfraIT.sec Automated Deployment
+            
+            $ErrorActionPreference = "Stop"
+            $LogFile = "C:\cloud-init-srv1.log"
+            
+            function Write-Log {
+                param($Message)
+                $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                "$timestamp - $Message" | Out-File -FilePath $LogFile -Append
+                Write-Host $Message
+            }
+            
+            try {
+                Write-Log "=== Starting SRV1 Configuration ==="
+                
+                # Set hostname
+                $name = (New-Object System.Net.WebClient).DownloadString("http://169.254.169.254/latest/meta-data/hostname")
+                $shortname = $name.split('.',2)[0]
+                if ( $env:computername -ne $shortname ) {
+                    Write-Log "Setting hostname to $shortname"
+                    Rename-Computer -NewName $shortname -Force
+                    Write-Log "Rebooting to apply hostname change"
+                    exit 1003
+                }
+                
+                # Set local Administrator password
+                Write-Log "Setting local Administrator password"
+                $LocalAdminPassword = ConvertTo-SecureString "LOCALADMINPASSWORD" -AsPlainText -Force
+                Get-LocalUser -Name "Administrator" | Set-LocalUser -Password $LocalAdminPassword
+                
+                # Wait for DC1 to be ready
+                Write-Log "Waiting for DC1 to be available..."
+                $DCReady = $false
+                $MaxAttempts = 60
+                $Attempt = 0
+                
+                while (-not $DCReady -and $Attempt -lt $MaxAttempts) {
+                    try {
+                        $Attempt++
+                        $DCTest = Test-NetConnection -ComputerName "dc1" -Port 389 -InformationLevel Quiet -WarningAction SilentlyContinue
+                        if ($DCTest) {
+                            Write-Log "DC1 is responding on LDAP port"
+                            $DCReady = $true
+                        } else {
+                            Write-Log "Attempt $Attempt/$MaxAttempts - DC1 not ready yet, waiting 10 seconds..."
+                            Start-Sleep -Seconds 10
+                        }
+                    } catch {
+                        Write-Log "Attempt $Attempt/$MaxAttempts - Error testing DC1: $($_.Exception.Message)"
+                        Start-Sleep -Seconds 10
+                    }
+                }
+                
+                if (-not $DCReady) {
+                    throw "DC1 did not become available within expected time"
+                }
+                
+                # Get DC1 IP address and set as DNS
+                Write-Log "Resolving DC1 IP address"
+                $DC1IP = (Resolve-DnsName -Name "dc1" -Type A -ErrorAction Stop).IPAddress
+                Write-Log "DC1 IP address: $DC1IP"
+                
+                Write-Log "Setting DNS server to DC1"
+                $Adapter = Get-NetAdapter | Where-Object {$_.Status -eq "Up"} | Select-Object -First 1
+                Set-DnsClientServerAddress -InterfaceIndex $Adapter.ifIndex -ServerAddresses $DC1IP
+                
+                # Verify DNS resolution
+                Start-Sleep -Seconds 5
+                try {
+                    $DomainTest = Resolve-DnsName -Name "InfraIT.sec" -Type A -ErrorAction Stop
+                    Write-Log "DNS resolution working - can resolve InfraIT.sec"
+                } catch {
+                    Write-Log "Warning: Cannot resolve domain yet, waiting additional time..."
+                    Start-Sleep -Seconds 15
+                }
+                
+                # Check if already domain joined
+                $ComputerInfo = Get-WmiObject -Class Win32_ComputerSystem
+                if ($ComputerInfo.PartOfDomain) {
+                    Write-Log "Already joined to domain: $($ComputerInfo.Domain)"
+                } else {
+                    Write-Log "Joining domain InfraIT.sec"
+                    $DomainCred = New-Object System.Management.Automation.PSCredential(
+                        "INFRAIT\Administrator",
+                        (ConvertTo-SecureString "DOMAINADMINPASSWORD" -AsPlainText -Force)
+                    )
+                    
+                    Add-Computer -DomainName "InfraIT.sec" -Credential $DomainCred -OUPath "OU=Servers,OU=InfraIT_Computers,DC=InfraIT,DC=sec" -Force
+                    Write-Log "Domain join successful - rebooting"
+                    exit 1003
+                }
+                
+                # Install DFS if not already installed
+                $DFSFeature = Get-WindowsFeature -Name FS-DFS-Namespace
+                if (-not $DFSFeature.Installed) {
+                    Write-Log "Installing DFS Namespace role"
+                    Install-WindowsFeature -Name FS-DFS-Namespace -IncludeManagementTools
+                    Write-Log "DFS Namespace installed successfully"
+                }
+                
+                # Install File Server role if needed
+                $FileServerFeature = Get-WindowsFeature -Name FS-FileServer
+                if (-not $FileServerFeature.Installed) {
+                    Write-Log "Installing File Server role"
+                    Install-WindowsFeature -Name FS-FileServer -IncludeManagementTools
+                    Write-Log "File Server installed successfully"
+                }
+                
+                Write-Log "=== SRV1 Configuration Completed Successfully ==="
+                
+            } catch {
+                $ErrorMessage = $_.Exception.Message
+                Write-Log "ERROR: $ErrorMessage"
+                Write-Log $_.ScriptStackTrace
+                exit 1
+            }
+          params:
+            LOCALADMINPASSWORD: { get_param: local_admin_password }
+            DOMAINADMINPASSWORD: { get_param: domain_admin_password }
+
+  # CL1 - Client Workstation
+  cl1_port:
+    type: OS::Neutron::Port
+    properties:
+      name: cl1-port
+      network_id: { get_resource: private_net }
+      security_groups: 
+        - default
+        - { get_resource: sec_core }
+      fixed_ips:
+        - subnet_id: { get_resource: private_subnet }
+
+  cl1_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ntnu-internal
+      port_id: { get_resource: cl1_port }
+
+  cl1:
+    type: OS::Nova::Server
+    depends_on: dc1_wait_condition
+    properties:
+      name: cl1
+      image: 'Windows 11 24H2 Enterprise [Evaluation]'
+      flavor: gx3.2c8r
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: cl1_port }
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: |
+            #ps1_sysnative
+            
+            # CL1 - Client Configuration Script
+            # InfraIT.sec Automated Deployment
+            
+            $ErrorActionPreference = "Stop"
+            $LogFile = "C:\cloud-init-cl1.log"
+            
+            function Write-Log {
+                param($Message)
+                $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                "$timestamp - $Message" | Out-File -FilePath $LogFile -Append
+                Write-Host $Message
+            }
+            
+            try {
+                Write-Log "=== Starting CL1 Configuration ==="
+                
+                # Set hostname
+                $name = (New-Object System.Net.WebClient).DownloadString("http://169.254.169.254/latest/meta-data/hostname")
+                $shortname = $name.split('.',2)[0]
+                if ( $env:computername -ne $shortname ) {
+                    Write-Log "Setting hostname to $shortname"
+                    Rename-Computer -NewName $shortname -Force
+                    Write-Log "Rebooting to apply hostname change"
+                    exit 1003
+                }
+                
+                # Set local Administrator password
+                Write-Log "Setting local Administrator password"
+                $LocalAdminPassword = ConvertTo-SecureString "LOCALADMINPASSWORD" -AsPlainText -Force
+                Get-LocalUser -Name "Administrator" | Set-LocalUser -Password $LocalAdminPassword
+                
+                # Wait for DC1 to be ready
+                Write-Log "Waiting for DC1 to be available..."
+                $DCReady = $false
+                $MaxAttempts = 60
+                $Attempt = 0
+                
+                while (-not $DCReady -and $Attempt -lt $MaxAttempts) {
+                    try {
+                        $Attempt++
+                        $DCTest = Test-NetConnection -ComputerName "dc1" -Port 389 -InformationLevel Quiet -WarningAction SilentlyContinue
+                        if ($DCTest) {
+                            Write-Log "DC1 is responding on LDAP port"
+                            $DCReady = $true
+                        } else {
+                            Write-Log "Attempt $Attempt/$MaxAttempts - DC1 not ready yet, waiting 10 seconds..."
+                            Start-Sleep -Seconds 10
+                        }
+                    } catch {
+                        Write-Log "Attempt $Attempt/$MaxAttempts - Error testing DC1: $($_.Exception.Message)"
+                        Start-Sleep -Seconds 10
+                    }
+                }
+                
+                if (-not $DCReady) {
+                    throw "DC1 did not become available within expected time"
+                }
+                
+                # Get DC1 IP address and set as DNS
+                Write-Log "Resolving DC1 IP address"
+                $DC1IP = (Resolve-DnsName -Name "dc1" -Type A -ErrorAction Stop).IPAddress
+                Write-Log "DC1 IP address: $DC1IP"
+                
+                Write-Log "Setting DNS server to DC1"
+                $Adapter = Get-NetAdapter | Where-Object {$_.Status -eq "Up"} | Select-Object -First 1
+                Set-DnsClientServerAddress -InterfaceIndex $Adapter.ifIndex -ServerAddresses $DC1IP
+                
+                # Verify DNS resolution
+                Start-Sleep -Seconds 5
+                try {
+                    $DomainTest = Resolve-DnsName -Name "InfraIT.sec" -Type A -ErrorAction Stop
+                    Write-Log "DNS resolution working - can resolve InfraIT.sec"
+                } catch {
+                    Write-Log "Warning: Cannot resolve domain yet, waiting additional time..."
+                    Start-Sleep -Seconds 15
+                }
+                
+                # Check if already domain joined
+                $ComputerInfo = Get-WmiObject -Class Win32_ComputerSystem
+                if ($ComputerInfo.PartOfDomain) {
+                    Write-Log "Already joined to domain: $($ComputerInfo.Domain)"
+                } else {
+                    Write-Log "Joining domain InfraIT.sec"
+                    $DomainCred = New-Object System.Management.Automation.PSCredential(
+                        "INFRAIT\Administrator",
+                        (ConvertTo-SecureString "DOMAINADMINPASSWORD" -AsPlainText -Force)
+                    )
+                    
+                    Add-Computer -DomainName "InfraIT.sec" -Credential $DomainCred -OUPath "OU=IT,OU=Workstations,OU=InfraIT_Computers,DC=InfraIT,DC=sec" -Force
+                    Write-Log "Domain join successful - rebooting"
+                    exit 1003
+                }
+                
+                Write-Log "=== CL1 Configuration Completed Successfully ==="
+                
+            } catch {
+                $ErrorMessage = $_.Exception.Message
+                Write-Log "ERROR: $ErrorMessage"
+                Write-Log $_.ScriptStackTrace
+                exit 1
+            }
+          params:
+            LOCALADMINPASSWORD: { get_param: local_admin_password }
+            DOMAINADMINPASSWORD: { get_param: domain_admin_password }
+
+  # MGR - Management Workstation
+  mgr_port:
+    type: OS::Neutron::Port
+    properties:
+      name: mgr-port
+      network_id: { get_resource: private_net }
+      security_groups:
+        - default
+        - { get_resource: sec_core }
+      fixed_ips:
+        - subnet_id: { get_resource: private_subnet }
+
+  mgr_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: ntnu-internal
+      port_id: { get_resource: mgr_port }
+
+  mgr:
+    type: OS::Nova::Server
+    depends_on: dc1_wait_condition
+    properties:
+      name: mgr
+      image: 'Windows 11 24H2 Enterprise [Evaluation]'
+      flavor: gx3.4c16r
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: mgr_port }
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: |
+            #ps1_sysnative
+            
+            # MGR - Management Workstation Configuration Script
+            # InfraIT.sec Automated Deployment
+            
+            $ErrorActionPreference = "Stop"
+            $LogFile = "C:\cloud-init-mgr.log"
+            
+            function Write-Log {
+                param($Message)
+                $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                "$timestamp - $Message" | Out-File -FilePath $LogFile -Append
+                Write-Host $Message
+            }
+            
+            try {
+                Write-Log "=== Starting MGR Configuration ==="
+                
+                # Set hostname
+                $name = (New-Object System.Net.WebClient).DownloadString("http://169.254.169.254/latest/meta-data/hostname")
+                $shortname = $name.split('.',2)[0]
+                if ( $env:computername -ne $shortname ) {
+                    Write-Log "Setting hostname to $shortname"
+                    Rename-Computer -NewName $shortname -Force
+                    Write-Log "Rebooting to apply hostname change"
+                    exit 1003
+                }
+                
+                # Set local Administrator password
+                Write-Log "Setting local Administrator password"
+                $LocalAdminPassword = ConvertTo-SecureString "LOCALADMINPASSWORD" -AsPlainText -Force
+                Get-LocalUser -Name "Administrator" | Set-LocalUser -Password $LocalAdminPassword
+                
+                # Wait for DC1 to be ready
+                Write-Log "Waiting for DC1 to be available..."
+                $DCReady = $false
+                $MaxAttempts = 60
+                $Attempt = 0
+                
+                while (-not $DCReady -and $Attempt -lt $MaxAttempts) {
+                    try {
+                        $Attempt++
+                        $DCTest = Test-NetConnection -ComputerName "dc1" -Port 389 -InformationLevel Quiet -WarningAction SilentlyContinue
+                        if ($DCTest) {
+                            Write-Log "DC1 is responding on LDAP port"
+                            $DCReady = $true
+                        } else {
+                            Write-Log "Attempt $Attempt/$MaxAttempts - DC1 not ready yet, waiting 10 seconds..."
+                            Start-Sleep -Seconds 10
+                        }
+                    } catch {
+                        Write-Log "Attempt $Attempt/$MaxAttempts - Error testing DC1: $($_.Exception.Message)"
+                        Start-Sleep -Seconds 10
+                    }
+                }
+                
+                if (-not $DCReady) {
+                    throw "DC1 did not become available within expected time"
+                }
+                
+                # Get DC1 IP address and set as DNS
+                Write-Log "Resolving DC1 IP address"
+                $DC1IP = (Resolve-DnsName -Name "dc1" -Type A -ErrorAction Stop).IPAddress
+                Write-Log "DC1 IP address: $DC1IP"
+                
+                Write-Log "Setting DNS server to DC1"
+                $Adapter = Get-NetAdapter | Where-Object {$_.Status -eq "Up"} | Select-Object -First 1
+                Set-DnsClientServerAddress -InterfaceIndex $Adapter.ifIndex -ServerAddresses $DC1IP
+                
+                # Verify DNS resolution
+                Start-Sleep -Seconds 5
+                try {
+                    $DomainTest = Resolve-DnsName -Name "InfraIT.sec" -Type A -ErrorAction Stop
+                    Write-Log "DNS resolution working - can resolve InfraIT.sec"
+                } catch {
+                    Write-Log "Warning: Cannot resolve domain yet, waiting additional time..."
+                    Start-Sleep -Seconds 15
+                }
+                
+                # Check if already domain joined
+                $ComputerInfo = Get-WmiObject -Class Win32_ComputerSystem
+                if ($ComputerInfo.PartOfDomain) {
+                    Write-Log "Already joined to domain: $($ComputerInfo.Domain)"
+                    $AlreadyJoined = $true
+                } else {
+                    Write-Log "Joining domain InfraIT.sec"
+                    $DomainCred = New-Object System.Management.Automation.PSCredential(
+                        "INFRAIT\Administrator",
+                        (ConvertTo-SecureString "DOMAINADMINPASSWORD" -AsPlainText -Force)
+                    )
+                    
+                    Add-Computer -DomainName "InfraIT.sec" -Credential $DomainCred -OUPath "OU=IT,OU=Workstations,OU=InfraIT_Computers,DC=InfraIT,DC=sec" -Force
+                    Write-Log "Domain join successful - rebooting"
+                    exit 1003
+                }
+                
+                # Install Chocolatey if not already installed
+                if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+                    Write-Log "Installing Chocolatey package manager"
+                    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+                    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+                    
+                    # Refresh environment
+                    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+                    Write-Log "Chocolatey installed successfully"
+                } else {
+                    Write-Log "Chocolatey is already installed"
+                }
+                
+                # Install PowerShell 7
+                if (-not (Get-Command pwsh -ErrorAction SilentlyContinue)) {
+                    Write-Log "Installing PowerShell 7"
+                    choco install powershell-core -y --no-progress
+                    Write-Log "PowerShell 7 installed"
+                } else {
+                    Write-Log "PowerShell 7 is already installed"
+                }
+                
+                # Install VS Code
+                if (-not (Test-Path "C:\Program Files\Microsoft VS Code\Code.exe")) {
+                    Write-Log "Installing Visual Studio Code"
+                    choco install vscode -y --no-progress
+                    Write-Log "VS Code installed"
+                } else {
+                    Write-Log "VS Code is already installed"
+                }
+                
+                # Install VS Code PowerShell extension (install later via Extensions UI or code --install-extension)
+                Write-Log "Note: PowerShell extension for VS Code should be installed via Extensions marketplace"
+                
+                # Install Git
+                if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+                    Write-Log "Installing Git"
+                    choco install git -y --no-progress
+                    Write-Log "Git installed"
+                } else {
+                    Write-Log "Git is already installed"
+                }
+                
+                # Install RSAT Tools for AD and Group Policy
+                Write-Log "Installing RSAT tools for Active Directory and Group Policy"
+                
+                $RSATFeatures = @(
+                    "Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0",
+                    "Rsat.GroupPolicy.Management.Tools~~~~0.0.1.0"
+                )
+                
+                foreach ($feature in $RSATFeatures) {
+                    $installed = Get-WindowsCapability -Online | Where-Object {$_.Name -eq $feature -and $_.State -eq "Installed"}
+                    if (-not $installed) {
+                        Write-Log "Installing $feature"
+                        Add-WindowsCapability -Online -Name $feature
+                    } else {
+                        Write-Log "$feature is already installed"
+                    }
+                }
+                
+                Write-Log "RSAT tools installed successfully"
+                
+                Write-Log "=== MGR Configuration Completed Successfully ==="
+                Write-Log "Management workstation is ready with:"
+                Write-Log "  - Chocolatey package manager"
+                Write-Log "  - PowerShell 7"
+                Write-Log "  - Visual Studio Code"
+                Write-Log "  - Git"
+                Write-Log "  - RSAT tools (AD and Group Policy)"
+                
+            } catch {
+                $ErrorMessage = $_.Exception.Message
+                Write-Log "ERROR: $ErrorMessage"
+                Write-Log $_.ScriptStackTrace
+                exit 1
+            }
+          params:
+            LOCALADMINPASSWORD: { get_param: local_admin_password }
+            DOMAINADMINPASSWORD: { get_param: domain_admin_password }
+
+outputs:
+  environment_info:
+    description: InfraIT.sec Environment Information
+    value:
+      domain: InfraIT.sec
+      admin_account:
+        str_replace:
+          template: adm_USERNAME
+          params:
+            USERNAME: { get_param: admin_username }
+  
+  dc1_info:
+    description: Domain Controller Information
+    value:
+      hostname: dc1
+      private_ip: { get_attr: [ dc1, first_address ] }
+      public_ip: { get_attr: [ dc1_floating_ip, floating_ip_address ] }
+      role: Domain Controller, DNS Server
+  
+  srv1_info:
+    description: File Server Information
+    value:
+      hostname: srv1
+      private_ip: { get_attr: [ srv1, first_address ] }
+      public_ip: { get_attr: [ srv1_floating_ip, floating_ip_address ] }
+      role: File Server with DFS Namespace
+  
+  cl1_info:
+    description: Client Workstation Information
+    value:
+      hostname: cl1
+      private_ip: { get_attr: [ cl1, first_address ] }
+      public_ip: { get_attr: [ cl1_floating_ip, floating_ip_address ] }
+      role: Domain-joined Client Workstation
+  
+  mgr_info:
+    description: Management Workstation Information
+    value:
+      hostname: mgr
+      private_ip: { get_attr: [ mgr, first_address ] }
+      public_ip: { get_attr: [ mgr_floating_ip, floating_ip_address ] }
+      role: IT Administrator Workstation
+      tools: Chocolatey, PowerShell 7, VS Code, Git, RSAT (AD & GP)
+  
+  login_instructions:
+    description: Login Information
+    value:
+      domain_admin:
+        str_replace:
+          template: |
+            Domain: InfraIT.sec
+            Username: adm_USERNAME or INFRAIT\adm_USERNAME
+            Password: <domain_admin_password parameter>
+          params:
+            USERNAME: { get_param: admin_username }
+      standard_users: |
+        Username: <samaccountname>@InfraIT.sec or INFRAIT\<samaccountname>
+        Password: <user_default_password parameter>
+        Note: Users must change password on first login

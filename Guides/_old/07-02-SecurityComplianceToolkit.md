@@ -108,13 +108,18 @@ Microsoft Security Compliance Toolkit må lastes ned manuelt.
 1. Åpne Edge/Chrome
 2. Gå til: $DownloadUrl
 3. Last ned nyeste versjon (f.eks. 'Security Compliance Toolkit 1.0')
-4. Lagre i: $ToolkitPath
+4. Huk av for alle filene og velg last ned
+5. Pakk ut .zip-filene og kopier mappene over til: $ToolkitPath
 
 Trykk Enter når nedlastingen er fullført...
 "@
 
 Read-Host
 ```
+![alt text](MarkerAlt.png)
+![alt text](AllowDownloadAll.png)
+![alt text](ExtractWin11Server25.png)
+![alt text](CopyFoldersToSecBaseLine.png)
 
 ### Steg 1.2: Installer og pakk ut toolkit
 
