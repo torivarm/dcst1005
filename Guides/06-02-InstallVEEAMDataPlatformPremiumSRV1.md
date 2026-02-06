@@ -59,7 +59,7 @@ Du vil nå se en liste over filer som kan lastes ned:
 
 ### Steg 1: Monter ISO-filen
 1. I File Explorer, naviger til **D:\InstallFiles**
-2. **Dobbeltklikk på ISO-filen** (VeeamDataPlatformPremim_XX.X.X.XXXX.iso)
+2. **Dobbeltklikk på ISO-filen** (VeeamDataPlatformPremim_XX.X.X.XXXX.iso) ‼️ **MERK: Kan fort ta 3-7 minutter** før den faktisk dukker opp i File Explorer som eget drev (sånn som vises på bildet under E:)
 3. Windows vil automatisk "montere" ISO-en som et virtuelt DVD-drev
 
 **Hva skjer:**
@@ -69,11 +69,10 @@ Du vil nå se en liste over filer som kan lastes ned:
 
 ### Steg 2: Finn installasjonsveiviseren
 Når ISO-en er montert, skal du se innholdet av installasjonsmediet:
-- **Setup.exe** - Dette er installasjonsprogrammet
-- Flere mapper med navn som "Backup", "Redistr", "Packages", osv.
+- **Setup.exe** - Dette er installasjonsprogrammet 
 
 ### Steg 3: Start installasjonen
-1. **Dobbeltklikk på Setup.exe**
+1. **Dobbeltklikk på Setup.exe** ‼️ **MERK: Kan fort ta 3-7 minutter** før selve installasjons veiviseren starter
 2. Hvis du får en "User Account Control"-melding, klikk **Yes** eller **Ja**
 3. VEEAM Data Platform Premium installasjonsveiviser starter
    1. ![alt text](VEEAMSetupDPP.png)
