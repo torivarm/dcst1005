@@ -10,7 +10,7 @@
 
 # VM's for the lab needs DC1 IP-address as DNS server (must be done on VM's: SRV1, CLI1 and MGR)
 # Why? Because the DNS server is the only one that knows about the domain
-$ipaddressdc1 = "192.168.111.183" # IP-address of DC1
+$ipaddressdc1 = "192.168.111.116" # IP-address of DC1
 Get-NetAdapter | Set-DnsClientServerAddress -ServerAddresses $ipaddressdc1
 
 # Check if configuration is correct
