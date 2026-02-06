@@ -7,6 +7,7 @@ Etter denne laben skal du kunne:
 - Implementere deferral policies og maintenance windows
 - Verifisere update compliance via PowerShell på tvers av domenet
 - Feilsøke vanlige Windows Update problemer i et domenemiljø
+- MERK‼️ Vi oppretter en GPO for både servere og arbeidsstasjoner i denne gjennomgangen. God praksis ville vært å opprette egen GPO for arbeidsstasjoner og servere.
 
 ---
 
@@ -163,31 +164,18 @@ Settings:
 
 ---
 
-**Policy 2: "Automatic Updates detection frequency"**
-
-```
-Status: Enabled
-
-Settings:
-- Check for updates interval: 4 hours
-```
-
-**Standard er 22 timer** - dette gjør at maskiner oppdager nye kritiske patches raskere.
-
----
-
-**Policy 3: "No auto-restart with logged on users for scheduled automatic updates installations"**
+**Policy 2: "No auto-restart with logged on users for scheduled automatic updates installations"**
 
 ```
 Status: Disabled
 ```
-
+![alt text](NoAutoRestart.png)
 **Viktig:** Dette TILLATER auto-restart selv om brukere er innlogget. Kombiner med deadline enforcement!
 
 ---
 
 **Policy 4: "Specify deadline before auto-restart for update installation"**
-
+![alt text](DeadlineAutoRestart.png)
 ```
 Status: Enabled
 
@@ -202,13 +190,17 @@ Settings:
 
 ### Steg 1.5: Link GPO til domenet
 
-1. I GPMC, høyreklikk på `infrait.sec` (root domain)
+1. I GPMC, høyreklikk på `InfraIT_Computers`
 2. Velg **Link an Existing GPO**
 3. Velg `Corporate - Windows Update Policy`
 4. Klikk **OK**
+![alt text](LinkGPOv3.png)
 
-**Alternativt:** Link kun til spesifikke OUer (f.eks. "Workstations" og "Servers" separat for forskjellige policies).
-
+> **Alternativt:** Link kun til spesifikke OUer (f.eks. "Workstations" og "Servers" separat for forskjellige policies).
+> 
+> **MERK:** For at disse policiene skal bli aktivert på maskinene, må maskinene ligge i en av OU-ene under InfraIT_Computers
+![alt text](CliHROU.png)
+![alt text](SRVinServerOU.png)
 ---
 
 ## Del 2: Tvinge Group Policy Oppdatering
