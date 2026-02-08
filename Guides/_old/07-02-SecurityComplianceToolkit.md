@@ -121,41 +121,6 @@ Read-Host
 ![alt text](ExtractWin11Server25.png)
 ![alt text](CopyFoldersToSecBaseLine.png)
 
-### Steg 1.2: Installer og pakk ut toolkit
-
-```powershell
-# Finn nedlastet .exe fil
-$InstallerPath = Get-ChildItem -Path $ToolkitPath -Filter "*.exe" | Select-Object -First 1
-
-if ($InstallerPath) {
-    Write-Host "Installerer Security Compliance Toolkit..." -ForegroundColor Cyan
-    
-    # Kjør installer (silent mode)
-    Start-Process -FilePath $InstallerPath.FullName -ArgumentList "/quiet" -Wait
-    
-    Write-Host "Installasjon fullført!" -ForegroundColor Green
-} else {
-    Write-Warning "Fant ikke installer! Last ned manuelt fra linken over."
-}
-```
-
-**Standard installasjonsplass:**
-```
-C:\Program Files (x86)\Microsoft Security Compliance Toolkit 1.0\
-```
-
-### Steg 1.3: Verifiser innhold
-
-```powershell
-# Naviger til toolkit-mappen
-$SCTPath = "C:\Program Files (x86)\Microsoft Security Compliance Toolkit 1.0"
-Set-Location $SCTPath
-
-# List tilgjengelige baselines
-Write-Host "`nTilgjengelige Security Baselines:" -ForegroundColor Yellow
-Get-ChildItem -Directory | Select-Object Name, LastWriteTime
-```
-
 **Du skal se mapper som:**
 ```
 Name
