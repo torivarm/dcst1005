@@ -76,7 +76,7 @@ gpmc.msc
 
 1. Høyreklikk på **Group Policy Objects** under `infrait.sec`
 2. Velg **New**
-   1. ![alt text](NewGPOWU.png)
+   1. ![alt text](NewGPOWUv2.png)
 3. Navn: `Corporate - Windows Update Policy`
 
 ### Steg 1.3: Konfigurer Quality Updates (Security Patches)
