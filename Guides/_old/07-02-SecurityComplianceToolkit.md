@@ -410,7 +410,7 @@ Write-Host "✓ Linket Member Server baseline til Servers OU" -ForegroundColor G
 ```
 ![alt text](MemberServerGPO.png)
 
-Etter at GPO er linket, kan en kjøre `Enter-PSSession srv1` og deretter `gpresult /r /scopte:computer` som viser hvilke GPO-er som er lastet for denne maskinen. 
+Etter at GPO er linket, kan en kjøre `Enter-PSSession srv1` og deretter `gpresult /r /scope:computer` som viser hvilke GPO-er som er lastet for denne maskinen. 
 
 ![alt text](PSSessionSRV1GPResoult.png)
 
@@ -438,8 +438,7 @@ Write-Host "✓ Linket Windows 11 User baseline til Workstations OU" -Foreground
 # Link Domain Security (gjelder alle maskiner i domenet)
 New-GPLink -Name "MSFT Windows Server 2025 v2506 - Domain Security" `
            -Target "DC=infrait,DC=sec" `
-           -LinkEnabled Yes `
-           -Order 10
+           -LinkEnabled Yes
 
 Write-Host "✓ Linket Domain Security til root domain" -ForegroundColor Green
 ```
@@ -454,18 +453,18 @@ Write-Host "✓ Linket Domain Security til root domain" -ForegroundColor Green
 
 ```powershell
 # Tving Group Policy oppdatering på alle maskiner
-$Computers = @('dc1', 'srv1', 'cl1', 'mgr')
+$Computers = @('dc1', 'srv1', 'cl1')
 
 foreach ($Computer in $Computers) {
     Write-Host "`nOppdaterer Group Policy på $Computer.infrait.sec..." -ForegroundColor Cyan
     
     Invoke-Command -ComputerName "$Computer.infrait.sec" -ScriptBlock {
-        gpupdate /force
+        gpresoult /
     } -ErrorAction Continue
 }
 
 Write-Host "`n⚠️  VIKTIG: Noen settings krever reboot for å tre i kraft!" -ForegroundColor Yellow
-Write-Host "Plan en reboot av alle maskiner i maintenance window." -ForegroundColor Yellow
+Write-Host "For PRODUKSJONSMILJØER: Planlegg en restart av maskiner i et maintenance vindu når det ikke påvirker mange brukere" -ForegroundColor Yellow
 ```
 
 ---
@@ -474,23 +473,15 @@ Write-Host "Plan en reboot av alle maskiner i maintenance window." -ForegroundCo
 
 ### Steg 4.1: Sjekk appliserte GPO-er
 
-```powershell
-# Lagre som C:\Scripts\Verify-HardeningGPO.ps1
-$VerifyScript = @'
-param([string]$ComputerName)
+```PowerShell
+$Computers = @('dc1', 'srv1', 'cl1')
 
-Invoke-Command -ComputerName $ComputerName -ScriptBlock {
-    # Generer GPResult rapport
-    gpresult /r /scope:computer | Select-String "Applied Group Policy Objects" -Context 0,10
-}
-'@
-
-$VerifyScript | Out-File C:\Scripts\Verify-HardeningGPO.ps1
-
-# Kjør på alle maskiner
-@('dc1', 'srv1', 'cl1', 'mgr') | ForEach-Object {
-    Write-Host "`n=== $_.infrait.sec ===" -ForegroundColor Yellow
-    & C:\Scripts\Verify-HardeningGPO.ps1 -ComputerName "$_.infrait.sec"
+foreach ($Computer in $Computers) {
+    Write-Host "`nSjekker hvilke GPO-er som er aktive for $Computer.infrait.sec..." -ForegroundColor Cyan
+    
+    Invoke-Command -ComputerName "$Computer.infrait.sec" -ScriptBlock {
+        gpresult /r /scope:computer | Select-String "Applied Group Policy Objects" -Context 0,10
+    }
 }
 ```
 

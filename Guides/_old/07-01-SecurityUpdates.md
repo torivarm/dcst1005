@@ -266,7 +266,7 @@ Applied Group Policy Objects
 
 ### Steg 3.1: Sjekk Registry Settings (Teknisk Verifisering)
 
-Group Policy skriver til Registry. La oss sjekke at settings er applisert:
+Group Policy skriver til Registry. La oss sjekke at settings er satt:
 
 ```powershell
 # Sjekk Quality Update deferral på cl1
