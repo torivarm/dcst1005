@@ -408,6 +408,11 @@ New-GPLink -Name "MSFT Windows Server 2025 v2506 - Member Server" `
 
 Write-Host "✓ Linket Member Server baseline til Servers OU" -ForegroundColor Green
 ```
+![alt text](MemberServerGPO.png)
+
+Etter at GPO er linket, kan en kjøre `Enter-PSSession srv1` og deretter `gpresult /r /scopte:computer` som viser hvilke GPO-er som er lastet for denne maskinen. 
+
+![alt text](PSSessionSRV1GPResoult.png)
 
 ```powershell
 # Link Windows 11 Computer baseline ‼️MERK‼️ Om en har MGR maskinen i IT OU-en, vil denne Group Policy-innstillingen det påvirke MRG-maskinen.
