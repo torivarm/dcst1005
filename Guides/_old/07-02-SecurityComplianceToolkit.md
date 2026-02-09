@@ -31,7 +31,7 @@ Etter denne laben skal du kunne:
 
 ---
 
-## Teorigrunnlag (10 min lesing)
+## Teorigrunnlag
 
 ### Hva er Microsoft Security Compliance Toolkit?
 
@@ -67,6 +67,8 @@ Security baselines konfigurerer:
 **Audit & Accountability:** Økt logging slik at angrep kan oppdages og analyseres.
 
 ### Baseline-versjoner du må kjenne til:
+
+![alt text](OsVersion.png)
 
 ```
 Windows 11 24H2 Security Baseline
@@ -119,7 +121,7 @@ Read-Host
 ![alt text](MarkerAlt.png)
 ![alt text](AllowDownloadAll.png)
 ![alt text](ExtractWin11Server25.png)
-![alt text](CopyFoldersToSecBaseLine.png)
+![alt text](CopyFoldersToV2.png)
 
 **Du skal se mapper som:**
 ```
@@ -139,14 +141,14 @@ LGPO Tool
 
 ### Steg 2.1: Utforsk Windows Server 2025 Baseline
 
+![alt text](WinServBaseline.png)
+
 ```powershell
 # Naviger til Server 2025 baseline
-$ServerBaselinePath = "$SCTPath\Windows Server 2025 Security Baseline"
-Set-Location $ServerBaselinePath
-
 # List innhold
 Get-ChildItem -Recurse | Select-Object FullName
 ```
+![alt text](pwshServBaseline.png)
 
 **Viktige filer:**
 
@@ -164,54 +166,17 @@ Documentation\
 └── Windows Server 2025 Security Baseline.xlsx  # Forklarer hver setting
 ```
 
-### Steg 2.2: Les dokumentasjonen (VIKTIG!)
+### Steg 2.2: Les dokumentasjonen (VIKTIG i produksjonssammenheng!)
+- Ligger i mappen Documentation
+  - ![alt text](docsinFolder.png)
+- MERK! Vi har ikke Excel på MGR, last ned filen fra Microsoft på egen PC for å lese.
+  - ![alt text](ExcelDocServ25.png)
 
-```powershell
-# Åpne Excel-dokumentasjonen
-$DocPath = "$ServerBaselinePath\Documentation\Windows Server 2025 Security Baseline.xlsx"
-
-if (Test-Path $DocPath) {
-    Start-Process excel.exe -ArgumentList $DocPath
-} else {
-    Write-Warning "Dokumentasjon ikke funnet. Sjekk installasjonen!"
-}
-```
 
 **Nøkkelinformasjon i dokumentasjonen:**
 
-- **Policy Name:** Hva policyen heter i GPO
-- **Setting:** Verdien som settes
-- **Rationale:** HVORFOR denne settingen er viktig for sikkerhet
-- **Impact:** Hva som kan slutte å fungere
-
-**Eksempel fra dokumentasjonen:**
-
-| Policy | Setting | Rationale | Impact |
-|--------|---------|-----------|--------|
-| SMBv1 Client | Disabled | SMBv1 har kjente sårbarheter (EternalBlue) | Kan ikke koble til svært gamle filservere |
-| LDAP Client Signing | Require signing | Forhindrer LDAP man-in-the-middle angrep | Eldre LDAP-klienter kan feile |
-| Anonymous SID enumeration | Disabled | Forhindrer brute-force av user accounts | Legacy apps som bruker anonymous access kan feile |
-
-**LES DENNE DOKUMENTASJONEN GRUNDIG!** Den forklarer hver enkelt setting.
-
----
-
-### Steg 2.3: Analyser en GPO med Policy Analyzer (Bonus)
-
-Microsoft inkluderer et verktøy for å sammenligne baselines:
-
-```powershell
-# Start Policy Analyzer
-$PolicyAnalyzer = "$SCTPath\Policy Analyzer\PolicyAnalyzer.exe"
-Start-Process -FilePath $PolicyAnalyzer
-```
-
-**Bruk Policy Analyzer til å:**
-1. **View baseline:** Åpne en GPO-backup fra baselines-mappen
-2. **Compare:** Sammenlign two baselines (f.eks. Server 2022 vs 2025)
-3. **Export:** Lag rapport over alle settings
-
-**Oppgave:** Sammenlign "Member Server" baseline mot "Domain Controller" baseline. Hvilke settings er forskjellige og hvorfor?
+- **Policy Setting Name:** Hva policyen heter i GPO
+- **Help text:** Hva denne innstillingen gjør
 
 ---
 
@@ -221,14 +186,8 @@ Start-Process -FilePath $PolicyAnalyzer
 
 På **mgr.infrait.sec**, kjør PowerShell som Administrator:
 
-```powershell
-# Naviger til Scripts-mappen for Server 2025
-$ScriptsPath = "C:\Program Files (x86)\Microsoft Security Compliance Toolkit 1.0\Windows Server 2025 Security Baseline\Scripts"
-Set-Location $ScriptsPath
-
-# VIKTIG: Les scriptet først for å forstå hva det gjør
-Get-Content .\Baseline-ADImport.ps1 | Select-Object -First 50
-```
+- Naviger til Scripts-mappen for Server 2025 - I mitt eksempel er det C:\SecurityBaseline\Windows Server 2025 Security Baseline\Windows Server 2025 Security Baseline - 2506\Scripts
+![alt text](ScriptFolderGPOImport.png)
 
 **Hva gjør Baseline-ADImport.ps1?**
 
@@ -248,15 +207,63 @@ Get-Content .\Baseline-ADImport.ps1 | Select-Object -First 50
 <#
 FORVENTET OUTPUT:
 
-Importing baseline GPOs...
-Successfully imported: MSFT Windows Server 2025 - Domain Security
-Successfully imported: MSFT Windows Server 2025 - Member Server
-Successfully imported: MSFT Windows Server 2025 - Domain Controller
+Importing the following GPOs:
 
-Import completed successfully!
+MSFT Internet Explorer 11 - Computer
+MSFT Internet Explorer 11 - User
+MSFT Windows Server 2025 v2506 - Defender Antivirus
+MSFT Windows Server 2025 v2506 - Domain Controller
+MSFT Windows Server 2025 v2506 - Domain Controller Virtualization Based Security
+MSFT Windows Server 2025 v2506 - Domain Security
+MSFT Windows Server 2025 v2506 - Member Server
+MSFT Windows Server 2025 v2506 - Member Server Credential Guard
+
+
+{4A17861B-5A04-4C85-9D2C-39941A77FCBF}: MSFT Internet Explorer 11 - Computer
+
+DisplayName      : MSFT Internet Explorer 11 - Computer
+DomainName       : InfraIT.sec
+Owner            : InfraIT\Domain Admins
+Id               : 16e64b61-c56f-4866-9e6b-8bdf5cc8bb01
+GpoStatus        : UserSettingsDisabled
+Description      : 
+CreationTime     : 2/8/2026 3:46:50 PM
+ModificationTime : 2/8/2026 3:46:52 PM
+UserVersion      : 
+ComputerVersion  : 
+WmiFilter        : 
+
+{6825461D-6DE3-4E24-A982-14D56D4AF997}: MSFT Internet Explorer 11 - User
+DisplayName      : MSFT Internet Explorer 11 - User
+DomainName       : InfraIT.sec
+Owner            : InfraIT\Domain Admins
+Id               : c5d8c015-4728-414a-b6bc-8a9e094f9c59
+GpoStatus        : ComputerSettingsDisabled
+Description      : 
+CreationTime     : 2/8/2026 3:46:52 PM
+ModificationTime : 2/8/2026 3:46:53 PM
+UserVersion      : 
+ComputerVersion  : 
+WmiFilter        : 
+
+{AA5E941F-A7C5-4D42-AB6C-6873614DBF72}: MSFT Windows Server 2025 v2506 - Defender Antivirus
+DisplayName      : MSFT Windows Server 2025 v2506 - Defender Antivirus
+DomainName       : InfraIT.sec
+Owner            : InfraIT\Domain Admins
+Id               : 32dc6d0a-d474-43f9-bec3-84efb8fb9094
+GpoStatus        : UserSettingsDisabled
+Description      : 
+CreationTime     : 2/8/2026 3:46:53 PM
+ModificationTime : 2/8/2026 3:46:54 PM
+..
+..
+..
+..
+..
 #>
 ```
-
+I Group Policy Manager kan en nå se alle de nyopprettede Group Policy objektene som er opprettet:
+![alt text](ImportedGPOs.png)
 **Hvis feil:** Se [Troubleshooting](#troubleshooting-1) nedenfor.
 
 ---
@@ -265,22 +272,56 @@ Import completed successfully!
 
 Gjenta prosessen for Windows 11:
 
-```powershell
-# Naviger til Windows 11 baseline scripts
-$Win11ScriptsPath = "C:\Program Files (x86)\Microsoft Security Compliance Toolkit 1.0\Windows 11 24H2 Security Baseline\Scripts"
-Set-Location $Win11ScriptsPath
+![alt text](ImportGPOWin11.png)
 
 # Kjør import
 .\Baseline-ADImport.ps1
 
+```Powershell
 <#
 FORVENTET OUTPUT:
 
-Successfully imported: MSFT Windows 11 24H2 - Domain Security
-Successfully imported: MSFT Windows 11 24H2 - Computer
-Successfully imported: MSFT Windows 11 24H2 - User
-Successfully imported: MSFT Windows 11 24H2 - BitLocker
-#>
+Importing the following GPOs:
+
+MSFT Internet Explorer 11 - Computer
+MSFT Internet Explorer 11 - User
+MSFT Windows 11 24H2 - BitLocker
+MSFT Windows 11 24H2 - Computer
+MSFT Windows 11 24H2 - Credential Guard
+MSFT Windows 11 24H2 - Defender Antivirus
+MSFT Windows 11 24H2 - Domain Security
+MSFT Windows 11 24H2 - User
+
+
+{BB10D67B-FBEA-4CD0-8E5F-09AC67C07670}: MSFT Internet Explorer 11 - Computer
+
+DisplayName      : MSFT Internet Explorer 11 - Computer
+DomainName       : InfraIT.sec
+Owner            : InfraIT\Domain Admins
+Id               : 16e64b61-c56f-4866-9e6b-8bdf5cc8bb01
+GpoStatus        : UserSettingsDisabled
+Description      : 
+CreationTime     : 2/8/2026 3:46:50 PM
+ModificationTime : 2/8/2026 3:54:34 PM
+UserVersion      : 
+ComputerVersion  : 
+WmiFilter        : 
+
+{BF76B495-48DD-4A15-AFFF-E9E20A6C9AAB}: MSFT Internet Explorer 11 - User
+DisplayName      : MSFT Internet Explorer 11 - User
+DomainName       : InfraIT.sec
+Owner            : InfraIT\Domain Admins
+Id               : c5d8c015-4728-414a-b6bc-8a9e094f9c59
+GpoStatus        : ComputerSettingsDisabled
+Description      : 
+CreationTime     : 2/8/2026 3:46:52 PM
+ModificationTime : 2/8/2026 3:54:36 PM
+..
+..
+..
+..
+..
+..
 ```
 
 ---
@@ -296,99 +337,101 @@ Get-GPO -All | Where-Object { $_.DisplayName -like "MSFT*" } |
 
 **Du skal se:**
 ```
-DisplayName                                      CreationTime         ModificationTime
------------                                      ------------         ----------------
-MSFT Windows Server 2025 - Domain Security       2025-02-06 10:15:22  2025-02-06 10:15:22
-MSFT Windows Server 2025 - Member Server         2025-02-06 10:15:25  2025-02-06 10:15:25
-MSFT Windows Server 2025 - Domain Controller     2025-02-06 10:15:28  2025-02-06 10:15:28
-MSFT Windows 11 24H2 - Domain Security           2025-02-06 10:18:11  2025-02-06 10:18:11
-MSFT Windows 11 24H2 - Computer                  2025-02-06 10:18:14  2025-02-06 10:18:14
-MSFT Windows 11 24H2 - User                      2025-02-06 10:18:17  2025-02-06 10:18:17
-MSFT Windows 11 24H2 - BitLocker                 2025-02-06 10:18:20  2025-02-06 10:18:20
+DisplayName                                                                      CreationTime        ModificationTime
+-----------                                                                      ------------        ----------------
+MSFT Internet Explorer 11 - Computer                                             2/8/2026 3:46:50 PM 2/8/2026 3:54:34 PM
+MSFT Windows 11 24H2 - Credential Guard                                          2/8/2026 3:54:39 PM 2/8/2026 3:54:40 PM
+MSFT Windows Server 2025 v2506 - Defender Antivirus                              2/8/2026 3:46:53 PM 2/8/2026 3:46:54 PM
+MSFT Windows Server 2025 v2506 - Member Server                                   2/8/2026 3:46:59 PM 2/8/2026 3:47:02 PM
+MSFT Windows 11 24H2 - BitLocker                                                 2/8/2026 3:54:36 PM 2/8/2026 3:54:36 PM
+MSFT Windows 11 24H2 - Domain Security                                           2/8/2026 3:54:43 PM 2/8/2026 3:54:44 PM
+MSFT Windows 11 24H2 - Computer                                                  2/8/2026 3:54:37 PM 2/8/2026 3:54:38 PM
+MSFT Windows 11 24H2 - User                                                      2/8/2026 3:54:45 PM 2/8/2026 3:54:46 PM
+MSFT Windows Server 2025 v2506 - Domain Controller Virtualization Based Security 2/8/2026 3:46:57 PM 2/8/2026 3:46:58 PM
+MSFT Windows Server 2025 v2506 - Member Server Credential Guard                  2/8/2026 3:47:02 PM 2/8/2026 3:47:02 PM
+MSFT Windows 11 24H2 - Defender Antivirus                                        2/8/2026 3:54:42 PM 2/8/2026 3:54:42 PM
+MSFT Windows Server 2025 v2506 - Domain Security                                 2/8/2026 3:46:58 PM 2/8/2026 3:46:58 PM
+MSFT Windows Server 2025 v2506 - Domain Controller                               2/8/2026 3:46:54 PM 2/8/2026 3:46:56 PM
+MSFT Internet Explorer 11 - User                                                 2/8/2026 3:46:52 PM 2/8/2026 3:54:36 PM
 ```
 
 ---
 
-### Steg 3.4: Opprett OU-struktur for riktig GPO-linking
-
-**Beste praksis:** Link baselines til spesifikke OUer, IKKE direkte til domenet.
-
-```powershell
-# Opprett OU-struktur
-$OUs = @(
-    "OU=Domain Controllers,DC=infrait,DC=sec"  # Eksisterer allerede
-    "OU=Servers,DC=infrait,DC=sec"
-    "OU=Workstations,DC=infrait,DC=sec"
-)
-
-foreach ($OU in $OUs[1..2]) {  # Hopp over DC OU (eksisterer)
-    try {
-        New-ADOrganizationalUnit -Name ($OU -split ',')[0].Replace('OU=','') -Path "DC=infrait,DC=sec" -ErrorAction Stop
-        Write-Host "Opprettet: $OU" -ForegroundColor Green
-    } catch {
-        Write-Warning "OU eksisterer allerede eller annen feil: $_"
-    }
-}
-```
-
-**Flytt maskiner til riktige OUer:**
+### Steg 3.4 Dobbeltsjekk at maskiner ligger i riktige OUer:**
 
 ```powershell
 # Flytt Domain Controller
 Get-ADComputer -Identity DC1 | Move-ADObject -TargetPath "OU=Domain Controllers,DC=infrait,DC=sec"
 
 # Flytt Member Server
-Get-ADComputer -Identity SRV1 | Move-ADObject -TargetPath "OU=Servers,DC=infrait,DC=sec"
+Get-ADComputer -Identity SRV1 | Move-ADObject -TargetPath "OU=Servers,OU=InfraIT_Computers,DC=infrait,DC=sec"
 
-# Flytt Workstations
-Get-ADComputer -Identity CL1 | Move-ADObject -TargetPath "OU=Workstations,DC=infrait,DC=sec"
-Get-ADComputer -Identity MGR | Move-ADObject -TargetPath "OU=Workstations,DC=infrait,DC=sec"
+# Flytt Workstations (MGR-NEW er mest trolig navnet etter at en har opprettet ny MGR maskin for større diskplass)
+Get-ADComputer -Identity CL1 | Move-ADObject -TargetPath "OU=HR,OU=Workstations,OU=InfraIT_Computers,DC=infrait,DC=sec"
+Get-ADComputer -Identity MGR-new | Move-ADObject -TargetPath "OU=IT,OU=Workstations,OU=InfraIT_Computers,DC=infrait,DC=sec"
 
 # Verifiser plassering
 Get-ADComputer -Filter * | Select-Object Name, DistinguishedName
 ```
+![alt text](OUlocationMachines.png)
 
 ---
 
 ### Steg 3.5: Link Baselines til riktige OUer
 
-**KRITISK: Link riktig baseline til riktig maskintype!**
+**‼️KRITISK‼️: Husk at når en linker en GPO med en OU påvirker det maskinen/brukerne i denne OU-en.**
+> **1. Det er viktig å linke riktig baseline til riktig maskintype!**
+>
+> **2. Det er viktg å husk at i produksjon kan en ikke linke GPO med OU uten å først gjennomføre tester og undersøke at systemene fungerer som tiltenkt**
+>
+> **3. Husk å ha riktig target om en ikke har samme oppsett som i gjennomgang / MarkDowns / videoer**
+>
+> **4. En vet ikke alt hvordan dette påvirker maskiner / brukere før en har gått igjennom Group Policy innstillingene som settes. Se eksempel fra Excel-filen under:**
+> ![alt text](ExampleGPO.png)
 
 ```powershell
 # Link Domain Controller baseline
-New-GPLink -Name "MSFT Windows Server 2025 - Domain Controller" `
+New-GPLink -Name "MSFT Windows Server 2025 v2506 - Domain Controller" `
            -Target "OU=Domain Controllers,DC=infrait,DC=sec" `
            -LinkEnabled Yes `
            -Order 1
 
 Write-Host "✓ Linket DC baseline til Domain Controllers OU" -ForegroundColor Green
+```
 
+```powershell
 # Link Member Server baseline
-New-GPLink -Name "MSFT Windows Server 2025 - Member Server" `
-           -Target "OU=Servers,DC=infrait,DC=sec" `
+New-GPLink -Name "MSFT Windows Server 2025 v2506 - Member Server" `
+           -Target "OU=Servers,OU=InfraIT_Computers,DC=infrait,DC=sec" `
            -LinkEnabled Yes `
            -Order 1
 
 Write-Host "✓ Linket Member Server baseline til Servers OU" -ForegroundColor Green
+```
 
-# Link Windows 11 Computer baseline
+```powershell
+# Link Windows 11 Computer baseline ‼️MERK‼️ Om en har MGR maskinen i IT OU-en, vil denne Group Policy-innstillingen det påvirke MRG-maskinen.
 New-GPLink -Name "MSFT Windows 11 24H2 - Computer" `
-           -Target "OU=Workstations,DC=infrait,DC=sec" `
+           -Target "OU=Workstations,OU=InfraIT_Computers,DC=infrait,DC=sec" `
            -LinkEnabled Yes `
            -Order 1
 
 Write-Host "✓ Linket Windows 11 baseline til Workstations OU" -ForegroundColor Green
+```
 
+```powershell
 # Link Windows 11 User baseline (gjelder brukere som logger på workstations)
 New-GPLink -Name "MSFT Windows 11 24H2 - User" `
-           -Target "OU=Workstations,DC=infrait,DC=sec" `
+           -Target "OU=Workstations,OU=InfraIT_Computers,DC=infrait,DC=sec" `
            -LinkEnabled Yes `
            -Order 2
 
 Write-Host "✓ Linket Windows 11 User baseline til Workstations OU" -ForegroundColor Green
+````
 
+```powershell
 # Link Domain Security (gjelder alle maskiner i domenet)
-New-GPLink -Name "MSFT Windows Server 2025 - Domain Security" `
+New-GPLink -Name "MSFT Windows Server 2025 v2506 - Domain Security" `
            -Target "DC=infrait,DC=sec" `
            -LinkEnabled Yes `
            -Order 10
