@@ -496,7 +496,7 @@ Applied Group Policy Objects
 
 ---
 
-### Steg 4.2: Test spesifikke hardening-settings
+### Steg 4.2: Test spesifikke hardening-settings (MERK! Legg ved mgr (eventuelt mgr-new) i listen for å teste "egen arbeidsstasjon")
 
 #### Test 1: Er SMBv1 deaktivert?
 
@@ -505,17 +505,24 @@ Applied Group Policy Objects
 $Computers = @('dc1', 'srv1', 'cl1')
 
 foreach ($Computer in $Computers) {
-    $SMBv1Status = Invoke-Command -ComputerName "$Computer.infrait.sec" -ScriptBlock {
-        Get-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -ErrorAction SilentlyContinue |
-            Select-Object FeatureName, State
+    $SMBStatus = Invoke-Command -ComputerName "$Computer.infrait.sec" -ScriptBlock {
+        # Denne metoden fungerer alltid!
+        $SMBConfig = Get-SmbServerConfiguration
+        $SMBConfig.EnableSMB1Protocol
     }
     
-    if ($SMBv1Status.State -eq 'Disabled') {
-        Write-Host "✓ $Computer : SMBv1 er DEAKTIVERT (sikker)" -ForegroundColor Green
+    if ($SMBStatus -eq $false) {
+        Write-Host "✓ $Computer : SMBv1 protokoll er DEAKTIVERT (sikker)" -ForegroundColor Green
     } else {
-        Write-Host "✗ $Computer : SMBv1 er AKTIVERT (SÅRBAR!)" -ForegroundColor Red
+        Write-Host "✗ $Computer : SMBv1 protokoll er AKTIVERT (SÅRBAR!)" -ForegroundColor Red
     }
 }
+```
+
+```PowerShell
+✓ dc1 : SMBv1 protokoll er DEAKTIVERT (sikker)
+✓ srv1 : SMBv1 protokoll er DEAKTIVERT (sikker)
+✓ cl1 : SMBv1 protokoll er DEAKTIVERT (sikker)
 ```
 
 ---
@@ -524,6 +531,8 @@ foreach ($Computer in $Computers) {
 
 ```powershell
 # PowerShell logging er kritisk for å oppdage angrep
+$Computers = @('dc1', 'srv1', 'cl1')
+
 foreach ($Computer in $Computers) {
     $PSLogging = Invoke-Command -ComputerName "$Computer.infrait.sec" -ScriptBlock {
         $RegPath = 'HKLM:\Software\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging'
@@ -543,11 +552,19 @@ foreach ($Computer in $Computers) {
 }
 ```
 
+```powershell
+✗ dc1 : PowerShell logging AKTIVERT
+✓ srv1 : PowerShell logging AKTIVERT
+✓ cl1 : PowerShell logging AKTIVERT
+```
+
 ---
 
 #### Test 3: Er Windows Defender real-time protection aktivert?
 
 ```powershell
+$Computers = @('dc1', 'srv1', 'cl1')
+
 foreach ($Computer in $Computers) {
     $DefenderStatus = Invoke-Command -ComputerName "$Computer.infrait.sec" -ScriptBlock {
         Get-MpPreference | Select-Object DisableRealtimeMonitoring, DisableBehaviorMonitoring
@@ -578,210 +595,6 @@ Invoke-Command -ComputerName dc1.infrait.sec -ScriptBlock {
 
 ---
 
-### Steg 4.3: Komplett Hardening Verification Script
-
-Lagre som `C:\Scripts\Test-SecurityHardening.ps1`:
-
-```powershell
-<#
-.SYNOPSIS
-    Komplett security hardening verification script
-    
-.DESCRIPTION
-    Verifiserer at Microsoft Security Baseline er korrekt implementert
-    på alle maskiner i InfraIT.sec domenet.
-    
-.EXAMPLE
-    .\Test-SecurityHardening.ps1 -GenerateReport
-#>
-
-[CmdletBinding()]
-param(
-    [string[]]$ComputerName = @('dc1.infrait.sec', 'srv1.infrait.sec', 'cl1.infrait.sec', 'mgr.infrait.sec'),
-    [switch]$GenerateReport
-)
-
-# Definer security checks
-$SecurityChecks = @{
-    'SMBv1 Disabled' = {
-        $Feature = Get-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -ErrorAction SilentlyContinue
-        $Feature.State -eq 'Disabled'
-    }
-    
-    'PowerShell Script Block Logging' = {
-        $RegPath = 'HKLM:\Software\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging'
-        if (Test-Path $RegPath) {
-            (Get-ItemProperty -Path $RegPath).EnableScriptBlockLogging -eq 1
-        } else {
-            $false
-        }
-    }
-    
-    'Windows Defender Real-time' = {
-        $Pref = Get-MpPreference
-        $Pref.DisableRealtimeMonitoring -eq $false
-    }
-    
-    'Windows Defender Cloud Protection' = {
-        $Pref = Get-MpPreference
-        $Pref.MAPSReporting -ge 1
-    }
-    
-    'LDAP Signing Required' = {
-        $RegPath = 'HKLM:\SYSTEM\CurrentControlSet\Services\LDAP'
-        if (Test-Path $RegPath) {
-            (Get-ItemProperty -Path $RegPath -Name LDAPClientIntegrity -ErrorAction SilentlyContinue).LDAPClientIntegrity -eq 2
-        } else {
-            $false
-        }
-    }
-    
-    'Anonymous SID Enumeration Disabled' = {
-        $RegPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa'
-        if (Test-Path $RegPath) {
-            (Get-ItemProperty -Path $RegPath -Name RestrictAnonymousSAM -ErrorAction SilentlyContinue).RestrictAnonymousSAM -eq 1
-        } else {
-            $false
-        }
-    }
-    
-    'Print Spooler Service Disabled' = {
-        $Service = Get-Service -Name Spooler -ErrorAction SilentlyContinue
-        if ($Service) {
-            $Service.StartType -eq 'Disabled'
-        } else {
-            $true  # Service ikke installert = bra
-        }
-    }
-    
-    'Remote Registry Disabled' = {
-        $Service = Get-Service -Name RemoteRegistry -ErrorAction SilentlyContinue
-        if ($Service) {
-            $Service.StartType -eq 'Disabled'
-        } else {
-            $true
-        }
-    }
-}
-
-# Kjør checks på alle maskiner
-$Results = foreach ($Computer in $ComputerName) {
-    Write-Host "`nSjekker $Computer..." -ForegroundColor Cyan
-    
-    try {
-        $CheckResults = Invoke-Command -ComputerName $Computer -ErrorAction Stop -ScriptBlock {
-            param($Checks)
-            
-            $Output = @{}
-            foreach ($CheckName in $Checks.Keys) {
-                try {
-                    $Result = & $Checks[$CheckName]
-                    $Output[$CheckName] = $Result
-                } catch {
-                    $Output[$CheckName] = "ERROR: $_"
-                }
-            }
-            
-            return $Output
-            
-        } -ArgumentList (,$SecurityChecks)
-        
-        # Bygg result object
-        $ResultObj = [PSCustomObject]@{
-            Computer = $Computer
-        }
-        
-        foreach ($CheckName in $SecurityChecks.Keys) {
-            $Value = $CheckResults[$CheckName]
-            
-            # Formater output
-            if ($Value -eq $true) {
-                $Status = "✓ PASS"
-                Write-Host "  ✓ $CheckName" -ForegroundColor Green
-            } elseif ($Value -eq $false) {
-                $Status = "✗ FAIL"
-                Write-Host "  ✗ $CheckName" -ForegroundColor Red
-            } else {
-                $Status = "⚠ ERROR"
-                Write-Host "  ⚠ $CheckName : $Value" -ForegroundColor Yellow
-            }
-            
-            $ResultObj | Add-Member -NotePropertyName $CheckName -NotePropertyValue $Status
-        }
-        
-        $ResultObj
-        
-    } catch {
-        Write-Warning "Kunne ikke kontakte $Computer : $_"
-    }
-}
-
-# Vis oppsummering
-Write-Host "`n========================================" -ForegroundColor Yellow
-Write-Host "SECURITY HARDENING COMPLIANCE REPORT" -ForegroundColor Yellow
-Write-Host "========================================`n" -ForegroundColor Yellow
-
-$Results | Format-Table -AutoSize
-
-# Generer HTML rapport hvis ønsket
-if ($GenerateReport) {
-    $ReportPath = "C:\Reports\SecurityHardening_$(Get-Date -Format 'yyyyMMdd_HHmm').html"
-    New-Item -Path C:\Reports -ItemType Directory -Force | Out-Null
-    
-    $HTML = @"
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Security Hardening Report - InfraIT.sec</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th { background-color: #4CAF50; color: white; padding: 12px; text-align: left; }
-        td { border: 1px solid #ddd; padding: 8px; }
-        tr:nth-child(even) { background-color: #f2f2f2; }
-        .pass { color: green; font-weight: bold; }
-        .fail { color: red; font-weight: bold; }
-        .error { color: orange; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <h1>Security Hardening Compliance Report</h1>
-    <p><strong>Generated:</strong> $(Get-Date)</p>
-    <p><strong>Domain:</strong> infrait.sec</p>
-    
-    $(
-        $Results | ConvertTo-Html -Fragment | 
-        ForEach-Object {
-            $_ -replace '✓ PASS', '<span class="pass">✓ PASS</span>' `
-               -replace '✗ FAIL', '<span class="fail">✗ FAIL</span>' `
-               -replace '⚠ ERROR', '<span class="error">⚠ ERROR</span>'
-        }
-    )
-</body>
-</html>
-"@
-    
-    $HTML | Out-File -FilePath $ReportPath -Encoding UTF8
-    Write-Host "`n✓ HTML rapport generert: $ReportPath" -ForegroundColor Green
-    
-    # Åpne rapporten
-    Start-Process $ReportPath
-}
-```
-
-**Kjør verification:**
-
-```powershell
-# Opprett Reports-mappe
-New-Item -Path C:\Reports -ItemType Directory -Force
-
-# Kjør komplett hardening test
-C:\Scripts\Test-SecurityHardening.ps1 -GenerateReport
-```
-
----
-
 ## Del 5: Custom Hardening Utover Baselines
 
 Baselines dekker mye, men noen ting må du konfigurere selv basert på ditt miljø.
@@ -795,15 +608,15 @@ New-GPO -Name "Corporate - Custom Security Settings" -Comment "Additional harden
 # Link til domenet (lavere prioritet enn baselines)
 New-GPLink -Name "Corporate - Custom Security Settings" `
            -Target "DC=infrait,DC=sec" `
-           -LinkEnabled Yes `
-           -Order 20
+           -LinkEnabled Yes
 ```
+![alt text](EditCustomCorpGPO.png)
 
 ### Steg 5.2: Konfigurer Additional Hardening
 
 I GPMC, edit `Corporate - Custom Security Settings`:
 
-#### A) Deaktiver Legacy Protocols
+#### A) Deaktiver Legacy Protocols (eksempel)
 
 **Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → Security Options**
 
@@ -814,12 +627,13 @@ Network security: LAN Manager authentication level
 Network security: Minimum session security for NTLM SSP
 → Require NTLMv2 session security + Require 128-bit encryption
 ```
+![alt text](LanManagerVisual.png)
 
 **Hvorfor?** LM og NTLM er gammelt og lett å cracke. NTLMv2 er minimum for sikkerhet.
 
 ---
 
-#### B) Disable NetBIOS over TCP/IP
+#### B) BONUSOPPGAVE: Disable NetBIOS over TCP/IP
 
 Dette krever PowerShell-script via GPO startup:
 
@@ -925,11 +739,20 @@ Invoke-Command -ComputerName srv1.infrait.sec -ScriptBlock {
 }
 ```
 
-**Forventet:**
+Dette ser forvirrende ut ved første øyekast, men er faktisk korrekt og sikker konfigurasjon.
+
 ```
-RequireSecuritySignature : True
-EnableSecuritySignature  : True
+RequireSecuritySignature : True   ← KREVET
+EnableSecuritySignature  : False  ← Ikke "enabled"???
 ```
+Realitet: Dette er perfekt sikker konfigurasjon fra Microsoft Baseline!
+Hvorfor Enable=False når Require=True?
+Forklaring:
+Når `RequireSecuritySignature = True`:
+
+Serveren KREVER at ALL SMB-trafikk er signert
+`EnableSecuritySignature` blir irrelevant (har ingen effekt)
+Signing er ALLTID PÅ uavhengig av "Enable" setting
 
 **Hvis True:** SMB relay attacks er blokkert.
 
@@ -955,6 +778,33 @@ Invoke-Command -ComputerName cl1.infrait.sec -ScriptBlock {
 ```
 
 **Forventet:** Event ID 4104 viser hele scriptet som ble kjørt.
+
+```
+Testing PowerShell logging
+
+ NPM(K)    PM(M)      WS(M)     CPU(s)      Id  SI ProcessName                                  PSComputerName
+ ------    -----      -----     ------      --  -- -----------                                  --------------
+      9     1.64       9.90       0.25    5056   0 AggregatorHost                               cl1.infrait.sec
+     20     1.91       5.78       1.47     556   0 csrss                                        cl1.infrait.sec
+     11     1.68       6.01       1.67     636   1 csrss                                        cl1.infrait.sec
+     25    18.71      54.81       7.92     800   1 dwm                                          cl1.infrait.sec
+      7     1.46       4.66       0.12     948   0 fontdrvhost                                  cl1.infrait.sec
+```
+
+```
+TimeCreated    : 2/9/2026 12:47:55 PM
+Message        : Creating Scriptblock text (1 of 1):
+
+                     # Dette skal logges i Event Log
+                     Write-Host "Testing PowerShell logging"
+                     Get-Process | Select-Object -First 5
+
+
+                 ScriptBlock ID: f82e796f-55ec-4c22-ae42-67b7fd4183af
+                 Path:
+PSComputerName : cl1.infrait.sec
+RunspaceId     : afd21550-cc6f-4256-84f4-8fc83139c056
+```
 
 ---
 
@@ -1016,48 +866,6 @@ New-GPO -Name "Exception - Legacy App Server"
 
 ---
 
-### Problem 3: BitLocker blokkerer oppstart
-
-**Symptom:** Etter baseline-implementering krever maskiner BitLocker recovery key.
-
-**Årsak:** Baseline endrer TPM-settings eller boot configuration.
-
-**Midlertidig løsning:**
-
-```powershell
-# Suspend BitLocker midlertidig
-Suspend-BitLocker -MountPoint "C:" -RebootCount 1
-
-# Eller disable helt (IKKE ANBEFALT!)
-Disable-BitLocker -MountPoint "C:"
-```
-
-**Permanent løsning:** Unlink BitLocker GPO eller konfigurer unntak for test-maskiner.
-
----
-
-### Problem 4: PowerShell Constrained Language Mode blokkerer scripts
-
-**Symptom:**
-```
-Cannot invoke method. Method invocation is supported only on core types in this language mode.
-```
-
-**Årsak:** Baseline aktiverer PowerShell Constrained Language Mode for å blokkere malware.
-
-**Diagnose:**
-```powershell
-$ExecutionContext.SessionState.LanguageMode
-# Output: ConstrainedLanguage
-```
-
-**Løsning:**
-
-- **Permanent:** Sign dine PowerShell scripts med code signing certificate
-- **Midlertidig (testing):** Deaktiver via GPO eller kjør fra Trusted Publisher
-
----
-
 ## Refleksjonsspørsmål
 
 1. **Hva er forskjellen mellom "Member Server" og "Domain Controller" baselines?**
@@ -1080,9 +888,6 @@ $ExecutionContext.SessionState.LanguageMode
    - Gi eksempler på multiple lag av sikkerhet fra baselines
    - Hva skjer hvis ett lag feiler?
 
-6. **Hvordan ville du testet baselines før produksjons-deployment?**
-   - Lag en rollout-strategi for 1000 maskiner
-   - Hvordan oppdager du problemer tidlig?
 
 ---
 
@@ -1094,7 +899,6 @@ Du har nå lært:
 - ✅ Importere og implementere baselines via Group Policy
 - ✅ Verifisere at hardening er korrekt applisert via PowerShell
 - ✅ Utvide baselines med custom security settings
-- ✅ Teste security controls mot simulated attacks
 - ✅ Feilsøke vanlige problemer med security baselines
 
 **Dette er fundamentet for enterprise infrastructure hardening!**
