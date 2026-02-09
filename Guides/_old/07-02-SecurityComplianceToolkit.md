@@ -459,7 +459,7 @@ foreach ($Computer in $Computers) {
     Write-Host "`nOppdaterer Group Policy på $Computer.infrait.sec..." -ForegroundColor Cyan
     
     Invoke-Command -ComputerName "$Computer.infrait.sec" -ScriptBlock {
-        gpresoult /
+        gpupdate /force
     } -ErrorAction Continue
 }
 
@@ -480,7 +480,7 @@ foreach ($Computer in $Computers) {
     Write-Host "`nSjekker hvilke GPO-er som er aktive for $Computer.infrait.sec..." -ForegroundColor Cyan
     
     Invoke-Command -ComputerName "$Computer.infrait.sec" -ScriptBlock {
-        gpresult /r /scope:computer | Select-String "Applied Group Policy Objects" -Context 0,10
+        gpresult /r /scope:computer
     }
 }
 ```
@@ -502,7 +502,7 @@ Applied Group Policy Objects
 
 ```powershell
 # SMBv1 er en KRITISK sårbarhet (EternalBlue/WannaCry)
-$Computers = @('dc1', 'srv1', 'cl1', 'mgr')
+$Computers = @('dc1', 'srv1', 'cl1')
 
 foreach ($Computer in $Computers) {
     $SMBv1Status = Invoke-Command -ComputerName "$Computer.infrait.sec" -ScriptBlock {
