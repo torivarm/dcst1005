@@ -191,7 +191,8 @@ Etterpå vil du kunne se AD Users and Computers i Web GUI:
 
 ### Steg 3.1: Kjør Basic Server Management Tasks
 
-**Oppgave:** Utforsk hver maskin og kjør vanlige admin-oppgaver.
+Utforsk SRV1 for vanlige admin-oppgaver som vi typisk har gjort tidligere via RDP og PowerShell.
+![alt text](AdminSrv1WAC.png)
 
 #### Task 1: Sjekk System Health på SRV1
 
@@ -203,54 +204,157 @@ Etterpå vil du kunne se AD Users and Computers i Web GUI:
    - Disk space
    - Network activity
 
-**Sammenlign med tradisjonell metode:**
+**Sammenlign med tradisjonell metode (kjør scriptet på MGR):**
 ```powershell
-# Tradisjonell måte (PowerShell Remoting)
-Invoke-Command -ComputerName srv1.infrait.sec -ScriptBlock {
-    Get-CimInstance Win32_Processor | Select-Object LoadPercentage
-    Get-CimInstance Win32_OperatingSystem | Select-Object @{
-        Name='MemoryUsagePercent'
-        Expression={[math]::Round((($_.TotalVisibleMemorySize - $_.FreePhysicalMemory) / $_.TotalVisibleMemorySize) * 100, 2)}
+<#
+.SYNOPSIS
+    Henter systemstatus fra remote server - WAC-lignende oversikt
+    
+.DESCRIPTION
+    Windows Admin Center bruker CIM/WMI-klasser og performance counters
+    for å hente sanntidsdata. Dette scriptet samler samme informasjon og
+    presenterer det i et lesbart format.
+    
+.NOTES
+    Problemet med ditt script: Invoke-Command returnerte separate objekter
+    for hver CPU-kjerne og hver kommando. WAC aggregerer dette til enkle tall.
+#>
+
+function Get-ServerOverview {
+    param(
+        [Parameter(Mandatory)]
+        [string]$ComputerName
+    )
+    
+    # Hent all data i én remote session (mer effektivt)
+    $data = Invoke-Command -ComputerName $ComputerName -ScriptBlock {
+        
+        # CPU - Gjennomsnitt over alle kjerner
+        $cpuLoad = (Get-CimInstance Win32_Processor | 
+            Measure-Object -Property LoadPercentage -Average).Average
+        
+        # Memory - Total og ledig i GB + prosent
+        $os = Get-CimInstance Win32_OperatingSystem
+        $totalMemGB = [math]::Round($os.TotalVisibleMemorySize / 1MB, 2)
+        $freeMemGB = [math]::Round($os.FreePhysicalMemory / 1MB, 2)
+        $usedMemGB = $totalMemGB - $freeMemGB
+        $memPercent = [math]::Round(($usedMemGB / $totalMemGB) * 100, 1)
+        
+        # Disk - Alle logiske disker
+        $disks = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" | 
+            ForEach-Object {
+                [PSCustomObject]@{
+                    Drive = $_.DeviceID
+                    SizeGB = [math]::Round($_.Size / 1GB, 2)
+                    FreeGB = [math]::Round($_.FreeSpace / 1GB, 2)
+                    UsedGB = [math]::Round(($_.Size - $_.FreeSpace) / 1GB, 2)
+                    PercentFree = [math]::Round(($_.FreeSpace / $_.Size) * 100, 1)
+                }
+            }
+        
+        # Network - Bytes sent/received (kun aktive adaptere)
+        $netAdapters = Get-CimInstance Win32_PerfFormattedData_Tcpip_NetworkInterface |
+            Where-Object { $_.BytesTotalPersec -gt 0 } |
+            ForEach-Object {
+                [PSCustomObject]@{
+                    Name = $_.Name
+                    BytesSentPerSec = [math]::Round($_.BytesSentPersec / 1KB, 2)
+                    BytesRecvPerSec = [math]::Round($_.BytesReceivedPersec / 1KB, 2)
+                    TotalKBPerSec = [math]::Round($_.BytesTotalPersec / 1KB, 2)
+                }
+            }
+        
+        # Returner alt som ett objekt
+        [PSCustomObject]@{
+            ComputerName = $env:COMPUTERNAME
+            CPU = [PSCustomObject]@{
+                LoadPercent = $cpuLoad
+                Status = if ($cpuLoad -lt 80) { "OK" } elseif ($cpuLoad -lt 95) { "High" } else { "Critical" }
+            }
+            Memory = [PSCustomObject]@{
+                TotalGB = $totalMemGB
+                UsedGB = $usedMemGB
+                FreeGB = $freeMemGB
+                UsedPercent = $memPercent
+                Status = if ($memPercent -lt 80) { "OK" } elseif ($memPercent -lt 95) { "High" } else { "Critical" }
+            }
+            Disks = $disks
+            Network = $netAdapters
+            Timestamp = Get-Date
+        }
     }
-    Get-PSDrive C | Select-Object Used, Free
+    
+    # Formater output som WAC-oversikt
+    Write-Host "`n========================================" -ForegroundColor Cyan
+    Write-Host " Server Overview: $($data.ComputerName)" -ForegroundColor Cyan
+    Write-Host "========================================`n" -ForegroundColor Cyan
+    
+    # CPU Section
+    $cpuColor = switch ($data.CPU.Status) {
+        "OK" { "Green" }
+        "High" { "Yellow" }
+        "Critical" { "Red" }
+    }
+    Write-Host "CPU Utilization:" -ForegroundColor White
+    Write-Host "  $($data.CPU.LoadPercent)% " -NoNewline -ForegroundColor $cpuColor
+    Write-Host "[$($data.CPU.Status)]" -ForegroundColor $cpuColor
+    
+    # Memory Section
+    $memColor = switch ($data.Memory.Status) {
+        "OK" { "Green" }
+        "High" { "Yellow" }
+        "Critical" { "Red" }
+    }
+    Write-Host "`nMemory Usage:" -ForegroundColor White
+    Write-Host "  $($data.Memory.UsedGB) GB / $($data.Memory.TotalGB) GB " -NoNewline -ForegroundColor $memColor
+    Write-Host "($($data.Memory.UsedPercent)%) " -NoNewline -ForegroundColor $memColor
+    Write-Host "[$($data.Memory.Status)]" -ForegroundColor $memColor
+    Write-Host "  Free: $($data.Memory.FreeGB) GB" -ForegroundColor Gray
+    
+    # Disk Section
+    Write-Host "`nDisk Space:" -ForegroundColor White
+    foreach ($disk in $data.Disks) {
+        $diskColor = if ($disk.PercentFree -gt 20) { "Green" } 
+                     elseif ($disk.PercentFree -gt 10) { "Yellow" } 
+                     else { "Red" }
+        
+        Write-Host "  $($disk.Drive) " -NoNewline -ForegroundColor White
+        Write-Host "$($disk.UsedGB) GB / $($disk.SizeGB) GB used " -NoNewline -ForegroundColor $diskColor
+        Write-Host "($($disk.FreeGB) GB free)" -ForegroundColor Gray
+    }
+    
+    # Network Section
+    Write-Host "`nNetwork Activity:" -ForegroundColor White
+    if ($data.Network) {
+        foreach ($adapter in $data.Network) {
+            Write-Host "  $($adapter.Name):" -ForegroundColor White
+            Write-Host "    ↑ $($adapter.BytesSentPerSec) KB/s  ↓ $($adapter.BytesRecvPerSec) KB/s" -ForegroundColor Cyan
+        }
+    } else {
+        Write-Host "  No active network traffic detected" -ForegroundColor Gray
+    }
+    
+    Write-Host "`n Last updated: $($data.Timestamp.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Gray
+    Write-Host "========================================`n" -ForegroundColor Cyan
+    
+    # Returner også raw data for videre bruk
+    return $data
 }
+
+# Bruk funksjonen
+$overview = Get-ServerOverview -ComputerName "srv1.infrait.sec"
+
+# For kontinuerlig overvåkning (som WAC)
+<#
+while ($true) {
+    Clear-Host
+    Get-ServerOverview -ComputerName "srv1.infrait.sec" | Out-Null
+    Start-Sleep -Seconds 5
+}
+#>
 ```
 
 **Refleksjon:** Hva er enklere? GUI eller PowerShell?
-
----
-
-#### Task 3: Sjekk Event Logs
-
-1. Gå til **Events**
-2. Filtrer på:
-   - **Log:** System
-   - **Level:** Error, Warning
-   - **Time range:** Last 24 hours
-
-3. Klikk på et event for detaljer
-
-**Sammenlign med:**
-```powershell
-# Tradisjonell måte
-Get-WinEvent -ComputerName srv1.infrait.sec -FilterHashtable @{
-    LogName = 'System'
-    Level = 2,3  # Error, Warning
-    StartTime = (Get-Date).AddDays(-1)
-} -MaxEvents 50
-```
-
----
-
-#### Task 4: Performance Monitoring
-
-1. Gå til **Performance Monitor**
-2. Legg til counters:
-   - Processor: % Processor Time
-   - Memory: Available MBytes
-   - Network Interface: Bytes Total/sec
-
-3. Observer real-time performance
 
 ---
 
@@ -296,7 +400,7 @@ MODERNE APPROACH (OSConfig):
 
 ### Steg 4.2: Åpne Web GUI for Security Baseline - OSConfig på Domene-maskiner
 
-> OSConfig er **innebygd** i Windows Server 2025 og Windows 11 24H2+
+> OSConfig er **innebygd** i Windows Server 2025
 >
 > Etter `Ensuring the required module is installed` vil den fortsette med `loading`
 > 
@@ -309,7 +413,7 @@ Som vi ser, er grensesnittet noe mer moderne og lettere å tolke hva som er konf
 
 > It is designed as a modern, local configuration tool for Windows Server 2025 that operates independently of AD Group Policy Objects (GPO). 
 
-### ‼️Se video for praktisk bruk og implementasjon av sikkerhetsinnstillinger:
+### ‼️ Se video for praktisk bruk av Security Baseline i Windows Admin Center for å få en høyre compliance percentage:
 https://youtu.be/oGScE8pDP3g
 
 ---
@@ -353,17 +457,6 @@ For lab purposes uten Azure:
 ---
 
 ## Del 7: GPO vs OSConfig - Sammenligning
-
-### Steg 7.1: Samme Configuration, To Metoder
-
-**Oppgave:** Implementer 
-
-#### Metode 1: Group Policy
-
-
-#### Metode 2: OSConfig
-
-
 
 **Sammenligning:**
 
