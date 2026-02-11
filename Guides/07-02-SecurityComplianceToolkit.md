@@ -676,6 +676,7 @@ ASR Rules (sett til "Block"):
 
 4. Legg til disse GUID-ene (Name = GUID, Value = 1):
 ```
+Se referanseliste på Web: https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference#asr-rule-to-guid-matrix
 
 **GUID-er å legge til:**
 
