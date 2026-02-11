@@ -480,89 +480,12 @@ For lab purposes uten Azure:
 
 - Når ville du brukt WAC over Remote Desktop?
 - Er WAC egnet for alle administrative oppgaver?
-- Hva er security implikasjonene av web-based management?
 
 **2. OSConfig vs Group Policy**
 
 - I hvilke scenarioer er OSConfig bedre enn GPO?
 - Når bør du fortsatt bruke GPO?
 - Kan de brukes sammen? (Hint: Ja!)
-
-**3. Infrastructure as Code**
-
-- Hva er fordelene med å lagre configurations som JSON/YAML?
-- Hvordan ville du implementert versjonskontroll for OSConfig?
-- Hvordan tester du en configuration før production deployment?
-
-**4. Hybrid Approach**
-
-Design en strategi som bruker både GPO og OSConfig:
-
-```
-GPO for:
-  - Domain-wide security policies
-  - User policies
-  - Microsoft Security Baselines
-
-OSConfig for:
-  - Server-specific configurations
-  - Application settings
-  - Cloud-hybrid scenarios
-  - Rapid deployment / testing
-```
-
----
-
-## Del 9: Praktisk Oppgave - Bygg din Egen Solution
-
-### Oppgave: Implementer "Nightly Security Scan" via OSConfig
-
-**Mål:** Opprett en OSConfig configuration som:
-
-1. Aktiverer Windows Defender scheduled scan
-2. Konfigurerer scanning time til 02:00
-3. Enable real-time protection
-4. Deploy til alle servere
-5. Verifiser compliance
-
-**Starter-kode:**
-
-```json
-{
-  "name": "WindowsDefenderScheduledScan",
-  "version": "1.0",
-  "description": "Configure Windows Defender nightly security scan",
-  "modules": [
-    {
-      "name": "Registry",
-      "settings": {
-        "registryValues": [
-          {
-            "keyPath": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Scan",
-            "valueName": "ScheduleDay",
-            "valueType": "DWord",
-            "valueData": 0,
-            "ensure": "Present"
-          },
-          {
-            "keyPath": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Scan",
-            "valueName": "ScheduleTime",
-            "valueType": "DWord",
-            "valueData": 120,
-            "ensure": "Present"
-          }
-        ]
-      }
-    }
-  ]
-}
-```
-
-**Din oppgave:**
-1. Fullfør configuration (legg til real-time protection settings)
-2. Deploy til alle servere
-3. Verifiser med PowerShell at settings er applisert
-4. Lag en compliance report
 
 ---
 
@@ -573,10 +496,8 @@ Du har nå lært:
 - ✅ Installere og konfigurere Windows Admin Center
 - ✅ Administrere domene-maskiner via web GUI
 - ✅ Forstå OSConfig og moderne configuration management
-- ✅ Implementere configurations via JSON
 - ✅ Deploy og verifisere configurations på tvers av domenet
 - ✅ Sammenligne tradisjonelle (GPO) og moderne (OSConfig) approaches
-- ✅ Designe hybrid management strategier
 
 **Nøkkelinnsikt:**
 
