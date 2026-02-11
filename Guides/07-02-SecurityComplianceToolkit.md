@@ -704,28 +704,6 @@ gpupdate /force /target:computer
 # Verifiser at custom GPO er applisert
 gpresult /r | Select-String "Corporate - Custom Security Settings"
 ```
-
----
-
-## Del 6: Test Scenarios & Attack Simulation
-
-### Scenario 1: Pass-the-Hash Attack Test
-
-**Mål:** Verifiser at NTLM-restrictions fungerer.
-
-**Setup:** Prøv å kjøre `mimikatz` for å dumpe credentials.
-
-```powershell
-# ADVARSEL: Ikke kjør dette i produksjon!
-# Dette er kun for pedagogisk testing i lab-miljø
-
-# Last ned mimikatz (kun for testing!)
-# Prøv å kjøre: sekurlsa::logonpasswords
-# Med riktig hardening skal dette feile eller gi begrenset info
-```
-
-**Forventet resultat:** Credential Guard (hvis aktivert) blokkerer access til LSASS. Audit logs viser forsøket.
-
 ---
 
 ### Scenario 2: SMB Relay Attack Test
