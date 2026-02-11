@@ -309,7 +309,10 @@ Som vi ser, er grensesnittet noe mer moderne og lettere å tolke hva som er konf
 
 > It is designed as a modern, local configuration tool for Windows Server 2025 that operates independently of AD Group Policy Objects (GPO). 
 
+### ‼️Se video for praktisk bruk og implementasjon av sikkerhetsinnstillinger:
+https://youtu.be/oGScE8pDP3g
 
+---
 **Merk:** OSConfig ikke er tilgjengelig Windows 11 OS.
 ![alt text](SecureCoreServer.png)
 
@@ -353,89 +356,10 @@ For lab purposes uten Azure:
 
 ### Steg 7.1: Samme Configuration, To Metoder
 
-**Oppgave:** Implementer Legal Notice / Logon Banner
+**Oppgave:** Implementer 
 
 #### Metode 1: Group Policy
-Steg 1.1: Opprett GPO
-På **mgr.infrait.sec**, kjør PowerShell som Administrator:
 
-```powershell
-powershellWrite-Host "=== Metode 1: Group Policy ===" -ForegroundColor Cyan
-
-# Opprett GPO
-New-GPO -Name "Test - Legal Notice Banner" -Comment "Testing GPO approach for Logon Banner"
-
-Write-Host "✓ GPO opprettet: Test - Legal Notice Banner" -ForegroundColor Green
-````
-
-Steg 1.2: Konfigurer Legal Notice i GPMC
-MANUELLE STEG I GPMC:
-
-1. Åpne Group Policy Management Console
-
-2. Høyreklikk 'Test - Legal Notice Banner' → Edit
-
-3. Naviger til:
-```
-   Computer Configuration
-     → Policies
-       → Windows Settings
-         → Security Settings
-           → Local Policies
-             → Security Options
-```
-1. Finn og konfigurer DISSE to policies:
-
-```
-    "Interactive logon: Message title for users attempting to log on"
-      ☑ Define this policy setting
-      Tekst: ADVARSEL - Autorisert Tilgang Kun
-```
-```
-    "Interactive logon: Message text for users attempting to log on"
-      ☑ Define this policy setting
-      Tekst: 
-      Dette systemet er kun for autoriserte brukere.
-      All aktivitet blir logget og overvåket.
-      Uautorisert tilgang vil bli etterforsket og straffet.
-      
-      Ved å fortsette godtar du disse vilkårene.
-```
-
-1. Klikk OK på begge
-
-2. Lukk Group Policy Management Editor
-
-Steg 1.3: Link GPO til Servers OU
-```powershell
-Write-Host "`nLinker GPO til Servers OU..." -ForegroundColor Yellow
-
-try {
-    # Link til Servers OU (der SRV1 befinner seg)
-    New-GPLink -Name "Test - Legal Notice Banner" `
-               -Target "OU=Servers,OU=InfraIT_Computers,DC=infrait,DC=sec" `
-               -LinkEnabled Yes `
-               -ErrorAction Stop
-    
-    Write-Host "✓ GPO linket til OU=Servers" -ForegroundColor Green
-} catch {
-    if ($_.Exception.Message -like "*already linked*") {
-        Write-Host "⚠ GPO allerede linket (OK)" -ForegroundColor Yellow
-    } else {
-        Write-Host "✗ Feil ved linking: $_" -ForegroundColor Red
-    }
-}
-```
-
-Kjørt gpupdate /force på srv1:
-```powershell
-Invoke-Command -ComputerName "srv1.infrait.sec" -ScriptBlock {
-    gpupdate /force
-}
-```
-
-Etter at kommandoen er kjørt, vil en bli vist følgende melding ved pålogging til SRV1:
-![alt text](Advarsel.png)
 
 #### Metode 2: OSConfig
 
