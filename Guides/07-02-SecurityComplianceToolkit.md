@@ -670,6 +670,30 @@ ASR Rules (sett til "Block"):
 - Block credential stealing from LSASS (lsass.exe)
 - Block untrusted and unsigned processes from USB
 ```
+1. Dobbeltklikk "Configure Attack Surface Reduction rules"
+2. Velg "Enabled"
+3. Klikk "Show..." under Options
+
+4. Legg til disse GUID-ene (Name = GUID, Value = 1):
+```
+
+**GUID-er å legge til:**
+
+| Name (GUID) | Value | Beskrivelse |
+|-------------|-------|-------------|
+| `BE9BA2D9-53EA-4CDC-84E5-9B1EEEE46550` | `1` | Block executable from email |
+| `D4F940AB-401B-4EFC-AADC-AD5F3C50688A` | `1` | Block Office child processes |
+| `75668C1F-73B5-4CF0-BB93-3ECF5CB7CC84` | `1` | Block Office injection |
+| `9E6C4E1F-7D60-472F-BA1A-A39EF669E4B2` | `1` | Block LSASS credential theft |
+| `B2B3F03D-6A65-4F7B-A9C7-1C7EF74A9BA4` | `1` | Block untrusted USB processes |
+
+**Value:**
+- `1` = Block
+- `0` = Disabled  
+- `2` = Audit only
+
+**Klikk OK → OK**
+
 
 **Hvorfor?** ASR rules blokkerer vanlige angrepsmetoder som malware bruker.
 
