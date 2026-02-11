@@ -675,17 +675,10 @@ ASR Rules (sett til "Block"):
 3. Klikk "Show..." under Options
 
 4. Legg til disse GUID-ene (Name = GUID, Value = 1):
-```
-https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference
 
-**Eller via PowerShell:**
-
-```powershell
-Get-MpPreference | Select-Object -ExpandProperty AttackSurfaceReductionRules_Ids
-Get-MpPreference | Select-Object -ExpandProperty AttackSurfaceReductionRules_Actions
-```
 
 **Full mapping tabell finnes også i Microsoft docs under "ASR rule to GUID mapping table".**
+https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference
 **GUID-er å legge til:**
 
 | Name (GUID) | Value | Beskrivelse |
