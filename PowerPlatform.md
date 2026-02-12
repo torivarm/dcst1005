@@ -54,11 +54,6 @@
 3. Partnerportal: Reseller og distributor management
 4. Jobbportal: Søknad og rekruttering
 5. Medlemsportal: Forening/fagorganisasjon
-6. Alumni-portal (utdanning)
-7. Grant application portal (offentlig)
-8. Patient portal (helse)
-9. Complaint og whistleblower-portal
-10. Product registration og warranty portal
 
 ## Copilot Studio
 1. IT-support helpdesk bot
