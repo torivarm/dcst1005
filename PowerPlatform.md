@@ -1,4 +1,4 @@
-# Oversikt Business Use Cases - Power Platform
+# Oversikt Business Use Cases - Power Platform - Tell , Show , Do
 
 ## Power Automate
 1. Fravær og feriegodkjenning
@@ -158,7 +158,7 @@ Ansatte skal rapportere avvik, nestenulykker, sikkerhetsobservasjoner. Ofte papi
 
 ---
 
-### 5. **Kundehenvendelser fra nettskjema til CRM**
+### 5. **Kundehenvendelser fra nettskjema til Customer Relationship Management (CRM)**
 **Problem:**
 Kunder sender henvendelser via web-skjema. Manuell overføring til CRM, treghet i oppfølging, ingen automatisk klassifisering.
 
