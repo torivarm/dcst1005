@@ -205,10 +205,12 @@ The subscription already restricts locations globally. You will add a *further* 
    1. ![alt text](scopeRG-08.png)
 3. Search for and select the built-in definition: **Allowed locations**.
    1. ![alt text](allowedLocation-08.png)
-4. Leave enforcement mode as **Enabled**. Assign.
-5. Under **Parameters → Allowed locations**, select only **Norway East**.
+4. Name the assignment: `<prefix>-policy-location-lab08`
+   1. ![alt text](policyLocationName-08.png)
+5. Leave enforcement mode as **Enabled**. Assign.
+6. Under **Parameters → Allowed locations**, select only **Norway East**.
    1. ![alt text](norwayEast-08.png)
-6. Name the assignment: `<prefix>-policy-location-lab08`
+7. Name the assignment: `<prefix>-policy-location-lab08`
 
 
 **Test it:**
@@ -225,12 +227,15 @@ In Phase 2 you manually added tags to your Resource Groups. Now you will enforce
 1. Go to **Policy** → **Assignments** → **+ Assign policy**.
 2. Set **Scope** to your `<prefix>-rg-infraitsec-lab08` Resource Group.
 3. Search for the built-in definition: **Require a tag on resources**.
-4. Under **Parameters → Tag Name**, enter: `Owner`
-5. Name the assignment: `<prefix>-policy-tag-owner-lab08`
+   1. ![alt text](requireTag-08.png)
+4. Name the assignment: `<prefix>-policy-tag-owner-lab08`
+   1. ![alt text](NameThePolicy-08.png)
+5. Under **Parameters → Tag Name**, enter: `Owner`
+   1. ![alt text](tagNameOwner-08.png)
 6. Assign.
 
 **Test it:**
-1. Inside `<prefix>-rg-dev`, attempt to create a resource *without* the `Owner` tag.
+1. Inside `<prefix>-rg-infraitsec-lab08`, attempt to create a resource *without* the `Owner` tag.
 2. At the **Review + create** step, you should see a policy violation.
 3. Add the tag and verify the validation now passes.
 
@@ -238,57 +243,76 @@ In Phase 2 you manually added tags to your Resource Groups. Now you will enforce
 
 > **Reflection:** In the on-premises environment you could not technically prevent someone from creating a folder without proper permissions — but you could audit it after the fact. Azure Policy's `Deny` effect prevents the non-compliant state from ever existing.
 
-### 4.3 Resource SKU — scoped to `rg-prod`
+### 4.3 Resource SKU — scoped to `<prefix>-rg-infraitsec-lab08`
 
-The subscription already has an allowed SKU list. Add an additional, stricter restriction to your production Resource Group that allows only one VM size.
+The subscription already has an allowed SKU list. Add an additional, stricter restriction to your Resource Group that allows only one VM size.
 
 1. Go to **Policy** → **Assignments** → **+ Assign policy**.
-2. Set **Scope** to your `<prefix>-rg-prod` Resource Group.
+2. Set **Scope** to your `<prefix>-rg-infraitsec-lab08` Resource Group.
 3. Search for the built-in definition: **Allowed virtual machine size SKUs**.
 4. Under **Parameters**, select only: `Standard_B2s`
-5. Name the assignment: `<prefix>-policy-sku-prod`
+5. Name the assignment: `<prefix>-policy-sku-lab08`
 6. Assign.
 
 **Test it:**
-1. Inside `<prefix>-rg-prod`, begin creating a Virtual Machine.
+1. Inside `<prefix>-rg-infraitsec-lab08`, begin creating a Virtual Machine.
 2. Under **Size**, attempt to select `Standard_B1ms`.
 3. You may not see the block until **Review + create** — at that point you should receive a policy violation for the SKU.
 4. Cancel the VM creation — do not create a VM unless specifically instructed.
 
 > **Important:** If you encounter SKU availability issues or error messages suggesting the built-in SKU policy list is outdated, note this in your lab report. VM SKU availability changes as Azure retires and introduces sizes.
+>
+> Verify the Policy Assignment on the Resource Group:
+>![alt text](checkPolicyRG-08.png)
 
 ### 4.4 Review your Policy compliance dashboard
 
 1. Go to **Policy** → **Compliance**.
 2. Filter by your Resource Groups.
+   1. ![alt text](complianceRG-08.png)
 3. Observe the compliance state of your three assignments.
 
 > New assignments will initially show all resources as **Not started** or **Non-compliant** until the first compliance scan runs (up to 30 minutes). Resources created *before* a Deny policy was assigned are not retroactively deleted — the policy only affects new deployments.
 
+
 ---
 
-## Phase 5 – Cost Management
+## Phase 5 – Cost Management - ‼️NOTE‼️ There might be a delay for 24 hours on tags showing up
 
 *Covers: Video 08-10*
 
 ### 5.1 Explore the Cost Analysis view
 
 1. Navigate to **Cost Management + Billing** → **Cost Management** → **Cost analysis**.
-2. Set the scope to your subscription.
-3. Group costs by **Tag: Owner** to see how the tagging from Phase 2 feeds into cost visibility.
-4. Note that resources *without* the Owner tag appear under an **Untagged** group — this is why tag enforcement matters.
+   1. ![alt text](new-cost-08.png)
+2. Verify the scope i subscription (se top of picture above).
+3. Go to All views and select Accumulated costs
+   1. ![alt text](AccumulatedCosts-08.png)
+4. Filter costs by **Tag: Owner** to see how the tagging from Phase 2 feeds into cost visibility.
+   1. ![alt text](filterTag-08.png)
+5. Note‼️ If the tag does not show, it would take a while before it is visible 
+
+> If you don't see a specific tag in Cost Management, consider the following questions:
+>
+> Was the tag applied directly to the resource?
+> Was the tag applied more than 24 hours ago?
+> Does the resource type support tags? Some resource types don't support tags in usage data. See Tags support for Azure resources for the full list of what is supported.
 
 ### 5.2 Create a budget alert
 
 1. In Cost Management, go to **Budgets** → **+ Add**.
-2. Set the scope to your subscription (or ask your instructor if individual Resource Group budgets are preferred).
+   1. ![alt text](addbudget-08.png)
+2. Set the scope to your subscription and filter on tags
+   1. ![alt text](newBudget-08.png)
+   2. ![alt text](amount500NOK-08.png)
+   3. ![alt text](SetAlert-08.png)
 3. Configure:
 
 | Field | Value |
 |---|---|
 | Name | `<prefix>-budget-lab` |
 | Reset period | Monthly |
-| Amount | A small amount set by your instructor |
+| Amount | 500 NOK |
 | Alert threshold | 80% of amount |
 | Alert recipients | Your student email address |
 
@@ -305,9 +329,9 @@ Before finishing, verify the following:
 - [ ] Logged in with your individual student account (not a shared account)
 - [ ] Three Resource Groups created with correct naming convention and all four tags
 - [ ] Reader role assigned to a classmate and subsequently removed
-- [ ] Policy assignment: Allowed Locations on `rg-prod` — violation confirmed
-- [ ] Policy assignment: Tag enforcement (Owner) on `rg-dev` — violation confirmed
-- [ ] Policy assignment: SKU restriction on `rg-prod` — violation confirmed
+- [ ] Policy assignment: Allowed Locations on `<prefix>-rg-infraitsec-lab08` — violation confirmed
+- [ ] Policy assignment: Tag enforcement (Owner) on `<prefix>-rg-infraitsec-lab08` — violation confirmed
+- [ ] Policy assignment: SKU restriction on `<prefix>-rg-infraitsec-lab08` — violation confirmed
 - [ ] Policy compliance dashboard reviewed
 - [ ] Budget alert created with your prefix in the name
 - [ ] All resources and assignments clearly carry your prefix
