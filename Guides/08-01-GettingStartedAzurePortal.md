@@ -30,7 +30,7 @@ You are **10 students sharing the same tenant**. Every object you create must ca
 
 ### Your prefix
 
-Use **two or three lowercase letters** derived from your name or student username, followed by a number, last two in my birth year. Examples:
+Use **two or three lowercase letters** derived from your name or student username, followed by a number, last two in your birth year. Examples:
 
 | Student | Prefix |
 |---|---|
