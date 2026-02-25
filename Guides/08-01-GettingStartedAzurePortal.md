@@ -37,7 +37,7 @@ Use **two or three lowercase letters** derived from your name or student usernam
 | Ola Nordmann | `on03` |
 | Kari Bakke | `kb00` |
 
-> **Rule:** Agree with your classmates on prefixes before you start. No two students should share the same prefix. Write your chosen prefix here before continuing: `________`
+> **Rule:** No two students should share the same prefix.
 
 ### Naming pattern
 
