@@ -30,13 +30,12 @@ You are **10 students sharing the same tenant**. Every object you create must ca
 
 ### Your prefix
 
-Use **two or three lowercase letters** derived from your name or student username, followed by a hyphen. Examples:
+Use **two or three lowercase letters** derived from your name or student username, followed by a number, last two in my birth year. Examples:
 
 | Student | Prefix |
 |---|---|
-| Ola Nordmann | `on-` |
-| Kari Bakke | `kb-` |
-| student03 | `s03-` |
+| Ola Nordmann | `on03` |
+| Kari Bakke | `kb00` |
 
 > **Rule:** Agree with your classmates on prefixes before you start. No two students should share the same prefix. Write your chosen prefix here before continuing: `________`
 
