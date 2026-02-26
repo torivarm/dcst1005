@@ -150,7 +150,7 @@ Invoke-Command -ComputerName srv1 -ScriptBlock {
 
 ## Required Active Directory Groups
 
-The following local groups should be created in Active Directory:
+The following local groups MUST be created in Active Directory:
 
 - l_fullAccess-hr-share
 - l_fullAccess-it-share
