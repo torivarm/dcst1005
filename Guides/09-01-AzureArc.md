@@ -139,9 +139,10 @@ Remove-PSSession $session
 
 1. **Kjør scriptet som Administrator:**
 ```powershell
-    Enter-PSSession -ComputerName DC1
-    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-    & "C:\script\onboardingscript.ps1"
+Enter-PSSession -ComputerName DC1
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+& "C:\script\onboardingscript.ps1"
+Exit-PSSession
 ```
 
 ![alt text](RunOnBoarding09.png)
@@ -212,9 +213,10 @@ Remove-PSSession $session
 Enter-PSSession -ComputerName srv1
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 & "C:\script\onboardingscript.ps1"
+Exit-PSSession
 ```
 
-### CL1
+### CL1 ‼️MERK: Vi må redigere --resource-name for hver maskin vi kjører det for.
 ```powershell
 $session = New-PSSession -ComputerName cl1
 
@@ -231,7 +233,26 @@ Write-Host "Fil kopiert til cl1"
 Remove-PSSession $session
 ```
 
-### MGR
+### Kjør sriptet på CL1
+
+```powershell
+Enter-PSSession -ComputerName cl1
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+& "C:\script\onboardingscript.ps1"
+Exit-PSSession
+```
+
+### MGR ‼️MERK: Vi må redigere --resource-name for hver maskin vi kjører det for.
+
+**Kjent issue:**
+>Hvorfor virket det remote, men ikke lokalt?
+>
+>Remote execution: Invoke-Command kjører scriptet direkte i en session som allerede har admin-rettigheter (PSSession etablert med admin-bruker)
+>Lokal execution: Scriptet må re-starte seg selv via Start-Process, og da blir quotes/escape-sekvenser tolket på nytt av PowerShell → parametere blir ødelagt
+
+**Fiks:**
+- Scriptet må skrives om, se eget script: 
+
 ```powershell
 # Kjør scriptet lokalt :)
 ```
@@ -239,8 +260,9 @@ Remove-PSSession $session
 ---
 
 ## Del 3: PowerShell-basert Installasjon (Automatisering)
+## ‼️IKKE VERIFISERT AT ALT UNDER DEL 3 FUNGERER 100% ENDA (26.02.2026)
 
-GUI-metoden fungerer, men er repetitiv. La oss automatisere prosessen med PowerShell.
+GUI/PowerShell-metoden fungerer, men er repetitiv. For en fullautomatisere prosessen, krever det et litt lengre og mer avansert PowerShell script.
 
 **Scenario:** Du må re-onboarde maskinene eller onboarde nye maskiner senere.
 
