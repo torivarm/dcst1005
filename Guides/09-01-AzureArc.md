@@ -42,6 +42,7 @@ Test-NetConnection -ComputerName "login.microsoftonline.com" -Port 443
 ```
 
 **Forventet output:** `TcpTestSucceeded: True` for begge
+![alt text](tcpTestTrue.png)
 
 Hvis dette feiler, kontakt lærer før du fortsetter.
 
@@ -59,11 +60,11 @@ Vi starter med **DC1** ved hjelp av Azure Portal GUI. Dette gir deg forståelse 
 
 3. Under "Infrastructure" → velg **"Machines"**
 
-4. Klikk **"+ Add/Create"** → **"Add a machine"**
+4. Klikk **"+ Onboard/Create"** → **"Onboard existing machines"**
+   1. ![alt text](onBoardExisting.png)
 
-5. Velg **"Generate script"**
-
-6. **Konfigurer script-parametere:**
+5. Velg **"Fyll inn Basics konfigurasjon"**
+   1. ![alt text](basicsArc.png)
 
    **Resource details:**
    - **Subscription:** (Velg riktig subscription)
@@ -75,11 +76,17 @@ Vi starter med **DC1** ved hjelp av Azure Portal GUI. Dette gir deg forståelse 
    - **Connectivity method:** `Public endpoint`
    
    **Authentication:**
-   - **Authentication method:** Velg `Interactive` (IKKE Service Principal)
+   - **Authentication method:** Velg `Authenticate machines manually`
+
+6. Klikk **"Next"** til du kommer til **"Tags"**
+
+**Legg inn tags i henhold til god praksis, husk Owner!**
+
+![alt text](tags09.png)
 
 7. Klikk **"Next"** til du kommer til **"Download and run script"**
 
-8. Klikk **"Download"** - får en .ps1 fil
+8. Klikk **"Download / Copy icon"** - Kopier .ps1 filen til MGR for editering
 
    **VIKTIG:** Ikke kjør scriptet ennå! Vi må tilpasse det først.
 
@@ -87,28 +94,22 @@ Vi starter med **DC1** ved hjelp av Azure Portal GUI. Dette gir deg forståelse 
 
 Det nedlastede scriptet bruker hostname som resource name i Azure. Siden alle studenter har maskiner som heter "DC1", "SRV1" etc., må vi legge til et unikt navn.
 
-1. Åpne det nedlastede scriptet i Notepad eller VS Code
+1. Åpne det nedlastede scriptet i VS Code
 
 2. Finn linjen som starter med:
 ```powershell
    & "$env:ProgramW6432\AzureConnectedMachineAgent\azcmagent.exe" connect ...
 ```
 
-3. Legg til `--resource-name` parameter **FØR** `--subscription-id`:
+1. Legg til `--resource-name` parameter **FØR** `--subscription-id`:
 ```powershell
-   --resource-name "DC1-<prefix>" `
+   --resource-name "DC1-<prefix>"
 ```
+![alt text](dc1prefix09.png)
 
-**Eksempel (komplett linje):**
-```powershell
-& "$env:ProgramW6432\AzureConnectedMachineAgent\azcmagent.exe" connect `
-    --resource-name "DC1-<prefix>" `
-    --resource-group "<prefix>-rg-infraitsec-arc" `
-    --tenant-id "..." `
-    --subscription-id "..." `
-    --location "northeurope" `
-    --cloud "AzureCloud"
-```
+**Om du ikke ser hele linjen, kan du velge at VS Code skal ha visning Word wrap. Det gjør at alt sammen vises i editeringsvinduet, selv om det er en lang setning:**
+
+![alt text](wordWrap09.png)
 
 **Hvorfor?** Dette sikrer at din DC1 vises som "DC1-<prefix>" i Azure Portal, ikke bare "DC1". Da unngår vi konflikter med andre studenter.
 
@@ -116,53 +117,55 @@ Det nedlastede scriptet bruker hostname som resource name i Azure. Siden alle st
 
 1. **Koble til DC1** (RDP eller fra MGR):
 ```powershell
-   Enter-PSSession -ComputerName DC1 -Credential (Get-Credential InfraIT\adm_<brukernavn>)
+   Enter-PSSession -ComputerName DC1
 ```
 
-2. **Opprett arbeidsmappe:**
+2. **Kopier Script fra MGR til DC1: (MERK! Mappen script opprettes om den ikke finnes fra før på destinasjon, her DC1)**
 ```powershell
-   New-Item -Path "C:\Temp" -ItemType Directory -Force
+$session = New-PSSession -ComputerName DC1
+
+Invoke-Command -Session $session -ScriptBlock {
+    if (-not (Test-Path "C:\script")) {
+        New-Item -Path "C:\script" -ItemType Directory -Force
+        Write-Host "Opprettet mappe: C:\script"
+    }
+}
+
+Copy-Item -Path "C:\script\onboardingscript.ps1" -Destination "C:\script\onboardingscript.ps1" -ToSession $session
+Write-Host "Fil kopiert til DC1"
+
+Remove-PSSession $session
 ```
 
-3. **Kopier** det tilpassede scriptet til `C:\Temp\OnboardArc.ps1` på DC1
-
-4. **Kjør scriptet som Administrator:**
+1. **Kjør scriptet som Administrator:**
 ```powershell
-   Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-   & "C:\Temp\OnboardArc.ps1"
+    Enter-PSSession -ComputerName DC1
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    & "C:\script\onboardingscript.ps1"
 ```
 
-### Steg 1.4: Interaktiv Autentisering
+![alt text](RunOnBoarding09.png)
+
+### Steg 1.4: Interaktiv Autentisering (EDGE nettleser åpne opp påloggingsvinduet)
+
+![alt text](EDGEPopup09.png)
+
+## Om du ikke får Edge popup, kan du vente litt og se om det dukker opp følgende informasjon nederst i terminalen om Device Login med tilhørende kode. Denne instruksen kan utføres på egen laptop i egen nettleser om ønskelig:
+
+![alt text](DeviceLogin09.png)
 
 **Output du vil se:**
 ```
-info    Downloading Azure Connected Machine agent...
-info    Installing Azure Connected Machine agent...
-info    Running connect command...
-
-To sign in, use a web browser to open the page https://microsoft.com/devicelogin 
-and enter the code A1B2C3D4 to authenticate.
+Installation of azcmagent completed successfully
+INFO    Connecting machine to Azure... This might take a few minutes. 
+INFO    Cloud: AzureCloud
+INFO    Testing connectivity to endpoints that are needed to connect to Azure... This might take a few minutes. 
+INFO    Please login using the pop-up browser to authenticate. 
 ```
 
-**Hva du gjør:**
+**Etter authentisering via nettleser vil en se følgende i terminal:**
 
-1. **På din egen PC** (ikke på DC1), åpne en browser
-
-2. Gå til: https://microsoft.com/devicelogin
-
-3. **Skriv inn koden** som vises i PowerShell-vinduet (f.eks. `A1B2C3D4`)
-
-4. **Logg inn** med din NTNU-bruker
-
-5. **Godkjenn permissions** når du blir spurt
-
-6. Tilbake i PowerShell-vinduet på DC1 skal du nå se:
-```
-info    Successfully connected machine to Azure
-info    Machine is now connected to Azure
-```
-
-**Hvis du får feilmelding:** Se [Troubleshooting](#troubleshooting) på slutten av guiden.
+![alt text](postAuthArc09.png)
 
 ### Steg 1.5: Verifiser i Azure Portal
 
@@ -180,46 +183,58 @@ info    Machine is now connected to Azure
 
 ---
 
-## Del 2: GUI-basert Installasjon (Resterende maskiner)
+## Del 2: Azure-Arc onboarding på resterende maskiner:
 
 Nå gjentar vi prosessen for **SRV1**, **MGR**, og **CL1**.
 
-**Forenklet prosess (etter at du har scriptet):**
+**Forenklet prosess (ettersom vi allerede har scriptet):**
 
-### SRV1
+### SRV1 ‼️MERK: Vi må redigere --resource-name for hver maskin vi kjører det for.
 ```powershell
-# På SRV1 (PowerShell som Administrator)
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+$session = New-PSSession -ComputerName srv1
 
-# REDIGER scriptet først: --resource-name "SRV1-<prefix>"
-& "C:\Temp\OnboardArc.ps1"
+Invoke-Command -Session $session -ScriptBlock {
+    if (-not (Test-Path "C:\script")) {
+        New-Item -Path "C:\script" -ItemType Directory -Force
+        Write-Host "Opprettet mappe: C:\script"
+    }
+}
 
-# Følg device code login prosessen
+Copy-Item -Path "C:\script\onboardingscript.ps1" -Destination "C:\script\onboardingscript.ps1" -ToSession $session
+Write-Host "Fil kopiert til srv1"
+
+Remove-PSSession $session
 ```
 
-### MGR
+### Kjør sriptet på SRV1
+
 ```powershell
-# På MGR (PowerShell som Administrator)
+Enter-PSSession -ComputerName srv1
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-
-# REDIGER scriptet først: --resource-name "MGR-<prefix>"
-& "C:\Temp\OnboardArc.ps1"
-
-# Følg device code login prosessen
+& "C:\script\onboardingscript.ps1"
 ```
 
 ### CL1
 ```powershell
-# På CL1 (PowerShell som Administrator)
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+$session = New-PSSession -ComputerName cl1
 
-# REDIGER scriptet først: --resource-name "CL1-<prefix>"
-& "C:\Temp\OnboardArc.ps1"
+Invoke-Command -Session $session -ScriptBlock {
+    if (-not (Test-Path "C:\script")) {
+        New-Item -Path "C:\script" -ItemType Directory -Force
+        Write-Host "Opprettet mappe: C:\script"
+    }
+}
 
-# Følg device code login prosessen
+Copy-Item -Path "C:\script\onboardingscript.ps1" -Destination "C:\script\onboardingscript.ps1" -ToSession $session
+Write-Host "Fil kopiert til cl1"
+
+Remove-PSSession $session
 ```
 
-**Tips:** Du kan kjøre alle parallelt og switche mellom device code login for hver maskin.
+### MGR
+```powershell
+# Kjør scriptet lokalt :)
+```
 
 ---
 
