@@ -581,10 +581,17 @@ Get-Service -Name himds
 ```powershell
 # Installer Az.ConnectedMachine module (hvis ikke installert)
 Install-Module -Name Az.ConnectedMachine -Force -AllowClobber
+```
+- Finn korrekt TenantID → EntraID → Owerview
+  - ![alt text](TenantIDEntraID09.png)
 
+```powershell
 # Connect til Azure
-Connect-AzAccount
+Connect-AzAccount -TenantID "<dinEgenTenantID>"
+```
+- Velg Work or School account fra popup vindu om pålogging.
 
+```powershell
 # List alle Arc-enabled machines i din RG
 Get-AzConnectedMachine -ResourceGroupName "<prefix>-rg-infraitsec-arc" | 
     Select-Object Name, Status, ProvisioningState, LastStatusChange | 
