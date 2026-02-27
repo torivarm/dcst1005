@@ -115,12 +115,7 @@ Det nedlastede scriptet bruker hostname som resource name i Azure. Siden alle st
 
 ### Steg 1.3: Kjør Script på DC1
 
-1. **Koble til DC1** (RDP eller fra MGR):
-```powershell
-   Enter-PSSession -ComputerName DC1
-```
-
-2. **Kopier Script fra MGR til DC1: (MERK! Mappen script opprettes om den ikke finnes fra før på destinasjon, her DC1)**
+1. **Kopier Script fra MGR til DC1: (MERK! Mappen script opprettes om den ikke finnes fra før på destinasjon, her DC1)**
 ```powershell
 $session = New-PSSession -ComputerName DC1
 
@@ -142,9 +137,7 @@ Remove-PSSession $session
 Enter-PSSession -ComputerName DC1
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 & "C:\script\onboardingscript.ps1"
-Exit-PSSession
 ```
-
 ![alt text](RunOnBoarding09.png)
 
 ### Steg 1.4: Interaktiv Autentisering (EDGE nettleser åpne opp påloggingsvinduet)
@@ -167,6 +160,11 @@ INFO    Please login using the pop-up browser to authenticate.
 **Etter authentisering via nettleser vil en se følgende i terminal:**
 
 ![alt text](postAuthArc09.png)
+
+Avslutt PSSession og gå tilbake til lokal terminal:
+```powershell
+Exit-PSSession
+```
 
 ### Steg 1.5: Verifiser i Azure Portal
 
@@ -213,8 +211,13 @@ Remove-PSSession $session
 Enter-PSSession -ComputerName srv1
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 & "C:\script\onboardingscript.ps1"
+```
+
+Når scriptet er ferdig, avslutt PSSession og gå tilbake til lokal terminal:
+```powershell
 Exit-PSSession
 ```
+
 
 ### CL1 ‼️MERK: Vi må redigere --resource-name for hver maskin vi kjører det for.
 ```powershell
@@ -239,23 +242,39 @@ Remove-PSSession $session
 Enter-PSSession -ComputerName cl1
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 & "C:\script\onboardingscript.ps1"
+```
+
+Når scriptet er ferdig, avslutt PSSession og gå tilbake til lokal terminal:
+```powershell
 Exit-PSSession
 ```
 
 ### MGR ‼️MERK: Vi må redigere --resource-name for hver maskin vi kjører det for.
 
-**Kjent issue:**
->Hvorfor virket det remote, men ikke lokalt?
+**Kjent issue:** Maskinen får navnet --resource-name i Azure.
+
+>Mulig årsak på hvorfor det virket, men ikke lokalt:
 >
 >Remote execution: Invoke-Command kjører scriptet direkte i en session som allerede har admin-rettigheter (PSSession etablert med admin-bruker)
+>
 >Lokal execution: Scriptet må re-starte seg selv via Start-Process, og da blir quotes/escape-sekvenser tolket på nytt av PowerShell → parametere blir ødelagt
 
 **Fiks:**
-- Scriptet må skrives om, se eget script: 
+- Forsøk først om det fungerer med denne kommandoen i terminal som er startes som Administrator: 
 
 ```powershell
-# Kjør scriptet lokalt :)
+# 1. Åpne PowerShell as Administrator (Run as Administrator)
+
+# 2. Naviger til script-mappen
+cd C:\script
+
+# 3. Kjør scriptet
+.\onboardingscript.ps1
 ```
+
+Når en har kjørt det for alle maskinene:
+
+![alt text](Arctim8409.png)
 
 ---
 
