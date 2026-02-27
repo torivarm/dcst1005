@@ -278,6 +278,8 @@ The subscription already has an allowed SKU list. Add an additional, stricter re
 ---
 
 ## Phase 5 – Cost Management - ‼️NOTE‼️ There might be a delay for 24 hours on tags showing up
+## ‼️NOTE 2‼️:
+**It will not be possible to filter on tags or anything else in Cost analysis until some cost has been generated in the Azure Tenant on the subscription. There will be small costs associated with connecting SkyHigh VMs to Azure via Azure Arc. Wait with cost analysis and budget with tags filter until after Azure Arc next week.**
 
 *Covers: Video 08-10*
 
