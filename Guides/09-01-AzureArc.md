@@ -612,39 +612,7 @@ CL1-<prefix> Connected Succeeded         2025-02-26 14:29:12
 
 ## Del 5: Post-Onboarding Tasks
 
-### Steg 5.1: Tag Resources
-
-Legg til tags for bedre organisering:
-```powershell
-# Azure Portal → Arc machine → Tags
-Name: Owner
-Value: <brukernavn>
-
-Name: Environment
-Value: Lab
-
-Name: Course
-Value: InfraIT-Cyber
-
-Name: Semester
-Value: Spring-2025
-```
-
-**Eller via PowerShell:**
-```powershell
-$tags = @{
-    Owner = "<brukernavn>"
-    Environment = "Lab"
-    Course = "InfraIT-Cyber"
-    Semester = "Spring-2025"
-}
-
-Get-AzConnectedMachine -ResourceGroupName "<prefix>-rg-infraitsec-arc" | ForEach-Object {
-    Update-AzTag -ResourceId $_.Id -Tag $tags -Operation Merge
-}
-```
-
-### Steg 5.2: Enable System-Assigned Managed Identity
+### Steg 5.1: Enable System-Assigned Managed Identity
 
 **Hvorfor?** Managed Identity lar maskinene autentisere til Azure-tjenester (Key Vault, Storage, etc.) uten å lagre credentials.
 
@@ -661,34 +629,6 @@ Get-AzConnectedMachine -ResourceGroupName "<prefix>-rg-infraitsec-arc" | ForEach
     Update-AzConnectedMachine -ResourceGroupName $_.ResourceGroupName -Name $_.Name -EnableSystemAssignedIdentity
     Write-Host "Enabled Managed Identity for $($_.Name)" -ForegroundColor Green
 }
-```
-
----
-
-## Troubleshooting
-
-### Problem: "Failed to connect - Network connectivity error"
-
-**Symptom:**
-```
-error   Unable to reach https://management.azure.com
-```
-
-**Løsning:**
-
-1. Verifiser internett-tilgang:
-```powershell
-   Test-NetConnection -ComputerName "management.azure.com" -Port 443
-```
-
-2. Sjekk Windows Firewall:
-```powershell
-   Get-NetFirewallRule -DisplayName "*Azure*" | Format-Table DisplayName, Enabled, Action
-```
-
-3. Hvis bak proxy, konfigurer proxy:
-```powershell
-   & 'C:\Program Files\AzureConnectedMachineAgent\azcmagent.exe' config set proxy.url "http://proxy:port"
 ```
 
 ---
@@ -826,7 +766,7 @@ Svar på disse spørsmålene etter at du har fullført onboarding:
 
 4. **Automatisering:**
    - Hva er fordelen med PowerShell-basert deployment?
-   - I hvilke scenarier ville du brukt GUI vs. PowerShell?
+   - I hvilke scenarier ville du brukt GUI/CLI vs. PowerShell?
 
 5. **Troubleshooting:**
    - Hvilke feilmeldinger opplevde du?
