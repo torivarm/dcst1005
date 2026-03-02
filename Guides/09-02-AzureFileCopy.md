@@ -1,795 +1,627 @@
-# Azure Arc - Onboarding av Lab-maskiner
+# Azure File Sync – Hybrid filsynkronisering for InfraIT.Sec
 
 ## Oversikt
 
-I denne gjennomgangen skal du koble dine on-premises lab-maskiner (DC1, SRV1, MGR, CL1) til Azure Arc. Dette gir deg mulighet til å administrere maskinene fra Azure Portal, selv om de kjører i OpenStack-miljøet på NTNU.
+I denne gjennomgangen skal du sette opp Azure File Sync mellom SRV1 og Azure. Dette gjør at de delte avdelingsmappene på SRV1 automatisk synkroniseres til Azure Files, og gir deg grunnlaget for disaster recovery og hybrid filaksess.
 
-**Hva er Azure Arc?**
-Azure Arc utvider Azure management og tjenester til servere som kjører utenfor Azure - i dette tilfellet dine OpenStack VMs. Du får:
-- Sentralisert oversikt over alle maskiner
-- Remote management capabilities
-- Azure Policy enforcement
-- Update management
-- Monitoring og logging
-- Security posture management
+**Hva er Azure File Sync?**
+Azure File Sync gjør det mulig å sentralisere fildelene dine i Azure Files og samtidig beholde lokal ytelse og tilgjengelighet på SRV1. Du får:
+- Automatisk toveis synkronisering mellom SRV1 og Azure
+- Cloud tiering — sjeldent brukte filer flyttes til Azure, mens aktive filer forblir lokalt
+- Disaster recovery — hvis SRV1 faller ned, finnes alle filer i Azure
+- Multi-site access — samme filshare tilgjengelig fra flere lokasjoner
+
+**Koblingen til tidligere lab-er:**
+
+| Hva du har fra før | Hva det brukes til her |
+|---|---|
+| SRV1 med avdelingsshares (AGDLP-oppsett) | Kilde for synkronisering |
+| `<prefix>-rg-infraitsec-hybrid` (Lab 08) | Ressursgruppe for alt som opprettes i dag |
+| Azure Arc-onboarding av SRV1 (Lab 09) | Gir oss oversikt over SRV1 i Azure Portal |
+| Navnekonvensjon med prefix | Brukes konsekvent på alle nye ressurser |
 
 **Læringsmål:**
-- Forstå hybrid cloud management
-- Installere og konfigurere Azure Connected Machine Agent
-- Autentisere sikker med Azure AD (ingen lagrede credentials)
-- Verifisere tilkobling og status
-- Automatisere onboarding med PowerShell
+- Forstå arkitekturen bak Azure File Sync
+- Opprette Storage Account og Azure File Shares
+- Opprette Storage Sync Service og koble den til Resource Group
+- Installere og registrere Azure File Sync-agenten på SRV1
+- Konfigurere Sync Groups og Endpoints for hver avdelingsshare
+- Verifisere synkronisering og teste disaster recovery-scenarioet
 
-**Estimert tid:** 45-60 minutter (alle 4 maskiner)
+**Estimert tid:** 60–90 minutter
+
+---
+
+## Arkitektur
+
+Før du starter er det viktig å forstå de fire komponentene som til sammen utgjør Azure File Sync:
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                    Azure (Cloud)                           │
+│                                                            │
+│  ┌─────────────────┐      ┌────────────────────────────┐   │
+│  │  Storage Account│      │   Storage Sync Service     │   │
+│  │                 │      │                            │   │
+│  │  File Share:    │◄────►│   Sync Group per avdeling  │   │
+│  │  - it           │      │   - Cloud Endpoint         │   │
+│  │  - hr           │      │   - Server Endpoint        │   │
+│  │  - okonomi      │      │                            │   │
+│  └─────────────────┘      └────────────┬───────────────┘   │
+└───────────────────────────────────────┬────────────────────┘
+                                        │ Azure File Sync Agent
+                                        │ (port 443 utgående)
+┌───────────────────────────────────────▼────────────────────┐
+│                    SRV1 (On-premises / OpenStack)          │
+│                                                            │
+│  C:\Shares\IT       ◄──── synkronisert                     │
+│  C:\Shares\HR       ◄──── synkronisert                     │
+│  C:\Shares\Finance  ◄──── synkronisert                     │
+└────────────────────────────────────────────────────────────┘
+```
+
+**Viktig begrepsforklaring:**
+
+| Begrep | Forklaring | Merknad |
+|---|---|---|
+| **Storage Account** | Azure-lagringskontoen som holder File Shares | |
+| **Azure File Share** | En SMB-filshare i skyen — én per avdeling | Vil ikke fungere grunnet blokkering av SMB inn/ut av nettverket |
+| **Storage Sync Service** | Tjenesten som orkestrerer synkroniseringen | |
+| **Sync Group** | Kobler én Azure File Share til én eller flere Server Endpoints | |
+| **Cloud Endpoint** | Azure File Share-siden av en Sync Group | |
+| **Server Endpoint** | Den lokale mappen på SRV1 som synkroniseres | |
+| **Registered Server** | SRV1 registrert hos Storage Sync Service | |
 
 ---
 
 ## Forutsetninger
 
-- [ ] Tilgang til Azure Portal med din NTNU-bruker (B2B guest)
-- [ ] Tilgang til Resource Group: `<prefix>-rg-infraitsec-arc`
-- [ ] Rolle: "Azure Connected Machine Onboarding" på Resource Group (dere har Global Admin)
-- [ ] Administratortilgang på DC1, SRV1, MGR, CL1
-- [ ] Maskinene har utgående internett-tilgang (port 443)
+- [ ] Lab 08 fullført — `<prefix>-rg-infraitsec-hybrid` eksisterer
+- [ ] Lab 09-01 fullført — SRV1 er Arc-enabled
+- [ ] SRV1 har utgående internett-tilgang på port 443
+- [ ] Du har administratortilgang på SRV1
+- [ ] Avdelingsshares eksisterer på SRV1 (fra tidligere fil-serverlab)
 
-**Verifiser internett-tilgang:**
+**Verifiser at avdelingsshares finnes på SRV1:**
 
-Kjør på **én av maskinene** (f.eks. DC1):
+Kjør fra MGR:
 ```powershell
-# Test HTTPS connectivity til Azure endpoints
-Test-NetConnection -ComputerName "management.azure.com" -Port 443
-Test-NetConnection -ComputerName "login.microsoftonline.com" -Port 443
+# List alle shares på SRV1
+Get-SmbShare -CimSession SRV1 | Where-Object { $_.Name -notlike "*$" } | 
+    Select-Object Name, Path | Format-Table -AutoSize
 ```
 
-**Forventet output:** `TcpTestSucceeded: True` for begge
-![alt text](tcpTestTrue.png)
+Vi får bruk for disse stiene til avdelingsmappene i Del 3.
 
-Hvis dette feiler, kontakt lærer før du fortsetter.
+**Eksempel på forventet output:**
+```
+Name     Path
+----     ----
+IT       C:\Shares\IT
+HR       C:\Shares\HR
+Okonomi  C:\Shares\Finance
+```
 
 ---
 
-## Del 1: GUI-basert Installasjon (Første maskin)
+## Del 1: Klargjøring i Azure Portal
 
-Vi starter med **DC1** ved hjelp av Azure Portal GUI. Dette gir deg forståelse for prosessen før vi automatiserer.
+### Steg 1.1: Opprett Storage Account
 
-### Steg 1.1: Generer Onboarding Script
+Storage Account er beholderen for alle Azure File Shares. Naming-regler: kun lowercase bokstaver og tall, 3–24 tegn, globalt unikt.
 
 1. Logg inn på [Azure Portal](https://portal.azure.com) med din NTNU-bruker
+2. Søk etter **"Storage accounts"** og klikk **"+ Create"**
+3. Fyll inn følgende:
 
-2. Søk etter **"Azure Arc"** i søkefeltet øverst
+   **Basics:**
+   | Felt | Verdi | Kommentar |
+   |---|---|---|
+   | Subscription | Din lab-subscription | |
+   | Resource group | `<prefix>-rg-infraitsec-hybrid` | |
+   | Storage account name | `<prefix>stgsync` (kun lowercase, ingen bindestrek) | |
+   | Region | `Norway East` | Velg samme region som tidligere (lab08) |
+   | Performance | `Standard` | |
+   | Redundancy | `Locally-redundant storage (LRS)` | |
 
-3. Under "Infrastructure" → velg **"Machines"**
+   > **Merk:** LRS er tilstrekkelig for lab-formål. I produksjon ville man typisk valgt GRS (Geo-redundant) for disaster recovery på tvers av regioner.
 
-4. Klikk **"+ Onboard/Create"** → **"Onboard existing machines"**
-   1. ![alt text](onBoardExisting.png)
+4. Gå til **"Tags"**-fanen og legg til tags som gått igjennom i lab 08:
 
-5. Velg **"Fyll inn Basics konfigurasjon"**
-   1. ![alt text](basicsArc.png)
+   | Tag | Verdi |
+   |---|---|
+   | `Owner` | `Din student-e-post` |
+   | `CostCenter` | `lab` |
+   | `Project` | `infrait-lab` |
 
-   **Resource details:**
-   - **Subscription:** (Velg riktig subscription)
-   - **Resource group:** `<prefix>-rg-infraitsec-arc`
-   - **Region:** `North Europe`
-   - **Operating system:** `Windows`
-   
-   **Machine details:**
-   - **Connectivity method:** `Public endpoint`
-   
-   **Authentication:**
-   - **Authentication method:** Velg `Authenticate machines manually`
+5. Gå til **"Data protection"** og ta vekk avhukingen for `Enable soft delete for .....` - Blobs, containers og file shares (MERK: kun for lab, dårlig praksis for produksjonsmiljø)
+6. Klikk **"Review + create"** → **"Create"**
 
-6. Klikk **"Next"** til du kommer til **"Tags"**
+### Steg 1.2: Opprett Azure File Shares
 
-**Legg inn tags i henhold til god praksis, husk Owner!**
+Du skal opprette én File Share per avdeling. Gjenta stegene under for hver avdeling du har på SRV1.
 
-![alt text](tags09.png)
+1. Åpne Storage Account du nettopp opprettet
+2. I venstremenyen, gå til **"Data storage"** → **"File shares"**
+3. Klikk **"+ File share"**
+4. Konfigurer:
 
-7. Klikk **"Next"** til du kommer til **"Download and run script"**
+   | Felt | Verdi |
+   |---|---|
+   | Name | `<prefix>-it` (eller `<prefix>-hr`, `<prefix>-okonomi` osv.) |
+   | Tier | `Transaction optimized` |
+   | Backup | Fjern avhukingen for `Enable backup` under Backup |
 
-8. Klikk **"Download / Copy icon"** - Kopier .ps1 filen til MGR for editering
+5. Klikk **"Create"**
 
-   **VIKTIG:** Ikke kjør scriptet ennå! Vi må tilpasse det først.
+**Opprett én share per avdeling.** Eksempel på hva du skal ha når dette er ferdig:
 
-### Steg 1.2: Tilpass Script (Custom Resource Name)
-
-Det nedlastede scriptet bruker hostname som resource name i Azure. Siden alle studenter har maskiner som heter "DC1", "SRV1" etc., må vi legge til et unikt navn.
-
-1. Åpne det nedlastede scriptet i VS Code
-
-2. Finn linjen som starter med:
-```powershell
-   & "$env:ProgramW6432\AzureConnectedMachineAgent\azcmagent.exe" connect ...
+```
+<prefix>stgsync (Storage Account)
+├── <prefix>-it          (File Share)
+├── <prefix>-hr          (File Share)
+└── <prefix>-okonomi     (File Share)
 ```
 
-1. Legg til `--resource-name` parameter **FØR** `--subscription-id`:
+> **Navnekonvensjon:** File Share-navn er globalt synlige innenfor Storage Account. Vi inkluderer prefix for å gjøre det tydelig hvilken student som eier hvilken share.
+
+---
+
+## Del 2: Opprett Storage Sync Service
+
+Storage Sync Service er orkestratoren — den vet om alle servere og alle sync-grupper i ditt oppsett.
+
+1. I Azure Portal, søk etter **"Azure File Sync"** og åpne tjenesten
+2. Klikk **"+ Create"**
+3. Konfigurer:
+
+   | Felt | Verdi |
+   |---|---|
+   | Subscription | Din lab-subscription |
+   | Resource group | `<prefix>-rg-infraitsec-hybrid` |
+   | Storage Sync Service name | `<prefix>-storagesync` |
+   | Region | `Norway East` |
+
+4. Gå til **"Tags"**-fanen og legg til de samme tags som i Steg 1.1
+5. Klikk **"Review + create"** → **"Create"**
+
+---
+
+## Del 3: Installer Azure File Sync Agent på SRV1
+
+Azure File Sync-agenten er en separat agent fra Azure Arc-agenten. Den håndterer selve filsynkroniseringen.
+
+### Steg 3.1: Last ned og installer agenten
+
+**Fra MGR, kopier installasjonsscriptet til SRV1:**
+
 ```powershell
-   --resource-name "DC1-<prefix>"
-```
-![alt text](dc1prefix09.png)
-
-**Om du ikke ser hele linjen, kan du velge at VS Code skal ha visning Word wrap. Det gjør at alt sammen vises i editeringsvinduet, selv om det er en lang setning:**
-
-![alt text](wordWrap09.png)
-
-**Hvorfor?** Dette sikrer at din DC1 vises som "DC1-<prefix>" i Azure Portal, ikke bare "DC1". Da unngår vi konflikter med andre studenter.
-
-### Steg 1.3: Kjør Script på DC1
-
-1. **Kopier Script fra MGR til DC1: (MERK! Mappen script opprettes om den ikke finnes fra før på destinasjon, her DC1)**
-```powershell
-$session = New-PSSession -ComputerName DC1
+# Last ned Azure File Sync-agenten direkte på SRV1
+$session = New-PSSession -ComputerName SRV1
 
 Invoke-Command -Session $session -ScriptBlock {
     if (-not (Test-Path "C:\script")) {
         New-Item -Path "C:\script" -ItemType Directory -Force
-        Write-Host "Opprettet mappe: C:\script"
     }
-}
 
-Copy-Item -Path "C:\script\onboardingscript.ps1" -Destination "C:\script\onboardingscript.ps1" -ToSession $session
-Write-Host "Fil kopiert til DC1"
+    $url = "https://aka.ms/afs/agent/Server2022"
+    $dest = "C:\script\StorageSyncAgent.msi"
+    
+    Write-Host "Laster ned Azure File Sync agent..." -ForegroundColor Cyan
+    Invoke-WebRequest -Uri $url -OutFile $dest -UseBasicParsing
+    Write-Host "Nedlasting fullført: $dest" -ForegroundColor Green
+}
 
 Remove-PSSession $session
 ```
 
-1. **Kjør scriptet som Administrator:**
+**Installer agenten på SRV1:**
+
 ```powershell
-Enter-PSSession -ComputerName DC1
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-& "C:\script\onboardingscript.ps1"
-```
-![alt text](RunOnBoarding09.png)
+Enter-PSSession -ComputerName SRV1
 
-### Steg 1.4: Interaktiv Autentisering (EDGE nettleser åpne opp påloggingsvinduet)
+# Installer agenten (krever restart etterpå)
+Start-Process msiexec.exe -ArgumentList '/i "C:\script\StorageSyncAgent.msi" /qn /norestart' -Wait
 
-![alt text](EDGEPopup09.png)
+Write-Host "Installasjon fullført. Sjekk status:" -ForegroundColor Green
+Get-Service -Name FileSyncSvc -ErrorAction SilentlyContinue
 
-## Om du ikke får Edge popup, kan du vente litt og se om det dukker opp følgende informasjon nederst i terminalen om Device Login med tilhørende kode. Denne instruksen kan utføres på egen laptop i egen nettleser om ønskelig:
-
-![alt text](DeviceLogin09.png)
-
-**Output du vil se:**
-```
-Installation of azcmagent completed successfully
-INFO    Connecting machine to Azure... This might take a few minutes. 
-INFO    Cloud: AzureCloud
-INFO    Testing connectivity to endpoints that are needed to connect to Azure... This might take a few minutes. 
-INFO    Please login using the pop-up browser to authenticate. 
-```
-
-**Etter authentisering via nettleser vil en se følgende i terminal:**
-
-![alt text](postAuthArc09.png)
-
-Avslutt PSSession og gå tilbake til lokal terminal:
-```powershell
 Exit-PSSession
-```
-
-### Steg 1.5: Verifiser i Azure Portal
-
-1. Gå tilbake til **Azure Portal** → **Azure Arc** → **Machines**
-
-2. Du skal nå se: **DC1-<prefix>** i listen
-
-3. Klikk på maskinnavnet for å se detaljer:
-   - **Status:** Connected
-   - **Agent version:** (nyeste versjon)
-   - **Operating System:** Windows Server 2025 (eller 2022)
-   - **Last heartbeat:** (< 5 minutter siden)
-
-**Gratulerer!** DC1 er nå Arc-enabled! 🎉
-
----
-
-## Del 2: Azure-Arc onboarding på resterende maskiner:
-
-Nå gjentar vi prosessen for **SRV1**, **MGR**, og **CL1**.
-
-**Forenklet prosess (ettersom vi allerede har scriptet):**
-
-### SRV1 ‼️MERK: Vi må redigere --resource-name for hver maskin vi kjører det for.
-```powershell
-$session = New-PSSession -ComputerName srv1
-
-Invoke-Command -Session $session -ScriptBlock {
-    if (-not (Test-Path "C:\script")) {
-        New-Item -Path "C:\script" -ItemType Directory -Force
-        Write-Host "Opprettet mappe: C:\script"
-    }
-}
-
-Copy-Item -Path "C:\script\onboardingscript.ps1" -Destination "C:\script\onboardingscript.ps1" -ToSession $session
-Write-Host "Fil kopiert til srv1"
-
-Remove-PSSession $session
-```
-
-### Kjør sriptet på SRV1
-
-```powershell
-Enter-PSSession -ComputerName srv1
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-& "C:\script\onboardingscript.ps1"
-```
-
-Når scriptet er ferdig, avslutt PSSession og gå tilbake til lokal terminal:
-```powershell
-Exit-PSSession
-```
-
-
-### CL1 ‼️MERK: Vi må redigere --resource-name for hver maskin vi kjører det for.
-```powershell
-$session = New-PSSession -ComputerName cl1
-
-Invoke-Command -Session $session -ScriptBlock {
-    if (-not (Test-Path "C:\script")) {
-        New-Item -Path "C:\script" -ItemType Directory -Force
-        Write-Host "Opprettet mappe: C:\script"
-    }
-}
-
-Copy-Item -Path "C:\script\onboardingscript.ps1" -Destination "C:\script\onboardingscript.ps1" -ToSession $session
-Write-Host "Fil kopiert til cl1"
-
-Remove-PSSession $session
-```
-
-### Kjør sriptet på CL1
-
-```powershell
-Enter-PSSession -ComputerName cl1
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-& "C:\script\onboardingscript.ps1"
-```
-
-Når scriptet er ferdig, avslutt PSSession og gå tilbake til lokal terminal:
-```powershell
-Exit-PSSession
-```
-
-### MGR ‼️MERK: Vi må redigere --resource-name for hver maskin vi kjører det for.
-
-**Kjent issue:** Maskinen får navnet --resource-name i Azure.
-
->Mulig årsak på hvorfor det virket, men ikke lokalt:
->
->Remote execution: Invoke-Command kjører scriptet direkte i en session som allerede har admin-rettigheter (PSSession etablert med admin-bruker)
->
->Lokal execution: Scriptet må re-starte seg selv via Start-Process, og da blir quotes/escape-sekvenser tolket på nytt av PowerShell → parametere blir ødelagt
-
-**Fiks:**
-- Forsøk først om det fungerer med denne kommandoen i terminal som er startes som Administrator: 
-
-```powershell
-# 1. Åpne PowerShell as Administrator (Run as Administrator)
-
-# 2. Naviger til script-mappen
-cd C:\script
-
-# 3. Kjør scriptet
-.\onboardingscript.ps1
-```
-
-Når en har kjørt det for alle maskinene:
-
-![alt text](Arctim8409.png)
-
----
-
-## Del 3: PowerShell-basert Installasjon (Automatisering)
-## ‼️IKKE VERIFISERT AT ALT UNDER DEL 3 FUNGERER 100% ENDA (26.02.2026)
-
-GUI/PowerShell-metoden fungerer, men er repetitiv. For en fullautomatisere prosessen, krever det et litt lengre og mer avansert PowerShell script.
-
-**Scenario:** Du må re-onboarde maskinene eller onboarde nye maskiner senere.
-
-### Steg 3.1: Opprett Felles Onboarding Script
-
-**På MGR** (eller lokal PC), opprett følgende script:
-
-**Fil:** `C:\Scripts\Deploy-ArcAgent.ps1`
-```powershell
-<#
-.SYNOPSIS
-    Automatisk installasjon og onboarding av Azure Arc agent
-.DESCRIPTION
-    Dette scriptet installerer Azure Connected Machine Agent og registrerer maskinen til Azure Arc.
-    Bruker interaktiv autentisering (device code login).
-.PARAMETER ComputerName
-    Navn på maskinen som skal Arc-enables
-.PARAMETER ResourceName
-    Navn som vises i Azure Portal (f.eks. "DC1-<prefix>")
-.PARAMETER TenantId
-    Azure AD Tenant ID
-.PARAMETER SubscriptionId
-    Azure Subscription ID
-.PARAMETER ResourceGroup
-    Azure Resource Group navn
-.PARAMETER Location
-    Azure region (f.eks. "northeurope")
-.EXAMPLE
-    .\Deploy-ArcAgent.ps1 -ComputerName "DC1" -ResourceName "DC1-studenta" -TenantId "..." -SubscriptionId "..." -ResourceGroup "studenta-rg-infraitsec-arc" -Location "northeurope"
-#>
-
-param(
-    [Parameter(Mandatory=$true)]
-    [string]$ComputerName,
-    
-    [Parameter(Mandatory=$true)]
-    [string]$ResourceName,
-    
-    [Parameter(Mandatory=$true)]
-    [string]$TenantId,
-    
-    [Parameter(Mandatory=$true)]
-    [string]$SubscriptionId,
-    
-    [Parameter(Mandatory=$true)]
-    [string]$ResourceGroup,
-    
-    [Parameter(Mandatory=$false)]
-    [string]$Location = "northeurope"
-)
-
-Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host "Azure Arc Agent Deployment" -ForegroundColor Cyan
-Write-Host "Target: $ComputerName" -ForegroundColor Cyan
-Write-Host "Azure Name: $ResourceName" -ForegroundColor Cyan
-Write-Host "========================================`n" -ForegroundColor Cyan
-
-# Definér script block som skal kjøres på remote machine
-$scriptBlock = {
-    param($ResourceName, $TenantId, $SubscriptionId, $ResourceGroup, $Location)
-    
-    # Variabler
-    $agentUrl = "https://aka.ms/AzureConnectedMachineAgent"
-    $installerPath = "C:\Temp\AzureConnectedMachineAgent.msi"
-    $logPath = "C:\Temp\ArcAgentInstall.log"
-    
-    # Opprett temp directory
-    New-Item -Path "C:\Temp" -ItemType Directory -Force | Out-Null
-    
-    Write-Host "[1/3] Downloading Azure Connected Machine Agent..." -ForegroundColor Yellow
-    try {
-        Invoke-WebRequest -Uri $agentUrl -OutFile $installerPath -UseBasicParsing
-        Write-Host "      Download completed." -ForegroundColor Green
-    } catch {
-        Write-Error "Failed to download agent: $_"
-        return $false
-    }
-    
-    Write-Host "[2/3] Installing Azure Connected Machine Agent..." -ForegroundColor Yellow
-    try {
-        $installArgs = "/i `"$installerPath`" /qn /l*v `"$logPath`""
-        $process = Start-Process msiexec.exe -ArgumentList $installArgs -Wait -PassThru
-        
-        if ($process.ExitCode -eq 0) {
-            Write-Host "      Installation completed successfully." -ForegroundColor Green
-        } else {
-            Write-Error "Installation failed with exit code: $($process.ExitCode)"
-            Write-Host "Check log: $logPath" -ForegroundColor Red
-            return $false
-        }
-    } catch {
-        Write-Error "Installation error: $_"
-        return $false
-    }
-    
-    # Vent litt for at service skal starte
-    Start-Sleep -Seconds 5
-    
-    # Verifiser at agent er installert
-    $agentPath = "C:\Program Files\AzureConnectedMachineAgent\azcmagent.exe"
-    if (-not (Test-Path $agentPath)) {
-        Write-Error "Agent executable not found at: $agentPath"
-        return $false
-    }
-    
-    Write-Host "[3/3] Connecting machine to Azure Arc..." -ForegroundColor Yellow
-    Write-Host "      You will be prompted for device code login..." -ForegroundColor Cyan
-    
-    try {
-        $connectArgs = @(
-            "connect",
-            "--resource-name", $ResourceName,
-            "--resource-group", $ResourceGroup,
-            "--tenant-id", $TenantId,
-            "--subscription-id", $SubscriptionId,
-            "--location", $Location,
-            "--cloud", "AzureCloud"
-        )
-        
-        & $agentPath $connectArgs
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "`n      Successfully connected to Azure Arc!" -ForegroundColor Green
-            
-            # Vis status
-            Write-Host "`n      Verifying connection..." -ForegroundColor Yellow
-            & $agentPath show
-            
-            return $true
-        } else {
-            Write-Error "Connection failed with exit code: $LASTEXITCODE"
-            return $false
-        }
-    } catch {
-        Write-Error "Connection error: $_"
-        return $false
-    }
-}
-
-# Kjør script på target machine
-try {
-    if ($ComputerName -eq $env:COMPUTERNAME) {
-        # Kjør lokalt
-        $result = & $scriptBlock -ResourceName $ResourceName -TenantId $TenantId -SubscriptionId $SubscriptionId -ResourceGroup $ResourceGroup -Location $Location
-    } else {
-        # Kjør remote
-        Write-Host "Connecting to $ComputerName..." -ForegroundColor Yellow
-        $session = New-PSSession -ComputerName $ComputerName -Credential (Get-Credential -Message "Enter credentials for $ComputerName")
-        
-        $result = Invoke-Command -Session $session -ScriptBlock $scriptBlock -ArgumentList $ResourceName, $TenantId, $SubscriptionId, $ResourceGroup, $Location
-        
-        Remove-PSSession -Session $session
-    }
-    
-    if ($result) {
-        Write-Host "`n========================================" -ForegroundColor Green
-        Write-Host "SUCCESS: $ComputerName is now Arc-enabled!" -ForegroundColor Green
-        Write-Host "========================================`n" -ForegroundColor Green
-    } else {
-        Write-Host "`n========================================" -ForegroundColor Red
-        Write-Host "FAILED: Arc onboarding did not complete" -ForegroundColor Red
-        Write-Host "========================================`n" -ForegroundColor Red
-    }
-    
-} catch {
-    Write-Error "Script execution failed: $_"
-}
-```
-
-### Steg 3.2: Konfigurer Variabler
-
-**Opprett en konfigurasjonsfil med dine verdier:**
-
-**Fil:** `C:\Scripts\ArcConfig.ps1`
-```powershell
-# Azure Arc Configuration
-# ENDRE DISSE VERDIENE TIL DINE EGNE!
-
-$ArcConfig = @{
-    TenantId       = "<din-tenant-id>"          # Finn i Azure Portal → Azure AD → Properties
-    SubscriptionId = "<din-subscription-id>"    # Finn i Azure Portal → Subscriptions
-    ResourceGroup  = "<prefix>-rg-infraitsec-arc"
-    Location       = "northeurope"
-    Prefix         = "<prefix>"                 # Ditt tildelte prefix
-}
-
-# Maskinliste som skal Arc-enables
-$Machines = @(
-    @{ComputerName = "DC1";  ResourceName = "DC1-$($ArcConfig.Prefix)"},
-    @{ComputerName = "SRV1"; ResourceName = "SRV1-$($ArcConfig.Prefix)"},
-    @{ComputerName = "MGR";  ResourceName = "MGR-$($ArcConfig.Prefix)"},
-    @{ComputerName = "CL1";  ResourceName = "CL1-$($ArcConfig.Prefix)"}
-)
-
-# Eksporter for bruk i andre scripts
-Export-ModuleMember -Variable ArcConfig, Machines
-```
-
-**Hvordan finne TenantId og SubscriptionId:**
-
-1. **TenantId:**
-   - Azure Portal → **Microsoft Entra ID** → **Overview** → kopier **Tenant ID**
-
-2. **SubscriptionId:**
-   - Azure Portal → **Subscriptions** → kopier **Subscription ID**
-
-### Steg 3.3: Deploy til Alle Maskiner
-
-**Metode 1: Én og én maskin (anbefalt første gang)**
-```powershell
-# Last inn config
-. C:\Scripts\ArcConfig.ps1
-
-# Deploy til DC1
-.\Deploy-ArcAgent.ps1 `
-    -ComputerName "DC1" `
-    -ResourceName "DC1-$($ArcConfig.Prefix)" `
-    -TenantId $ArcConfig.TenantId `
-    -SubscriptionId $ArcConfig.SubscriptionId `
-    -ResourceGroup $ArcConfig.ResourceGroup `
-    -Location $ArcConfig.Location
-```
-
-**Metode 2: Alle maskiner i loop**
-```powershell
-# Last inn config
-. C:\Scripts\ArcConfig.ps1
-
-# Deploy til alle maskiner
-foreach ($machine in $Machines) {
-    Write-Host "`n`nProcessing: $($machine.ComputerName)" -ForegroundColor Magenta
-    
-    .\Deploy-ArcAgent.ps1 `
-        -ComputerName $machine.ComputerName `
-        -ResourceName $machine.ResourceName `
-        -TenantId $ArcConfig.TenantId `
-        -SubscriptionId $ArcConfig.SubscriptionId `
-        -ResourceGroup $ArcConfig.ResourceGroup `
-        -Location $ArcConfig.Location
-    
-    Write-Host "`nWaiting 30 seconds before next machine..." -ForegroundColor Gray
-    Start-Sleep -Seconds 30
-}
-
-Write-Host "`n`nAll machines processed!" -ForegroundColor Green
-```
-
-**VIKTIG:** Du må gjennomføre device code login for hver maskin.
-
----
-
-## Del 4: Verifisering og Status
-
-### Steg 4.1: Sjekk Status i Azure Portal
-
-1. **Azure Portal** → **Azure Arc** → **Machines**
-
-2. Filtrer på Resource Group: `<prefix>-rg-infraitsec-arc`
-
-3. Du skal nå se alle 4 maskiner:
-   - DC1-<prefix>
-   - SRV1-<prefix>
-   - MGR-<prefix>
-   - CL1-<prefix>
-
-4. Verifiser for hver maskin:
-   - **Arc agent status:** Connected (grønn prikk)
-   - **Last heartbeat:** < 5 minutter siden
-   - **Agent version:** (siste versjon)
-   - **Operating system:** Windows Server 2025 / Windows 11
-
-### Steg 4.2: Sjekk Status fra PowerShell (Lokalt)
-
-**På hver maskin:**
-```powershell
-# Vis Arc agent status
-& 'C:\Program Files\AzureConnectedMachineAgent\azcmagent.exe' show
-
-# Forventet output:
-# Resource Name: DC1-<prefix>
-# Agent Status: Connected
-# Agent Version: 1.xx
-# Subscription ID: ...
-# Resource Group: <prefix>-rg-infraitsec-arc
-```
-
-**Sjekk service status:**
-```powershell
-Get-Service -Name himds
-
-# Status skal være: Running
-```
-
-### Steg 4.3: Sjekk Status fra Azure (PowerShell)
-
-**På MGR (eller lokal PC med Az PowerShell):**
-```powershell
-# Installer Az.ConnectedMachine module (hvis ikke installert)
-Install-Module -Name Az.ConnectedMachine -Force -AllowClobber
-```
-- Finn korrekt TenantID → EntraID → Owerview
-  - ![alt text](TenantIDEntraID09.png)
-
-```powershell
-# Connect til Azure
-Connect-AzAccount -TenantID "<dinEgenTenantID>"
-```
-- Velg Work or School account fra popup vindu om pålogging.
-
-```powershell
-# List alle Arc-enabled machines i din RG
-Get-AzConnectedMachine -ResourceGroupName "<prefix>-rg-infraitsec-arc" | 
-    Select-Object Name, Status, ProvisioningState, LastStatusChange | 
-    Format-Table -AutoSize
 ```
 
 **Forventet output:**
 ```
-Name         Status    ProvisioningState LastStatusChange
-----         ------    ----------------- ----------------
-DC1-<prefix> Connected Succeeded         2025-02-26 14:23:11
-SRV1-<prefix> Connected Succeeded        2025-02-26 14:25:33
-MGR-<prefix> Connected Succeeded         2025-02-26 14:27:45
-CL1-<prefix> Connected Succeeded         2025-02-26 14:29:12
+Status   Name               DisplayName
+------   ----               -----------
+Running  FileSyncSvc        Storage Sync Monitor
+```
+
+> Hvis tjenesten ikke starter umiddelbart, vent 1–2 minutter og kjør `Get-Service -Name FileSyncSvc` på nytt.
+
+### Steg 3.2: Registrer SRV1 hos Storage Sync Service
+
+Registrering etablerer tillitsforholdet mellom SRV1 og din Storage Sync Service i Azure. Dette gjøres via en interaktiv pålogging — samme prinsipp som Arc-onboarding.
+
+1. Logg inn på SRV1 via RDP (eller Enter-PSSession fra MGR og åpne en lokal GUI-sesjon)
+
+2. Åpne **Server Manager** → merk at Azure File Sync Registration-vinduet kan åpne automatisk etter installasjon. Hvis ikke:
+
+3. Naviger til:
+   ```
+   C:\Program Files\Azure\StorageSyncAgent\ServerRegistration.exe
+   ```
+   og kjør det som Administrator.
+
+4. Klikk **"Sign in"** og logg inn med din NTNU-bruker
+
+5. Velg:
+
+   | Felt | Verdi |
+   |---|---|
+   | Subscription | Din lab-subscription |
+   | Resource group | `<prefix>-rg-infraitsec-hybrid` |
+   | Storage Sync Service | `<prefix>-storagesync` |
+
+6. Klikk **"Register"**
+
+**Verifiser registreringen i Azure Portal:**
+
+1. Gå til **Azure File Sync** → `<prefix>-storagesync`
+2. Under **"Registered servers"** skal du nå se **SRV1** med status **Online**
+
+---
+
+## Del 4: Konfigurer Sync Groups og Endpoints
+
+En Sync Group kobler én Azure File Share (Cloud Endpoint) til én lokal mappe på SRV1 (Server Endpoint). Du skal opprette én Sync Group per avdeling.
+
+### Steg 4.1: Opprett Sync Group for første avdeling
+
+Gjenta dette for hver avdeling.
+
+1. I Azure Portal, gå til **Azure File Sync** → `<prefix>-storagesync`
+2. Klikk **"+ Sync group"**
+3. Konfigurer:
+
+   | Felt | Verdi |
+   |---|---|
+   | Sync group name | `<prefix>-syncgroup-it` |
+   | Subscription | Din lab-subscription |
+   | Storage Account | `<prefix>stgsync` |
+   | Azure File Share | `<prefix>-it` |
+
+4. Klikk **"Create"**
+
+### Steg 4.2: Legg til Server Endpoint
+
+1. Klikk på Sync Group du nettopp opprettet (`<prefix>-syncgroup-it`)
+2. Klikk **"+ Add server endpoint"**
+3. Konfigurer:
+
+   | Felt | Verdi |
+   |---|---|
+   | Registered server | `SRV1` |
+   | Path | `C:\Shares\IT` (eller den faktiske stien til IT-mappen din) |
+   | Cloud Tiering | `Disabled` (deaktiver for lab-formål) |
+   | Volume Free Space | N/A (kun relevant med Cloud Tiering aktivert) |
+
+4. Klikk **"Create"**
+
+> **Cloud Tiering:** I produksjon aktiverer man Cloud Tiering slik at sjeldent brukte filer automatisk flyttes til Azure og frigjør lokal diskplass. For lab-formål holder vi dette deaktivert for å se full synkronisering.
+
+### Steg 4.3: Gjenta for alle avdelinger
+
+Opprett en ny Sync Group for hver avdeling etter samme mønster:
+
+| Sync Group | Azure File Share | Server Path |
+|---|---|---|
+| `<prefix>-syncgroup-it` | `<prefix>-it` | `C:\Shares\IT` |
+| `<prefix>-syncgroup-hr` | `<prefix>-hr` | `C:\Shares\HR` |
+| `<prefix>-syncgroup-okonomi` | `<prefix>-okonomi` | `C:\Shares\Okonomi` |
+
+**Når alle Sync Groups er opprettet:**
+
+```powershell
+# Sjekk status på alle sync sessions fra SRV1
+Enter-PSSession -ComputerName SRV1
+
+# List aktive sync sessions
+Get-StorageSyncSession | Format-Table -AutoSize
+
+Exit-PSSession
 ```
 
 ---
 
-## Del 5: Post-Onboarding Tasks
+## Del 5: Verifiser synkronisering
 
-### Steg 5.1: Enable System-Assigned Managed Identity
+### Steg 5.1: Opprett en testfil på SRV1
 
-**Hvorfor?** Managed Identity lar maskinene autentisere til Azure-tjenester (Key Vault, Storage, etc.) uten å lagre credentials.
-
-**For hver maskin i Azure Portal:**
-
-1. Arc machine → **Identity**
-2. **System assigned** tab
-3. **Status:** ON
-4. **Save**
-
-**Eller via PowerShell:**
 ```powershell
-Get-AzConnectedMachine -ResourceGroupName "<prefix>-rg-infraitsec-arc" | ForEach-Object {
-    Update-AzConnectedMachine -ResourceGroupName $_.ResourceGroupName -Name $_.Name -EnableSystemAssignedIdentity
-    Write-Host "Enabled Managed Identity for $($_.Name)" -ForegroundColor Green
+# Opprett testfil i IT-mappen fra MGR
+$session = New-PSSession -ComputerName SRV1
+
+Invoke-Command -Session $session -ScriptBlock {
+    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $content = "Synkroniseringstest opprettet: $timestamp`nMaskin: $env:COMPUTERNAME`nBruker: $env:USERNAME"
+    
+    New-Item -Path "C:\Shares\IT\sync-test-$timestamp.txt" -ItemType File -Value $content -Force
+    Write-Host "Testfil opprettet: sync-test-$timestamp.txt" -ForegroundColor Green
+}
+
+Remove-PSSession $session
+```
+
+### Steg 5.2: Verifiser at filen dukker opp i Azure
+
+1. Gå til Azure Portal → **Storage accounts** → `<prefix>stgsync`
+2. Under **"Data storage"** → **"File shares"** → `<prefix>-it`
+3. Vent 1–5 minutter og refresh — testfilen skal nå vises i Azure File Share
+
+> **Merk:** Første synkronisering etter at en Server Endpoint er opprettet kan ta noen minutter, avhengig av mengden data. Etterfølgende synkroniseringer er inkrementelle og går raskere.
+
+### Steg 5.3: Sjekk sync-status fra PowerShell
+
+```powershell
+Enter-PSSession -ComputerName SRV1
+
+# Importer modul
+Import-Module "C:\Program Files\Azure\StorageSyncAgent\StorageSync.Management.ServerCmdlets.dll"
+
+# Vis sync-status for alle endpoints
+Get-StorageSyncSyncSessionStatus | 
+    Select-Object ServerEndpointPath, SyncSessionStatus, LastSyncResult, LastSyncTime |
+    Format-Table -AutoSize
+
+Exit-PSSession
+```
+
+**Forventet output:**
+```
+ServerEndpointPath  SyncSessionStatus  LastSyncResult  LastSyncTime
+------------------  -----------------  --------------  ------------
+C:\Shares\IT        Active             Success         2025-03-01 14:23:11
+C:\Shares\HR        Active             Success         2025-03-01 14:23:15
+C:\Shares\Okonomi   Active             Success         2025-03-01 14:23:19
+```
+
+### Steg 5.4: Sjekk sync-helse i Azure Portal
+
+1. Gå til **Azure File Sync** → `<prefix>-storagesync`
+2. Klikk på en Sync Group
+3. Verifiser:
+   - **Cloud endpoint:** Grønn hake
+   - **Server endpoint (SRV1):** Status **Healthy**, siste sync < 5 minutter siden
+
+---
+
+## Del 6: Disaster Recovery-scenario
+
+Dette steget simulerer at SRV1 faller ned og du gjenoppretter tilgang til filene via Azure.
+
+### Steg 6.1: Simuler tap av lokal fil
+
+```powershell
+# Slett testfilen lokalt på SRV1 (simulerer korrupt/slettet fil)
+$session = New-PSSession -ComputerName SRV1
+
+Invoke-Command -Session $session -ScriptBlock {
+    $files = Get-ChildItem "C:\Shares\IT\sync-test-*.txt"
+    if ($files) {
+        $files | Remove-Item -Force
+        Write-Host "Slettet $($files.Count) testfil(er) lokalt" -ForegroundColor Yellow
+    }
+}
+
+Remove-PSSession $session
+```
+
+### Steg 6.2: Gjenopprett fra Azure
+
+**Alternativ A — Via Azure Portal:**
+1. Gå til Storage Account → File Share `<prefix>-it`
+2. Finn testfilen
+3. Klikk **"..."** → **"Download"**
+4. Kopier filen tilbake til SRV1
+
+**Alternativ B — Via PowerShell (Azure Files SMB-mount):**
+
+```powershell
+# Hent Storage Account key
+$storageAccount = Get-AzStorageAccount -ResourceGroupName "<prefix>-rg-infraitsec-hybrid" `
+    -Name "<prefix>stgsync"
+
+$storageKey = (Get-AzStorageAccountKey -ResourceGroupName "<prefix>-rg-infraitsec-hybrid" `
+    -Name "<prefix>stgsync")[0].Value
+
+# Mount Azure File Share som nettverksdisk på MGR
+$connectTestResult = Test-NetConnection -ComputerName "<prefix>stgsync.file.core.windows.net" -Port 445
+
+if ($connectTestResult.TcpTestSucceeded) {
+    net use Z: "\\<prefix>stgsync.file.core.windows.net\<prefix>-it" `
+        /user:"localhost\<prefix>stgsync" $storageKey
+    Write-Host "Azure File Share montert som Z:\" -ForegroundColor Green
+} else {
+    Write-Host "Port 445 er blokkert. Bruk Azure Portal for nedlasting." -ForegroundColor Yellow
 }
 ```
 
+> **Merk om port 445:** NTNU-nettverket blokkerer utgående SMB-trafikk (port 445), som er nødvendig for å mounte Azure File Share direkte. I et slikt tilfelle bruker du Azure Portal for å laste ned filer. Azure File Sync over port 443 er ikke berørt av denne begrensningen — synkroniseringen fungerer uavhengig.
+
+### Steg 6.3: Verifiser at Azure File Sync gjenoppretter filen automatisk
+
+Etter at du slettet filen lokalt i Steg 6.1, venter du 2–5 minutter. Azure File Sync vil automatisk synkronisere filen tilbake fra Azure til SRV1 siden cloud endpoint er master.
+
+```powershell
+# Sjekk om filen er kommet tilbake
+$session = New-PSSession -ComputerName SRV1
+
+Invoke-Command -Session $session -ScriptBlock {
+    $files = Get-ChildItem "C:\Shares\IT\sync-test-*.txt" -ErrorAction SilentlyContinue
+    if ($files) {
+        Write-Host "Fil gjenopprettet automatisk fra Azure:" -ForegroundColor Green
+        $files | Select-Object Name, LastWriteTime
+    } else {
+        Write-Host "Fil ikke gjenopprettet ennå — vent litt og kjør på nytt" -ForegroundColor Yellow
+    }
+}
+
+Remove-PSSession $session
+```
+
+> **Hva du beviste:** Selv om filen forsvant lokalt, levde den i Azure Files. Azure File Sync synkroniserte den tilbake uten manuell intervensjon. I et reelt disaster recovery-scenario ville man re-registrert SRV1 (eller en ny server) mot den samme Storage Sync Service og fått alle filer tilbake.
+
 ---
 
-### Problem: "Authentication failed - AADSTS50105"
+## Del 7: Verifiser oppsett i Azure Portal
 
-**Symptom:**
-```
-error   User account is disabled or does not exist
-```
+### Steg 7.1: Overordnet statussjekk
+
+1. Gå til **Azure File Sync** → `<prefix>-storagesync`
+2. Verifiser:
+   - **Registered servers:** SRV1 — Status **Online**
+   - **Sync groups:** Én per avdeling, alle med grønn status
+
+3. Klikk inn på hver Sync Group og bekreft:
+
+   | Komponent | Forventet status |
+   |---|---|
+   | Cloud Endpoint | Provisioned |
+   | Server Endpoint (SRV1) | Healthy |
+   | Files synced | > 0 |
+   | Last sync | < 15 minutter siden |
+
+### Steg 7.2: Kobling til Cost Management
+
+Fordi du la til `Owner`-tag på Storage Account i Steg 1.1, vil kostnadene for filsynkronisering dukke opp under din identitet i Cost Management — slik du konfigurerte i Lab 08.
+
+1. Gå til **Cost Management** → **Cost analysis**
+2. Grupper på **Tag: Owner**
+3. Filtrer på `<prefix>-rg-infraitsec-hybrid`
+
+---
+
+## Sjekkliste
+
+- [ ] Storage Account opprettet med korrekt prefix og tags
+- [ ] Azure File Share opprettet for hver avdeling
+- [ ] Storage Sync Service opprettet i `<prefix>-rg-infraitsec-hybrid`
+- [ ] Azure File Sync-agent installert og kjørende på SRV1
+- [ ] SRV1 registrert som **Online** under Storage Sync Service
+- [ ] Sync Group opprettet for hver avdeling med Cloud og Server Endpoint
+- [ ] Testfil synkronisert fra SRV1 → Azure (bevist i portal)
+- [ ] Disaster recovery-scenario gjennomført — fil gjenopprettet automatisk
+
+---
+
+## Feilsøking
+
+### Problem: "Server is not registered"
+
+**Symptom:** Server Endpoint-oppretting feiler med melding om at serveren ikke er registrert.
 
 **Løsning:**
-
-1. Verifiser at din NTNU-bruker er invitert som B2B guest
-2. Sjekk at du har "Azure Connected Machine Onboarding" rolle
-3. Prøv å logge inn på Azure Portal først for å verifisere tilgang
+1. Verifiser at `FileSyncSvc`-tjenesten kjører på SRV1:
+   ```powershell
+   Enter-PSSession -ComputerName SRV1
+   Get-Service -Name FileSyncSvc
+   Start-Service -Name FileSyncSvc
+   ```
+2. Kjør `ServerRegistration.exe` på nytt og verifiser at du velger riktig Storage Sync Service
 
 ---
 
-### Problem: "Resource already exists"
+### Problem: Sync-status viser "Error" eller "Pending"
 
-**Symptom:**
-```
-error   A machine with the name 'DC1-<prefix>' already exists
-```
+**Symptom:** Server Endpoint viser feil i Azure Portal.
 
 **Løsning:**
-
-**Hvis dette er re-onboarding:**
-
-1. Disconnect først:
 ```powershell
-   & 'C:\Program Files\AzureConnectedMachineAgent\azcmagent.exe' disconnect --force-local-only
+Enter-PSSession -ComputerName SRV1
+
+# Se feillog
+Get-WinEvent -ProviderName "Microsoft-FileSync-Agent" -MaxEvents 20 | 
+    Where-Object { $_.LevelDisplayName -eq "Error" } |
+    Select-Object TimeCreated, Message |
+    Format-List
 ```
 
-2. Slett ressursen i Azure Portal:
-   - Arc → Machines → Velg maskinen → Delete
-
-3. Prøv onboarding på nytt
+Vanlige årsaker:
+- Stien i Server Endpoint eksisterer ikke på SRV1 → opprett mappen manuelt
+- Tillatelser mangler på lokal mappe → gi `FileSyncSvc`-tjenestekontoen lesetilgang
 
 ---
 
-### Problem: Agent installerer ikke
+### Problem: Port 445 blokkert (Azure Files SMB-mount)
 
-**Symptom:**
-```
-error   Installation failed with exit code 1603
-```
+**Symptom:** `Test-NetConnection -Port 445` returnerer `TcpTestSucceeded: False`
+
+**Forklaring:** NTNU blokkerer utgående SMB-trafikk. Dette påvirker *direkte mounting* av Azure File Share, men **ikke** Azure File Sync — synkronisering går over port 443 og er upåvirket.
+
+**Løsning for direkte filaksess:** Bruk Azure Portal for opp- og nedlasting av enkeltfiler.
+
+---
+
+### Problem: Agentinstallasjon feiler
 
 **Løsning:**
-
-1. Sjekk installasjon log:
 ```powershell
-   Get-Content "C:\Temp\ArcAgentInstall.log" | Select-String "error" -Context 3
-```
+Enter-PSSession -ComputerName SRV1
 
-2. Verifiser at du kjører som Administrator
+# Sjekk Windows version (krever 2012 R2 eller nyere)
+Get-WmiObject -Class Win32_OperatingSystem | Select-Object Caption, Version
 
-3. Sjekk at .NET Framework 4.7.2 eller høyere er installert:
-```powershell
-   (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full").Version
-```
-
-4. Prøv manuell installasjon:
-```powershell
-   msiexec /i "C:\Temp\AzureConnectedMachineAgent.msi" /l*v "C:\Temp\ManualInstall.log"
-```
-
----
-
-### Problem: "Disconnected" status i Azure Portal
-
-**Symptom:**
-Maskinen vises som "Disconnected" selv om den virker online.
-
-**Løsning:**
-
-1. Sjekk service på maskinen:
-```powershell
-   Get-Service -Name himds
-   Restart-Service -Name himds
-```
-
-2. Sjekk event log:
-```powershell
-   Get-WinEvent -LogName "Azure Connected Machine Agent" -MaxEvents 20
-```
-
-3. Force reconnect:
-```powershell
-   & 'C:\Program Files\AzureConnectedMachineAgent\azcmagent.exe' reconnect
-```
-
----
-
-## Cleanup (Kun ved lab reset)
-
-**ADVARSEL:** Gjør kun dette hvis du skal rebuilde lab-miljøet!
-
-### Disconnect maskiner
-
-**På hver maskin:**
-```powershell
-& 'C:\Program Files\AzureConnectedMachineAgent\azcmagent.exe' disconnect --force-local-only
-```
-
-### Slett fra Azure Portal
-```powershell
-# Azure Cloud Shell eller lokal PC
-Get-AzConnectedMachine -ResourceGroupName "<prefix>-rg-infraitsec-arc" | Remove-AzConnectedMachine -Force
-```
-
-### Avinstaller agent (valgfritt)
-```powershell
-msiexec /x "C:\Temp\AzureConnectedMachineAgent.msi" /qn
+# Sjekk installasjonslogs
+Get-Content "C:\Windows\Temp\StorageSyncAgent*.log" -Tail 50
 ```
 
 ---
 
 ## Refleksjonsspørsmål
 
-Diskuter spørsmålene etter at du har fullført onboarding med medstudenter, det er ikke sikkert dere vet svaret, men en kan finne det ut sammen:
+1. **Hybrid filarkitektur:**
+   - Hva er forskjellen mellom å ha filer kun på SRV1 vs. synkronisert til Azure Files?
+   - I hvilke scenarioer ville du aktivert Cloud Tiering?
 
-1. **Hybrid Management:**
-   - Hva er forskjellen mellom å administrere maskiner via RDP/GPO vs. Azure Arc?
-   - Hvilke fordeler gir sentralisert management fra Azure Portal?
+2. **Disaster recovery:**
+   - Hva skjer med synkroniserte filer hvis SRV1 er utilgjengelig i én uke?
+   - Hvordan ville du gjenopprettet filaksess for brukerne raskest mulig?
 
-2. **Autentisering:**
-   - Hvorfor bruker vi device code login istedenfor service principals?
-   - Hva er fordelene med Managed Identity?
+3. **Tilgangsstyring:**
+   - Hvem har tilgang til filene i Azure File Share? Er det de samme som har tilgang til shares på SRV1?
+   - Hva må du gjøre for å sikre at AGDLP-modellen fra on-prem speiles i Azure?
 
-3. **Naming Convention:**
-   - Hvorfor må vi bruke `--resource-name` parameter?
-   - Hva hadde skjedd hvis alle studenter brukte samme navn?
+4. **Navnekonvensjon og tags:**
+   - Hvorfor er det viktig at Storage Account og File Shares har samme prefix som resten av ditt oppsett?
+   - Hva skjer i Cost Management hvis du glemmer å sette `Owner`-tag på Storage Account?
 
-4. **Automatisering:**
-   - Hva er fordelen med PowerShell-basert deployment?
-   - I hvilke scenarier ville du brukt GUI/CLI vs. PowerShell?
-
-5. **Troubleshooting:**
-   - Hvilke feilmeldinger opplevde du?
-   - Hvordan løste du dem?
-   - Hva ville du gjort annerledes neste gang?
+5. **Arkitektur:**
+   - Hva er forskjellen på Cloud Endpoint og Server Endpoint?
+   - Kan du ha én Azure File Share synkronisert mot to forskjellige servere? Hva ville bruksscenarioet vært?
 
 ---
 
-## Neste Steg
+## Neste steg
 
-Nå som maskinene dine er Arc-enabled, kan du gå videre med:
+Med Azure File Sync på plass har du nå et fullstendig hybrid-oppsett:
 
-1. **Azure Arc Management** - Bruk Arc til remote command execution, update management, og policy enforcement
-2. **Azure Blob Storage** - Sett opp automatisk backup fra SRV1
-3. **Azure File Sync** - Replikér DFS folders til Azure for disaster recovery
+- **On-premises:** DC1 (domenekontrller), SRV1 (filserver med synkroniserte shares), CL1 (klientmaskin)
+- **Azure Arc:** Alle maskiner administrert og synlig fra Azure Portal
+- **Azure File Sync:** Avdelingsshares speilet til Azure med automatisk disaster recovery
 
-**Gratulerer med fullført Azure Arc onboarding!** 🎉
+Neste lab vil ta for seg **sentralisert monitorering og sikkerhetsstyring** av hybrid-infrastrukturen via Azure Monitor og Defender for Cloud.
 
 ---
 
 ## Ressurser
 
-- [Azure Arc Documentation](https://learn.microsoft.com/en-us/azure/azure-arc/)
-- [Connected Machine Agent Overview](https://learn.microsoft.com/en-us/azure/azure-arc/servers/agent-overview)
-- [Troubleshooting Guide](https://learn.microsoft.com/en-us/azure/azure-arc/servers/troubleshoot-agent-onboard)
-- [Azure Arc Best Practices](https://learn.microsoft.com/en-us/azure/azure-arc/servers/best-practices)
+- [Azure File Sync Documentation](https://learn.microsoft.com/en-us/azure/storage/file-sync/file-sync-introduction)
+- [Planning for Azure File Sync](https://learn.microsoft.com/en-us/azure/storage/file-sync/file-sync-planning)
+- [Azure File Sync Agent Release Notes](https://learn.microsoft.com/en-us/azure/storage/file-sync/file-sync-release-notes)
+- [Troubleshooting Azure File Sync](https://learn.microsoft.com/en-us/azure/storage/file-sync/file-sync-troubleshoot)
+- [Azure Files pricing](https://azure.microsoft.com/en-us/pricing/details/storage/files/)
+
+---
+
+*DCST1005 – Digital Infrastructure and Cybersecurity*  
+*NTNU – Institutt for informasjonssikkerhet og kommunikasjonsteknologi*
