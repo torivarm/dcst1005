@@ -750,7 +750,7 @@ msiexec /x "C:\Temp\AzureConnectedMachineAgent.msi" /qn
 
 ## Refleksjonsspørsmål
 
-Svar på disse spørsmålene etter at du har fullført onboarding:
+Diskuter spørsmålene etter at du har fullført onboarding med medstudenter, det er ikke sikkert dere vet svaret, men en kan finne det ut sammen:
 
 1. **Hybrid Management:**
    - Hva er forskjellen mellom å administrere maskiner via RDP/GPO vs. Azure Arc?
