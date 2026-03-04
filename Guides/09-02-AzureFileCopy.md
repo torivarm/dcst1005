@@ -374,34 +374,11 @@ Remove-PSSession $session
 
 1. Gå til Azure Portal → **Storage accounts** → `<prefix>stgsync`
 2. Under **"Data storage"** → **"File shares"** → `<prefix>-it`
-3. Vent 1–5 minutter og refresh — testfilen skal nå vises i Azure File Share
+3. Vent noen sekunder — testfilen skal nå vises i Azure File Share
+   1. ![alt text](AzureFileShareITtestFile.png)
 
 > **Merk:** Første synkronisering etter at en Server Endpoint er opprettet kan ta noen minutter, avhengig av mengden data. Etterfølgende synkroniseringer er inkrementelle og går raskere.
 
-### Steg 5.3: Sjekk sync-status fra PowerShell
-
-```powershell
-Enter-PSSession -ComputerName SRV1
-
-# Importer modul
-Import-Module "C:\Program Files\Azure\StorageSyncAgent\StorageSync.Management.ServerCmdlets.dll"
-
-# Vis sync-status for alle endpoints
-Get-StorageSyncSyncSessionStatus | 
-    Select-Object ServerEndpointPath, SyncSessionStatus, LastSyncResult, LastSyncTime |
-    Format-Table -AutoSize
-
-Exit-PSSession
-```
-
-**Forventet output:**
-```
-ServerEndpointPath  SyncSessionStatus  LastSyncResult  LastSyncTime
-------------------  -----------------  --------------  ------------
-C:\Shares\IT        Active             Success         2025-03-01 14:23:11
-C:\Shares\HR        Active             Success         2025-03-01 14:23:15
-C:\Shares\finance   Active             Success         2025-03-01 14:23:19
-```
 
 ### Steg 5.4: Sjekk sync-helse i Azure Portal
 
@@ -415,79 +392,77 @@ C:\Shares\finance   Active             Success         2025-03-01 14:23:19
 
 ## Del 6: Disaster Recovery-scenario
 
-Dette steget simulerer at SRV1 faller ned og du gjenoppretter tilgang til filene via Azure.
+Dette steget simulerer at SRV1 krasjer og blir utilgjengelig. Når serveren er "nede"
+synkroniserer ikke agenten lenger — og Azure Files beholder siste kjente tilstand.
 
-### Steg 6.1: Simuler tap av lokal fil
+### Steg 6.1: Simuler at SRV1 faller ned
 
+Vi stopper Azure File Sync-agenten på SRV1 for å simulere at serveren er utilgjengelig.
+Så lenge tjenesten er stoppet, vil ingen endringer lokalt på SRV1 synkroniseres til Azure.
 ```powershell
-# Slett testfilen lokalt på SRV1 (simulerer korrupt/slettet fil)
-$session = New-PSSession -ComputerName SRV1
-
-Invoke-Command -Session $session -ScriptBlock {
-    $files = Get-ChildItem "C:\Shares\IT\sync-test-*.txt"
-    if ($files) {
-        $files | Remove-Item -Force
-        Write-Host "Slettet $($files.Count) testfil(er) lokalt" -ForegroundColor Yellow
-    }
-}
-
-Remove-PSSession $session
-```
-
-### Steg 6.2: Gjenopprett fra Azure
-
-**Alternativ A — Via Azure Portal:**
-1. Gå til Storage Account → File Share `<prefix>-it`
-2. Finn testfilen
-3. Klikk **"..."** → **"Download"**
-4. Kopier filen tilbake til SRV1
-
-**Alternativ B — Via PowerShell (Azure Files SMB-mount):**
-
-```powershell
-# Hent Storage Account key
-$storageAccount = Get-AzStorageAccount -ResourceGroupName "<prefix>-rg-infraitsec-hybrid" `
-    -Name "<prefix>stgsync"
-
-$storageKey = (Get-AzStorageAccountKey -ResourceGroupName "<prefix>-rg-infraitsec-hybrid" `
-    -Name "<prefix>stgsync")[0].Value
-
-# Mount Azure File Share som nettverksdisk på MGR
-$connectTestResult = Test-NetConnection -ComputerName "<prefix>stgsync.file.core.windows.net" -Port 445
-
-if ($connectTestResult.TcpTestSucceeded) {
-    net use Z: "\\<prefix>stgsync.file.core.windows.net\<prefix>-it" `
-        /user:"localhost\<prefix>stgsync" $storageKey
-    Write-Host "Azure File Share montert som Z:\" -ForegroundColor Green
-} else {
-    Write-Host "Port 445 er blokkert. Bruk Azure Portal for nedlasting." -ForegroundColor Yellow
+Invoke-Command -ComputerName SRV1 -ScriptBlock {
+    Stop-Service -Name FileSyncSvc -Force
+    Write-Host "Azure File Sync agent stoppet — SRV1 er nå 'nede'" -ForegroundColor Yellow
+    Get-Service -Name FileSyncSvc | Select-Object Name, Status
 }
 ```
 
-> **Merk om port 445:** NTNU-nettverket blokkerer utgående SMB-trafikk (port 445), som er nødvendig for å mounte Azure File Share direkte. I et slikt tilfelle bruker du Azure Portal for å laste ned filer. Azure File Sync over port 443 er ikke berørt av denne begrensningen — synkroniseringen fungerer uavhengig.
-
-### Steg 6.3: Verifiser at Azure File Sync gjenoppretter filen automatisk
-
-Etter at du slettet filen lokalt i Steg 6.1, venter du 2–5 minutter. Azure File Sync vil automatisk synkronisere filen tilbake fra Azure til SRV1 siden cloud endpoint er master.
-
+### Steg 6.2: Slett filen lokalt (simuler datatap)
 ```powershell
-# Sjekk om filen er kommet tilbake
-$session = New-PSSession -ComputerName SRV1
-
-Invoke-Command -Session $session -ScriptBlock {
+Invoke-Command -ComputerName SRV1 -ScriptBlock {
     $files = Get-ChildItem "C:\Shares\IT\sync-test-*.txt" -ErrorAction SilentlyContinue
     if ($files) {
-        Write-Host "Fil gjenopprettet automatisk fra Azure:" -ForegroundColor Green
-        $files | Select-Object Name, LastWriteTime
+        $files | Remove-Item -Force
+        Write-Host "Slettet $($files.Count) fil(er) lokalt — filen er borte fra SRV1" -ForegroundColor Red
     } else {
-        Write-Host "Fil ikke gjenopprettet ennå — vent litt og kjør på nytt" -ForegroundColor Yellow
+        Write-Host "Ingen testfiler funnet" -ForegroundColor Yellow
     }
 }
+```
+
+### Steg 6.3: Verifiser at filen fortsatt finnes i Azure
+
+1. Gå til Azure Portal → **Storage accounts** → `<prefix>stgsync`
+2. Åpne File Share `<prefix>-it`
+3. Bekreft at `sync-test-*.txt` fortsatt er der
+
+> **Hva du ser:** Fordi sync-agenten var stoppet da du slettet filen lokalt,
+> fikk Azure aldri beskjed om slettingen. Dette speiler virkeligheten: hvis en
+> server krasjer midt i en arbeidsdag, fryser Azure Files på siste synkroniserte
+> tilstand.
+
+### Steg 6.4: Gjenopprett filen fra Azure (MERK! Veldig manuell fremgangsmåte. Prinsippene er de samme)
+
+Last ned filen fra Azure Portal:
+1. Klikk på filen i File Share → **"..."** → **"Download"**
+2. Kopier den nedlastede filen tilbake til SRV1:
+```powershell
+# Kopier gjenopprettet fil fra MGR til SRV1 - HUSK Å SKRIVE INN DITT BRUKERNAVN I STIEN UNDER, for meg er det adm_melling
+# "C:\Users\adm_melling\Downloads\sync-test-*.txt"
+$session = New-PSSession -ComputerName SRV1
+
+Copy-Item -Path "C:\Users\adm_melling\Downloads\sync-test-*.txt" `
+    -Destination "C:\Shares\IT\" `
+    -ToSession $session
 
 Remove-PSSession $session
 ```
 
-> **Hva du beviste:** Selv om filen forsvant lokalt, levde den i Azure Files. Azure File Sync synkroniserte den tilbake uten manuell intervensjon. I et reelt disaster recovery-scenario ville man re-registrert SRV1 (eller en ny server) mot den samme Storage Sync Service og fått alle filer tilbake.
+### Steg 6.5: Start SRV1 opp igjen
+```powershell
+Invoke-Command -ComputerName SRV1 -ScriptBlock {
+    Start-Service -Name FileSyncSvc
+    Write-Host "SRV1 er tilbake online — synkronisering gjenopptas" -ForegroundColor Green
+    Get-Service -Name FileSyncSvc | Select-Object Name, Status
+}
+```
+
+Vent 2–3 minutter og verifiser at alle Sync Groups viser **Healthy** i Azure Portal.
+
+> **Hva du beviste:** Selv om filen forsvant fra SRV1, levde den trygt i Azure Files.
+> I et reelt scenario ville man registrert SRV1 (eller en helt ny server) mot den
+> samme Storage Sync Service og fått alle filer tilbake automatisk via synkronisering —
+> uten å måtte laste ned fil for fil.
 
 ---
 
