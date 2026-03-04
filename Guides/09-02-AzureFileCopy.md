@@ -46,7 +46,7 @@ Før du starter er det viktig å forstå de fire komponentene som til sammen utg
 │  │  File Share:    │◄────►│   Sync Group per avdeling  │   │
 │  │  - it           │      │   - Cloud Endpoint         │   │
 │  │  - hr           │      │   - Server Endpoint        │   │
-│  │  - okonomi      │      │                            │   │
+│  │  - finance      │      │                            │   │
 │  └─────────────────┘      └────────────┬───────────────┘   │
 └───────────────────────────────────────┬────────────────────┘
                                         │ Azure File Sync Agent
@@ -99,7 +99,7 @@ Name     Path
 ----     ----
 IT       C:\Shares\IT
 HR       C:\Shares\HR
-Okonomi  C:\Shares\Finance
+finance  C:\Shares\Finance
 ```
 
 ---
@@ -148,7 +148,7 @@ Du skal opprette én File Share per avdeling. Gjenta stegene under for hver avde
 
    | Felt | Verdi |
    |---|---|
-   | Name | `<prefix>-it` (eller `<prefix>-hr`, `<prefix>-okonomi` osv.) |
+   | Name | `<prefix>-it` (eller `<prefix>-hr`, `<prefix>-finance` osv.) |
    | Tier | `Transaction optimized` |
    | Backup | Fjern avhukingen for `Enable backup` under Backup |
 
@@ -160,7 +160,7 @@ Du skal opprette én File Share per avdeling. Gjenta stegene under for hver avde
 <prefix>stgsync (Storage Account)
 ├── <prefix>-it          (File Share)
 ├── <prefix>-hr          (File Share)
-└── <prefix>-okonomi     (File Share)
+└── <prefix>-finance     (File Share)
 ```
 
 > **Navnekonvensjon:** File Share-navn er globalt synlige innenfor Storage Account. Vi inkluderer prefix for å gjøre det tydelig hvilken student som eier hvilken share.
@@ -171,8 +171,8 @@ Du skal opprette én File Share per avdeling. Gjenta stegene under for hver avde
 
 Storage Sync Service er orkestratoren — den vet om alle servere og alle sync-grupper i ditt oppsett.
 
-1. I Azure Portal, søk etter **"Azure File Sync"** og åpne tjenesten
-2. Klikk **"+ Create"**
+1. I Azure Portal, søk etter **"Storage Sync Services"** og åpne tjenesten
+2. Klikk **"File Sync"** og deretter **"+ Create"**
 3. Konfigurer:
 
    | Felt | Verdi |
@@ -180,7 +180,7 @@ Storage Sync Service er orkestratoren — den vet om alle servere og alle sync-g
    | Subscription | Din lab-subscription |
    | Resource group | `<prefix>-rg-infraitsec-hybrid` |
    | Storage Sync Service name | `<prefix>-storagesync` |
-   | Region | `Norway East` |
+   | Region | `Norway East` (eller den regionen du har brukt ved oppretting av Resource Group) |
 
 4. Gå til **"Tags"**-fanen og legg til de samme tags som i Steg 1.1
 5. Klikk **"Review + create"** → **"Create"**
@@ -191,7 +191,9 @@ Storage Sync Service er orkestratoren — den vet om alle servere og alle sync-g
 
 Azure File Sync-agenten er en separat agent fra Azure Arc-agenten. Den håndterer selve filsynkroniseringen.
 
-### Steg 3.1: Last ned og installer agenten
+### Steg 3.1: Last ned og installer agenten - Browser (srv1) / Script (mgr)
+
+**Fra SRV1, åpne nettleser: https://aka.ms/afs/agent/Server2022**
 
 **Fra MGR, kopier installasjonsscriptet til SRV1:**
 
@@ -218,15 +220,26 @@ Remove-PSSession $session
 **Installer agenten på SRV1:**
 
 ```powershell
-Enter-PSSession -ComputerName SRV1
-
-# Installer agenten (krever restart etterpå)
-Start-Process msiexec.exe -ArgumentList '/i "C:\script\StorageSyncAgent.msi" /qn /norestart' -Wait
-
-Write-Host "Installasjon fullført. Sjekk status:" -ForegroundColor Green
-Get-Service -Name FileSyncSvc -ErrorAction SilentlyContinue
-
-Exit-PSSession
+# Installer agenten på SRV1 via Invoke-Command
+Invoke-Command -ComputerName SRV1 -ScriptBlock {
+    $logFile = "C:\script\afs_install.log"
+    
+    Write-Host "Starter installasjon..." -ForegroundColor Cyan
+    $result = Start-Process -FilePath "msiexec.exe" `
+        -ArgumentList "/i `"C:\script\StorageSyncAgent.msi`" /qn /norestart /l*v `"$logFile`"" `
+        -Wait -PassThru
+    
+    Write-Host "Exit code: $($result.ExitCode)" -ForegroundColor Cyan
+    
+    if ($result.ExitCode -eq 0) {
+        Write-Host "Installasjon fullført." -ForegroundColor Green
+    } else {
+        Write-Host "Installasjon feilet. Sjekk log: $logFile" -ForegroundColor Red
+        Get-Content $logFile | Select-Object -Last 30
+    }
+    
+    Get-Service -Name FileSyncSvc -ErrorAction SilentlyContinue
+}
 ```
 
 **Forventet output:**
@@ -238,23 +251,33 @@ Running  FileSyncSvc        Storage Sync Monitor
 
 > Hvis tjenesten ikke starter umiddelbart, vent 1–2 minutter og kjør `Get-Service -Name FileSyncSvc` på nytt.
 
+**Restart SRV1**
+```powershell
+Invoke-Command -ComputerName SRV1 -ScriptBlock { 
+    Restart-Computer -Force
+    }
+```
+
 ### Steg 3.2: Registrer SRV1 hos Storage Sync Service
 
 Registrering etablerer tillitsforholdet mellom SRV1 og din Storage Sync Service i Azure. Dette gjøres via en interaktiv pålogging — samme prinsipp som Arc-onboarding.
 
-1. Logg inn på SRV1 via RDP (eller Enter-PSSession fra MGR og åpne en lokal GUI-sesjon)
-
-2. Åpne **Server Manager** → merk at Azure File Sync Registration-vinduet kan åpne automatisk etter installasjon. Hvis ikke:
-
-3. Naviger til:
+1. Naviger til:
    ```
    C:\Program Files\Azure\StorageSyncAgent\ServerRegistration.exe
    ```
-   og kjør det som Administrator.
 
-4. Klikk **"Sign in"** og logg inn med din NTNU-bruker
+2. Klikk **"Sign in"** og logg inn med din NTNU-bruker ‼️MERK‼️ Om det blir **trøbbel med NTNU-brukeren**, opprett en egen adm_egetBrukerNavn og gi den Global Administrator rollen i Azure Tenant (f.eks: adm_melling@digsecgr2.onmicrosoft.com). Benytt deretter denne brukeren for å logge på Azure File Sync. En bør logge inn via en nettleser først, for å få satt opp MFA på denne nye brukeren.
 
-5. Velg:
+   1. ![alt text](AzureSignInSyncAgent.png)
+
+**Om du får følgende visning:**
+![alt text](IEenhancedSecurity.png)
+
+**Slå av IE Enhanced Security fra Server Manager → Local Server → IE Enhanced Security Configuration → Off - Avslutt Server Registration og start den på nytt**
+![alt text](OffIEES.png)
+
+1. Velg:
 
    | Felt | Verdi |
    |---|---|
@@ -262,12 +285,16 @@ Registrering etablerer tillitsforholdet mellom SRV1 og din Storage Sync Service 
    | Resource group | `<prefix>-rg-infraitsec-hybrid` |
    | Storage Sync Service | `<prefix>-storagesync` |
 
-6. Klikk **"Register"**
+**Eksempelvisning, navn vil avvike fra deres visning.**
+![alt text](subrgsync.png)
+
+2. Klikk **"Register"**
 
 **Verifiser registreringen i Azure Portal:**
 
-1. Gå til **Azure File Sync** → `<prefix>-storagesync`
+1. Gå til **Storage Sync Service → File Sync → `<prefix>-storagesync` → Sync → Reistrated servers**
 2. Under **"Registered servers"** skal du nå se **SRV1** med status **Online**
+![alt text](storagesynconline.png)
 
 ---
 
@@ -279,18 +306,19 @@ En Sync Group kobler én Azure File Share (Cloud Endpoint) til én lokal mappe p
 
 Gjenta dette for hver avdeling.
 
-1. I Azure Portal, gå til **Azure File Sync** → `<prefix>-storagesync`
-2. Klikk **"+ Sync group"**
-3. Konfigurer:
+1. I Azure Portal, gå til → `<prefix>-storagesync`
+2. Klikk **Sync group** I venstremenyen under **Sync**
+3. Velg deretter **"+ Create a sync group"**
+4. Konfigurer:
 
-   | Felt | Verdi |
-   |---|---|
-   | Sync group name | `<prefix>-syncgroup-it` |
-   | Subscription | Din lab-subscription |
-   | Storage Account | `<prefix>stgsync` |
-   | Azure File Share | `<prefix>-it` |
+   | Felt | Verdi | Kommentar |
+   |---|---|---|
+   | Sync group name | `<prefix>-syncgroup-it` | |
+   | Subscription | Din lab-subscription | |
+   | Storage Account | `<prefix>stgsync` | Klikk på Select storage account og velg din egen storage account |
+   | Azure File Share | `<prefix>-it` | |
 
-4. Klikk **"Create"**
+5. Klikk **"Create"**
 
 ### Steg 4.2: Legg til Server Endpoint
 
@@ -317,19 +345,9 @@ Opprett en ny Sync Group for hver avdeling etter samme mønster:
 |---|---|---|
 | `<prefix>-syncgroup-it` | `<prefix>-it` | `C:\Shares\IT` |
 | `<prefix>-syncgroup-hr` | `<prefix>-hr` | `C:\Shares\HR` |
-| `<prefix>-syncgroup-okonomi` | `<prefix>-okonomi` | `C:\Shares\Okonomi` |
-
-**Når alle Sync Groups er opprettet:**
-
-```powershell
-# Sjekk status på alle sync sessions fra SRV1
-Enter-PSSession -ComputerName SRV1
-
-# List aktive sync sessions
-Get-StorageSyncSession | Format-Table -AutoSize
-
-Exit-PSSession
-```
+| `<prefix>-syncgroup-finance` | `<prefix>-finance` | `C:\Shares\finance` |
+| ... | ... | ... |
+| ... | ... | ... |
 
 ---
 
@@ -382,7 +400,7 @@ ServerEndpointPath  SyncSessionStatus  LastSyncResult  LastSyncTime
 ------------------  -----------------  --------------  ------------
 C:\Shares\IT        Active             Success         2025-03-01 14:23:11
 C:\Shares\HR        Active             Success         2025-03-01 14:23:15
-C:\Shares\Okonomi   Active             Success         2025-03-01 14:23:19
+C:\Shares\finance   Active             Success         2025-03-01 14:23:19
 ```
 
 ### Steg 5.4: Sjekk sync-helse i Azure Portal
