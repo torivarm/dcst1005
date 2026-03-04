@@ -619,6 +619,9 @@ CL1-<prefix> Connected Succeeded         2025-02-26 14:29:12
 **Hvorfor?** Managed Identity lar maskinene autentisere til Azure-tjenester (Key Vault, Storage, etc.) uten å lagre credentials.
 
 **For hver maskin i Azure Portal Cloud Shell Bash:**
+1. Start Cloud Shell Bash fra toppen av Azure Portal
+2. Sjekk at du står i Bash og ikke PowerShell
+3. Kjør kommandoene for hver maskin:
 
 ![alt text](StartCLoudShell.png)
 **Via Cloud Shell Bash:** Her med eksempel på DC1
