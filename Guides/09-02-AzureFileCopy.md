@@ -1,5 +1,7 @@
 # Azure File Sync – Hybrid filsynkronisering for InfraIT.Sec
 
+## ‼️ MERK ‼️ I løpet av denne og forrige "walkthrough", kan dere møte på flere utfordringer sammenlignet hva selve gjennomgangen tar for seg. Dette er "by design", siden dere har vært så snille og gjort alt sammen som jeg sier i tidligere oppgaver/lab. En del av oppgaven / utfordringen for denne uken blir å finne ut hvordan dere kan løse / komme dere rundt problemene som oppstår underveis. Forsøk først selv, spør en medstudent / venn(AI?), diskuter på gruppebordene. Spør læringsassistenten om hint/hjelp. If all fails, grand master Melling will assist.
+
 ## Oversikt
 
 I denne gjennomgangen skal du sette opp Azure File Sync mellom SRV1 og Azure. Dette gjør at de delte avdelingsmappene på SRV1 automatisk synkroniseres til Azure Files, og gir deg grunnlaget for disaster recovery og hybrid filaksess.

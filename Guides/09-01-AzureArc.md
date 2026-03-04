@@ -1,5 +1,7 @@
 # Azure Arc - Onboarding av Lab-maskiner
 
+## ‼️ MERK ‼️ I løpet av denne og neste "walkthrough", kan dere møte på flere utfordringer sammenlignet hva selve gjennomgangen tar for seg. Dette er "by design", siden dere har vært så snille og gjort alt sammen som jeg sier i tidligere oppgaver/lab. En del av oppgaven / utfordringen for denne uken blir å finne ut hvordan dere kan løse / komme dere rundt problemene som oppstår underveis. Forsøk først selv, spør en medstudent / venn(AI?), diskuter på gruppebordene. Spør læringsassistenten om hint/hjelp. If all fails, grand master Melling will assist.
+
 ## Oversikt
 
 I denne gjennomgangen skal du koble dine on-premises lab-maskiner (DC1, SRV1, MGR, CL1) til Azure Arc. Dette gir deg mulighet til å administrere maskinene fra Azure Portal, selv om de kjører i OpenStack-miljøet på NTNU.
