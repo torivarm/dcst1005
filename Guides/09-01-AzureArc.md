@@ -281,7 +281,7 @@ Når en har kjørt det for alle maskinene:
 ---
 
 ## Del 3: PowerShell-basert Installasjon (Automatisering)
-## ‼️IKKE VERIFISERT AT ALT UNDER DEL 3 FUNGERER 100% ENDA (26.02.2026)
+## ‼️ DET ER IKKE VERIFISERT AT ALT UNDER DEL 3 FUNGERER 100% ENDA (04.03.2026)
 
 GUI/PowerShell-metoden fungerer, men er repetitiv. For en fullautomatisere prosessen, krever det et litt lengre og mer avansert PowerShell script.
 
