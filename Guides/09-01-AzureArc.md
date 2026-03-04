@@ -614,23 +614,27 @@ CL1-<prefix> Connected Succeeded         2025-02-26 14:29:12
 
 ## Del 5: Post-Onboarding Tasks
 
-### Steg 5.1: Enable System-Assigned Managed Identity
+### Steg 5.1: Enable System-Assigned Managed Identity in Cloud Shell Bash
 
 **Hvorfor?** Managed Identity lar maskinene autentisere til Azure-tjenester (Key Vault, Storage, etc.) uten å lagre credentials.
 
-**For hver maskin i Azure Portal:**
+**For hver maskin i Azure Portal Cloud Shell Bash:**
 
-1. Arc machine → **Identity**
-2. **System assigned** tab
-3. **Status:** ON
-4. **Save**
+![alt text](StartCLoudShell.png)
+**Via Cloud Shell Bash:** Her med eksempel på DC1
+```bash
+az connectedmachine update \
+    --resource-group "<prefix>-rg-infraitsec-arc" \
+    --name "dc1-<prefix>" \
+    --set identity.type="SystemAssigned"
+```
 
-**Eller via PowerShell:**
-```powershell
-Get-AzConnectedMachine -ResourceGroupName "<prefix>-rg-infraitsec-arc" | ForEach-Object {
-    Update-AzConnectedMachine -ResourceGroupName $_.ResourceGroupName -Name $_.Name -EnableSystemAssignedIdentity
-    Write-Host "Enabled Managed Identity for $($_.Name)" -ForegroundColor Green
-}
+Sjekk etterpå med:
+```bash
+az connectedmachine show \
+    --resource-group "<prefix>-rg-infraitsec-arc" \
+    --name "dc1-<prefix>" \
+    --query "{Name:name, Identity:identity.type, PrincipalId:identity.principalId}"
 ```
 
 ---
