@@ -1,6 +1,6 @@
 # Azure Arc - Onboarding av Lab-maskiner
 
-## ‼️ MERK ‼️ I løpet av denne og neste "walkthrough", kan dere møte på flere utfordringer sammenlignet hva selve gjennomgangen tar for seg. Dette er "by design", siden dere har vært så snille og gjort alt sammen som jeg sier i tidligere oppgaver/lab. En del av oppgaven / utfordringen for denne uken blir å finne ut hvordan dere kan løse / komme dere rundt problemene som oppstår underveis. Forsøk først selv, spør en medstudent / venn(AI?), diskuter på gruppebordene. Spør læringsassistenten om hint/hjelp. If all fails, grand master Melling will assist.
+## ‼️ MERK ‼️ I løpet av denne og neste "walkthrough", kan dere møte på flere utfordringer sammenlignet hva selve gjennomgangen tar for seg. Dette er "by design", siden dere har vært så snille og gjort alt sammen som jeg sier i tidligere oppgaver/lab. En del av oppgaven / utfordringen for denne uken blir å finne ut hvordan dere kan løse / komme dere rundt problemene som oppstår underveis. Forsøk først selv, spør en medstudent / venn(AI?), diskuter på gruppebordene. Spør læringsassistenten om hint/hjelp. If all fails, Mr. Melling will assist.
 
 ## Oversikt
 
