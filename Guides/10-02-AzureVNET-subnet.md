@@ -282,28 +282,13 @@ Vi skal se på dette når vi deployer VMs.
 
 2. Venstre meny → **Topology** (Under Monitoring)
 
-3. Velg din **Resource Group:** `<prefix>-rg-infraitsec-network`
+3. Velg din **Resource Group:** `<prefix>-rg-infraitsec-network` i toppen under scope
 
 4. **Se topologien:**
-   - VNet-ikonet i midten
+   - VNet-ikonet i midten (trykk på pl)
    - Subnets vises som "sub-ikoner" eller i detaljer
    - Foreløpig ingen VMs eller andre ressurser
-
-### Steg 7.2: Effective Routes (Konseptuelt)
-
-1. Gå tilbake til ditt VNet → **Subnets**
-
-2. Klikk på et subnet (f.eks. `subnet-frontend`)
-
-3. På subnet-siden → **Effective routes** (kan være under "Support + troubleshooting")
-
-**Hva ser du?**
-
-Azure viser automatiske ruter (routes) som er aktive:
-- `10.0.0.0/16` → VirtualNetwork (lokal routing innenfor VNet)
-- `0.0.0.0/0` → Internet (default route ut til internett)
-
-Dette viser at Azure håndterer routing automatisk uten at du må konfigurere noe.
+   - ![alt text](networkTopology.png)
 
 ---
 
