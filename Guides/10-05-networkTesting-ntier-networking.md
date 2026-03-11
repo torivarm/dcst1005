@@ -444,7 +444,7 @@ Azure sjekker alle relevante NSG-regler og forteller deg resultatet.
 
 2. **Konfigurer test:**
    - **Subscription:** Din subscription
-   - **Resource group:** `<prefix>-rg-infraitsec-network`
+   - **Resource group:** `<prefix>-rg-infraitsec-compute`
    - **Virtual machine:** `<prefix>-vm-frontend`
    - **Network interface:** Auto-selected
    - **Protocol:** TCP
@@ -631,7 +631,7 @@ Next hop viser hvor en pakke sendes videre i nettverket. I Azure betyr dette:
 1. **Network Watcher** → **Next hop**
 
 2. **Konfigurer:**
-   - **Resource group:** `<prefix>-rg-infraitsec-network`
+   - **Resource group:** `<prefix>-rg-infraitsec-compute`
    - **Virtual machine:** `<prefix>-vm-frontend`
    - **Network interface:** Auto
    - **Source IP address:** (auto - frontend VM IP)

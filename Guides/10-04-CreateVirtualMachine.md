@@ -625,47 +625,10 @@ sudo nano index.html
 
 Du skal nå se din custom side med gradient bakgrunn! 🌈
 
----
-
-## Del 15: Verifiser Monitoring Integration
-
-### Steg 15.1: Sjekk Azure Monitor Agent (i VM)
-```bash
-# Sjekk om agent kjører
-systemctl status azuremonitoragent
-
-# Eller
-ps aux | grep azuremonitor
-```
-
-Skal vise at agenten kjører.
-
-### Steg 15.2: Query i Log Analytics
-
-**Azure Portal → Log Analytics Workspace:**
-```kusto
-Heartbeat
-| where TimeGenerated > ago(1h)
-| where Computer contains "linux01"
-| project TimeGenerated, Computer, OSType, OSName, OSMajorVersion
-```
-
-**Forventet (etter 10-15 min):**
-```
-TimeGenerated         Computer              OSType  OSName  OSMajorVersion
-2024-03-10 14:23:12   eg06-vm-linux01      Linux   Ubuntu  24
-```
-
-**Hybrid Monitoring i praksis:**
-- On-prem Windows (DC1, SRV1) via Arc
-- Azure Windows VM (hvis du lagde den)
-- Azure Linux VM (linux01)
-
-**Alt i samme workspace!** 🎯
 
 ---
 
-## Del 16: Sikkerhet - Hva Hvis IP Endres?
+## Del 15: Sikkerhet - Hva Hvis IP Endres?
 
 ### Scenario: Du Bytter Nettverk
 
@@ -696,9 +659,9 @@ Dette tillater hele IP-ranges (mer permissivt, men fortsatt bedre enn "Any").
 
 ---
 
-## Del 17: Stoppe og Starte VM
+## Del 16: Stoppe og Starte VM
 
-### Steg 17.1: Stop VM
+### Steg 16.1: Stop VM
 
 **Husk å stoppe VM når du ikke bruker den!**
 
@@ -713,7 +676,7 @@ Dette tillater hele IP-ranges (mer permissivt, men fortsatt bedre enn "Any").
 - ✅ Compute charges stopper
 - ✅ Public IP frigjøres (static IP beholdes)
 
-### Steg 17.2: Start VM
+### Steg 16.2: Start VM
 
 1. VM-siden → **"Start"**
 
@@ -723,7 +686,7 @@ Dette tillater hele IP-ranges (mer permissivt, men fortsatt bedre enn "Any").
 
 ---
 
-## Del 18: Feilsøking
+## Del 17: Feilsøking
 
 ### Problem: "SSH Connection Refused"
 
