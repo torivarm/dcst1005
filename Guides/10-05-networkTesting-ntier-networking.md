@@ -71,7 +71,7 @@ For denne øvelsen trenger du **3 Linux VMs** (Ubuntu Server):
 
 **Du har allerede lært å deploye Linux VMs, så her er en rask oppsummering:**
 
-**For hver VM (gjenta 3 ganger):**
+**Opprett 3 VM-er i hvert sitt subnet:**
 
 1. **Virtual machines** → **Create**
 
