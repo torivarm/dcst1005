@@ -12,8 +12,8 @@
 | 11 | 9. - 13. mars | Introduction to Networking in Public Cloud | Øving 9 | |
 | 12 | 16. - 20. mars | Advanced networking in public cloud | Øving 10 | |
 | 13 | 23. - 27. mars | | | |
-| 14 | 30. mars - 3. apr | | | |
+| 14 | 30. mars - 3. apr | Påskeferie | | |
 | 15 | 6. - 10. apr | | | |
 | 16 | 13. - 17. apr | | | |
 | 17 | 20. - 24. apr | | | |
-| 18 | 27. apr - 1. mai | | | |
+| 18 | 27. apr - 1. mai | Undervisningsslutt / Eksamensperiode | | |
