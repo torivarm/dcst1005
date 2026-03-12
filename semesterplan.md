@@ -10,7 +10,7 @@
 | 9 | 23. - 27. feb | Introduksjon / kom i gang med Azure | Øving 7 | |
 | 10 | 2. - 6. mars | Hybrid cloud with Azure Arc and File Sync | Øving 8 | |
 | 11 | 9. - 13. mars | Introduction to Networking in Public Cloud | Øving 9 | |
-| 12 | 16. - 20. mars | | | |
+| 12 | 16. - 20. mars | Advanced networking in public cloud | Øving 10 | |
 | 13 | 23. - 27. mars | | | |
 | 14 | 30. mars - 3. apr | | | |
 | 15 | 6. - 10. apr | | | |
