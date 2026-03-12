@@ -7,9 +7,9 @@
 | 6 | 2. - 6. feb | Backup in a small infrastructure | Øving 5 | Soft frist 18.02 |
 | 7 | 9. - 13. feb | Hardening your infrastructure | Øving 6 | Soft frist 25.02 |
 | 8 | 16. - 20. feb | Studieuke (kom ajour med faget) | | |
-| 9 | 23. - 27. feb | Introduksjon / kom i gang med Azure | | |
-| 10 | 2. - 6. mars | | | |
-| 11 | 9. - 13. mars | | | |
+| 9 | 23. - 27. feb | Introduksjon / kom i gang med Azure | Øving 7 | |
+| 10 | 2. - 6. mars | Hybrid cloud with Azure Arc and File Sync | Øving 8 | |
+| 11 | 9. - 13. mars | Introduction to Networking in Public Cloud | Øving 9 | |
 | 12 | 16. - 20. mars | | | |
 | 13 | 23. - 27. mars | | | |
 | 14 | 30. mars - 3. apr | | | |
