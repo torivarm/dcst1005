@@ -47,7 +47,7 @@ For lab-miljøet anbefales følgende:
 - `192.168.0.0/16` - Mindre område
 
 **For denne labben bruker vi:**
-- `10.100.0.0/16` - Gir 65,536 adresser
+- `10.0.0.0/16` - Gir 65,536 adresser
 - Unikt område som ikke kolliderer med lab-nettverket ditt i OpenStack
 
 **Hvorfor /16?**
@@ -135,7 +135,7 @@ Her defineres nettverkets adresseområde.
 
 **Hva betyr dette?**
 
-- `10.100.0.0/16` betyr at VNet kan bruke IP-adresser fra `10.100.0.0` til `10.100.255.255`
+- `10.0.0.0/16` betyr at VNet kan bruke IP-adresser fra `10.0.0.0` til `10.0.255.255`
 - Totalt 65,536 mulige IP-adresser
 - Dette er mer enn nok for alle subnets du kommer til å opprette
 
@@ -181,7 +181,7 @@ Klikk **"Next: Review + create >"**
    - Resource group: `<prefix>-rg-infraitsec-network`
    - VNet name: `<prefix>-vnet-infraitsec`
    - Region: North Europe
-   - Address space: `10.100.0.0/16`
+   - Address space: `10.0.0.0/16`
    - Subnets: Ingen (skal være tomt)
 
 3. Hvis validering passerer, klikk **"Create"**
@@ -202,7 +202,7 @@ Du er nå på VNet-siden. Sjekk følgende:
 - **Resource group:** Skal vise din nye RG
 - **Location:** North Europe
 - **Subscription:** Din subscription
-- **Address space:** `10.100.0.0/16`
+- **Address space:** `10.0.0.0/16`
 - **Subnets:** 0 (vi oppretter disse i neste øvelse)
 
 ### Steg 3.2: Utforsk Settings
@@ -211,7 +211,7 @@ Du er nå på VNet-siden. Sjekk følgende:
 
 **Address space:**
 - Klikk på **"Address space"** (venstre meny)
-- Bekreft at `10.100.0.0/16` er listet
+- Bekreft at `10.0.0.0/16` er listet
 - Dette kan endres senere hvis nødvendig
 
 **Subnets:**
@@ -266,7 +266,7 @@ Selv om du ikke setter opp VPN i denne øvelsen, er det viktig å forstå hvorda
 
 ### On-Premises til Azure Connectivity
 
-**Ditt VNet (`10.100.0.0/16`)** i Azure kan kobles til **ditt lab-nettverk** i OpenStack via:
+**Ditt VNet (`10.0.0.0/16`)** i Azure kan kobles til **ditt lab-nettverk** i OpenStack via:
 
 **Point-to-Site VPN (P2S):**
 - Din PC kobler til Azure VNet via VPN-klient
@@ -289,7 +289,7 @@ Vi setter IKKE opp VPN (for dyrt), men VNet-strukturen vi bygger nå er forbered
 
 **Viktig designprinsipp:**
 
-VNet-adresseområdet (`10.100.0.0/16`) må **ikke** overlappe med on-premises nettverk (`192.168.111.0/24` i OpenStack). Dette sikrer at IP-ruting fungerer korrekt hvis du senere kobler nettverkene sammen.
+VNet-adresseområdet (`10.0.0.0/16`) må **ikke** overlappe med on-premises nettverk (`192.168.111.0/24` i OpenStack). Dette sikrer at IP-ruting fungerer korrekt hvis du senere kobler nettverkene sammen.
 
 ---
 
