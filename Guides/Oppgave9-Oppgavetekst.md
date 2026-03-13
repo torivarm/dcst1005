@@ -123,3 +123,7 @@ Utfør praktisk testing med `ping` eller `nc` (netcat) mellom VMs for å verifis
 ## Leveranse
 
 Du skal vise frem til læringsassistent at trafikk tillates og blokkeres som forventet.
+
+## Etter presentert for læringsassistent:
+
+Slå av og slett alle virtuelle maskiner (om en har alle VM-ene i en egen Resource Group, kan en slette hele denne Resource Group-en) som ble opprettet i forbindelse med testing av VNET og subnet. Dere trenger IKKE å slette VNET, subnet og NSG-er.
