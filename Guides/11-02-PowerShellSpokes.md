@@ -19,7 +19,7 @@ Så langt har du opprettet Azure-ressurser manuelt via portalen. Det fungerer go
 ## Forutsetninger
 
 - [ ] PowerShell 7 installert på din maskin (kontroller med `$PSVersionTable.PSVersion` i et PowerShell-vindu)
-- [ ] Tenant ID og Subscription ID for ditt Azure-miljø (fås av lærer)
+- [ ] Tenant ID og Subscription ID for ditt Azure-miljø (Finnes i portal.azure.com)
 - [ ] Ditt tildelte prefix (f.eks. `eg06`, `tim84`)
 - [ ] Fullført forrige øvelse — `<prefix>-rg-infraitsec-networking` eksisterer allerede
 
@@ -83,7 +83,7 @@ Erstatt verdiene i enkeltfnutter med dine faktiske IDs (oppgitt av lærer):
 Connect-AzAccount -Tenant 'xxxx-xxxx-xxxx-xxxx' -SubscriptionId 'yyyy-yyyy-yyyy-yyyy'
 ```
 
-Et nettleservindu åpner seg automatisk. Logg inn med din `@stud.ntnu.no`-bruker. Når innloggingen er fullført, lukkes nettleservinduet og PowerShell-vinduet viser en bekreftelse med kontoinformasjon.
+Et nettleservindu åpner seg automatisk. Logg inn med din NTNU-bruker. Når innloggingen er fullført, lukkes nettleservinduet og PowerShell-vinduet viser en bekreftelse med kontoinformasjon.
 
 ### Steg 2.2: Verifiser tilkoblingen
 
@@ -94,12 +94,6 @@ Get-AzContext
 ```
 
 Outputen viser hvilken konto, tenant og subscription du er aktiv på. Bekreft at `SubscriptionId` og `TenantId` matcher det du forventet.
-
-Vil du se alle tilgjengelige subscriptions på din konto, kan du kjøre:
-
-```powershell
-Get-AzSubscription
-```
 
 ---
 
@@ -118,9 +112,9 @@ Scriptet under oppretter de to spoke-nettverkene fra forrige øvelse — `<prefi
 # Variabler — endre disse til dine egne verdier
 #########################################################
 
-$prefix            = 'eg06'                          # Ditt tildelte prefix
-$resourceGroupName = "$prefix-rg-infraitsec-networking"
-$location          = 'norwayeast'
+$prefix            = 'tim84'       # Ditt tildelte prefix
+$resourceGroupName = "$prefix-rg-infraitsec-network"
+$location          = 'northeurope'  # Husk å endre til samme region/location som du har brukt tidligere
 
 # Spoke 2
 $spoke2VnetName    = "$prefix-vnet-spoke2"
@@ -150,7 +144,7 @@ New-AzVirtualNetwork `
     -Location $location `
     -AddressPrefix $spoke2AddressSpace `
     -Subnet $spoke2Subnet `
-    -Tag @{ Owner = $prefix; Environment = 'Lab'; Course = 'InfraIT-Cyber' }
+    -Tag @{ Owner = $prefix; Environment = 'Lab'; Course = 'InfraIT.sec' }
 
 Write-Host "$spoke2VnetName opprettet." -ForegroundColor Green
 
@@ -170,7 +164,7 @@ New-AzVirtualNetwork `
     -Location $location `
     -AddressPrefix $spoke3AddressSpace `
     -Subnet $spoke3Subnet `
-    -Tag @{ Owner = $prefix; Environment = 'Lab'; Course = 'InfraIT-Cyber' }
+    -Tag @{ Owner = $prefix; Environment = 'Lab'; Course = 'InfraIT.sec' }
 
 Write-Host "$spoke3VnetName opprettet." -ForegroundColor Green
 
@@ -198,7 +192,7 @@ Lim inn hele scriptet i PowerShell og trykk Enter. Du vil se cyan-farget tekst m
 Bekreft at begge nettverkene ble opprettet som forventet:
 
 ```powershell
-Get-AzVirtualNetwork -ResourceGroupName "$prefix-rg-infraitsec-networking" |
+Get-AzVirtualNetwork -ResourceGroupName "$prefix-rg-infraitsec-network" |
     Select-Object Name, Location, @{N='AddressSpace';E={$_.AddressSpace.AddressPrefixes}}
 ```
 
@@ -207,36 +201,10 @@ Du skal se alle dine virtuelle nettverk i resource gruppen listet opp med navn o
 For å inspisere subnets i ett spesifikt nettverk:
 
 ```powershell
-Get-AzVirtualNetwork -Name "$prefix-vnet-spoke2" -ResourceGroupName "$prefix-rg-infraitsec-networking" |
+Get-AzVirtualNetwork -Name "$prefix-vnet-spoke2" -ResourceGroupName "$prefix-rg-infraitsec-network" |
     Select-Object -ExpandProperty Subnets |
     Select-Object Name, AddressPrefix
 ```
-
----
-
-## Del 4: Rydd opp med script (valgfritt)
-
-Når du er ferdig med å verifisere, kan du slette de to spoke-nettverkene med følgende kommandoer. Dette er nyttig å øve på slik at du blir komfortabel med å rive ned ressurser programmatisk.
-
-```powershell
-# Slett spoke 2
-Remove-AzVirtualNetwork `
-    -Name "$prefix-vnet-spoke2" `
-    -ResourceGroupName "$prefix-rg-infraitsec-networking" `
-    -Force
-
-# Slett spoke 3
-Remove-AzVirtualNetwork `
-    -Name "$prefix-vnet-spoke3" `
-    -ResourceGroupName "$prefix-rg-infraitsec-networking" `
-    -Force
-
-Write-Host "Spoke-nettverk slettet." -ForegroundColor Yellow
-```
-
-Flagget `-Force` sørger for at du ikke blir spurt om bekreftelse for hver ressurs.
-
-> **Merk:** I neste del av dette modulet gjennomgår vi et fullstendig deployment- og teardown-script for hele hub-spoke-topologien — inkludert hub-nettverk, NSG, Public IP, Firewall Policy, Azure Firewall, peering og rutetabeller — slik at du kan bygge opp og rive ned hele miljøet med ett kall.
 
 ---
 
