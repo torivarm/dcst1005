@@ -196,7 +196,7 @@ Azure Firewall krever en dedikert public IP-adresse av typen **Standard SKU**. D
    | DNS name label | <prefix>-infrait |
    | Domain name label scope (preview) | None |
 
-4. Legg til tags og klikk **"Review + create"** → **"Create"**
+4. Legg til tags som tidligere og klikk **"Review + create"** → **"Create"**
 
 **Hvorfor statisk IP?**
 En statisk IP-adresse endrer seg ikke, selv om du stopper og starter tilknyttede ressurser. For en firewall er dette kritisk — alle regler og DNS-oppføringer som peker på denne adressen vil fortsette å fungere.
@@ -221,7 +221,7 @@ Vi oppretter policyen nå, men legger til regler i den i Del 10 — etter at fir
    |---|---|
    | Resource group | `<prefix>-rg-infraitsec-networking` |
    | Name | `<prefix>-fwpolicy-hub` |
-   | Region | Norway East |
+   | Region | Samme region som tidligere |
    | Policy tier | **Basic** |
 
    **Merk:** Policy-tier må matche tier på selve firewallen du oppretter i Del 7. Basic-tier støtter nettverksregler og DNAT-regler, som er alt du trenger for denne øvelsen. Avanserte funksjoner som applikasjonslagsinspeksjon (layer 7) og Threat Intelligence krever Standard- eller Premium-tier.
@@ -231,6 +231,9 @@ Vi oppretter policyen nå, men legger til regler i den i Del 10 — etter at fir
 ---
 
 ## Del 5: Opprett spoke-nettverkene
+
+**TIL INFO: Her er det mye som vi har gjort manuelt fra før, ta heller en titt på hvordan dette kan utføres ved bruk av PowerShell:**
+[PowerShell-gjennomgang](11-02-PowerShellSpokes.md)
 
 Du oppretter nå de to nye spoke-nettverkene. Disse representerer separate miljøer — tenk på dem som ulike avdelinger eller prosjekter hos InfraIT.sec som trenger kontrollert tilgang til ressurser i hverandre og i spoke 1.
 
