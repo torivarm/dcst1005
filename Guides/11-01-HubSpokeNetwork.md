@@ -75,7 +75,7 @@ Hub-nettverket er kjernen i topologien. Det huser Azure Firewall, som er det ene
 
 **Instance details:**
 - **Name:** `<prefix>-vnet-hub`
-- **Region:** Norway East
+- **Region:** `<samme region som tidligere>`
 
 Klikk **Next** for å gå til Security-fanen. La alle valg her stå på **Disabled** — vi oppretter firewallen manuelt i en egen ressurs i stedet for gjennom denne veiviseren.
 
@@ -135,7 +135,7 @@ Management-subnettet er ment for administrative ressurser som har tilgang til re
    |---|---|
    | Resource group | `<prefix>-rg-infraitsec-network` |
    | Name | `<prefix>-nsg-management` |
-   | Region | Norway East |
+   | Region | `<velg samme region som tidligere>` |
 
 4. Legg til de samme tags som ovenfor
 5. Klikk **"Review + create"** → **"Create"**
@@ -175,7 +175,7 @@ Management-subnettet er ment for administrative ressurser som har tilgang til re
 
 Azure Firewall krever en dedikert public IP-adresse av typen **Standard SKU**. Denne adressen blir det offentlige inngangspunktet for eventuell innkommende trafikk du senere ønsker å rute gjennom firewallen. Vi oppretter den nå slik at den er klar når firewallen deployes i Del 7.
 
-### Steg 3.1: Opprett Public IP
+### Steg 3.1: Opprett 2x Public IP
 
 1. Søk etter **"Public IP addresses"** i søkefeltet
 2. Klikk **"+ Create"**
@@ -185,7 +185,7 @@ Azure Firewall krever en dedikert public IP-adresse av typen **Standard SKU**. D
    |---|---|
    | Resource group | `<prefix>-rg-infraitsec-network` |
    | Name | `<prefix>-pip-fw` |
-   | Region | Norway East |
+   | Region | `<velg samme region som tidligere>` |
    | SKU | Standard |
    | IP version | IPv4 |
    | Assignment | Static |
@@ -197,6 +197,22 @@ Azure Firewall krever en dedikert public IP-adresse av typen **Standard SKU**. D
    | Domain name label scope (preview) | None |
 
 4. Legg til tags som tidligere og klikk **"Review + create"** → **"Create"**
+5. Velg å opprett enda en Public IP for mangagmenet:
+
+   | Felt | Verdi |
+   |---|---|
+   | Resource group | `<prefix>-rg-infraitsec-network` |
+   | Name | `<prefix>-pip-fw-mgmt` |
+   | Region | `<velg samme region som tidligere>` |
+   | SKU | Standard |
+   | IP version | IPv4 |
+   | Assignment | Static |
+   | Availability zone | Zone-redundant |
+   | Tier | Regional |
+   | Routing preference | Microsoft Network |
+   | Idle timeout (minutes) | 4 |
+   | DNS name label | <prefix>-infrait |
+   | Domain name label scope (preview) | None |
 
 **Hvorfor statisk IP?**
 En statisk IP-adresse endrer seg ikke, selv om du stopper og starter tilknyttede ressurser. For en firewall er dette kritisk — alle regler og DNS-oppføringer som peker på denne adressen vil fortsette å fungere.
@@ -246,7 +262,7 @@ Du oppretter nå de to nye spoke-nettverkene. Disse representerer separate milj�
    |---|---|
    | Resource group | `<prefix>-rg-infraitsec-network` |
    | Name | `<prefix>-vnet-spoke2` |
-   | Region | Norway East |
+   | Region | `<velg samme region som tidligere>` |
 
 3. På **IP Addresses**-fanen:
    - Adresserom: `10.1.0.0/16`
@@ -354,7 +370,7 @@ På Peerings-menyen til `<prefix>-vnet-hub` skal du nå se tre oppføringer — 
    |---|---|
    | Resource group | `<prefix>-rg-infraitsec-network` |
    | Name | `<prefix>-fw-hub` |
-   | Region | Norway East |
+   | Region | `<velg tidliger brukt region>` |
    | Firewall tier | **Basic** |
    | Firewall management | **Use a Firewall Policy to manage this firewall** |
    | Firewall policy | `<prefix>-fwpolicy-hub` |
@@ -404,7 +420,7 @@ VNET Peering etablerer nettverksforbindelsen, men styrer ikke hvilken vei trafik
    | Felt | Verdi |
    |---|---|
    | Resource group | `<prefix>-rg-infraitsec-network` |
-   | Region | Norway East |
+   | Region | `<velg samme region som tidligere>` |
    | Name | `<prefix>-rt-spoke1` |
    | Propagate gateway routes | **No** |
 
