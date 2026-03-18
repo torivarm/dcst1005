@@ -97,11 +97,21 @@ Klikk **Next** for å gå til Security-fanen. La alle valg her stå på **Disabl
 
    | Felt | Verdi |
    |---|---|
-   | Subnet name | `AzureFirewallSubnet` |
+   | Subnet purpose | Azure Firewall |
    | Starting address | `10.100.1.0` |
    | Size | `/26` |
 
    **Merk:** `/26` gir 64 adresser, som er minimumet Azure krever for et firewall-subnet. Legg også merke til at Azure ikke lar deg knytte en NSG til `AzureFirewallSubnet` — dette er en bevisst begrensning fordi firewallen selv kontrollerer trafikken på dette subnettet.
+
+   Lagre subnettet.
+
+5. Klikk **"+ Add a subnet"** igjen for å legge til firewall management-subnettet:
+
+   | Felt | Verdi |
+   |---|---|
+   | Subnet purpose | Firewall Management (forced tunneling) |
+   | Starting address | `10.100.2.0` |
+   | Size | `/26` |
 
    Lagre subnettet.
 
@@ -374,7 +384,7 @@ På Peerings-menyen til `<prefix>-vnet-hub` skal du nå se tre oppføringer — 
    | Firewall tier | **Basic** |
    | Firewall management | **Use a Firewall Policy to manage this firewall** |
    | Firewall policy | `<prefix>-fwpolicy-hub` |
-   | Virtual network | `<prefix>-vnet-hub` |
+   | Choose a virtual network - Use existing | `<prefix>-vnet-hub` |
    | Public IP address | `<prefix>-pip-fw` |
 
    Når du velger `<prefix>-vnet-hub` som virtuelt nettverk, plasserer Azure automatisk firewallen i `AzureFirewallSubnet`.
