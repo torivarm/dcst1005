@@ -450,6 +450,8 @@ VNET Peering etablerer nettverksforbindelsen, men styrer ikke hvilken vei trafik
    | Next hop type | Virtual appliance |
    | Next hop address | *(firewall private IP fra Del 8)* |
 
+![alt text](VisningRouteSpoke1.png)
+
 4. Klikk **"Add"** og legg deretter til andre rute:
 
    | Felt | Verdi |
@@ -464,9 +466,13 @@ VNET Peering etablerer nettverksforbindelsen, men styrer ikke hvilken vei trafik
 
 Rutetabellen må knyttes til alle tre subnets i `<prefix>-vnet-infraitsec` for at rutene skal gjelde.
 
+> "Selv om n-tier-reglene styrer intern kommunikasjon i spoke 1, sier de ingenting om trafikk destined for andre spokes. UDR på alle subnets sikrer at firewallen ser all inter-spoke-trafikk uavhengig av hvilket subnet den originerer fra."
+
 1. Velg **"Subnets"** i venstremenyen på rutetabellen
 2. Klikk **"+ Associate"** og knytt til `<prefix>-vnet-infraitsec` / `subnet-frontend`
 3. Gjenta for `subnet-backend` og `subnet-data`
+
+![alt text](routetospoke1.png)
 
 ### Steg 9.4: Opprett rutetabell for spoke 2
 
@@ -498,7 +504,7 @@ Rutetabellene er nå på plass. Trafikk fra et subnet i en spoke som er destined
 
 ### Steg 10.1: Naviger til Firewall Policy
 
-1. Naviger til `<prefix>-fwpolicy-hub`
+1. Naviger til `<prefix>-fwpolicy-hub` under Firewall Policies
 2. Velg **"Rule collections"** i venstremenyen
 
 ### Hva er en Rule Collection?
@@ -526,9 +532,11 @@ En **Rule Collection** er en navngitt gruppe regler med felles prioritet og hand
    | Protocol | Any |
    | Source type | IP Address |
    | Source | `10.0.0.0/16,10.1.0.0/16,10.2.0.0/16` |
+   | Protocol | Select all 4 | 
+   | Destination ports | `*` |
    | Destination type | IP Address |
    | Destination | `10.0.0.0/16,10.1.0.0/16,10.2.0.0/16` |
-   | Destination ports | `*` |
+
 
 4. Klikk **"Add"**
 
@@ -544,20 +552,17 @@ Endringer i Firewall Policy propageres automatisk til firewallen, typisk innen e
 
 1. Naviger til `<prefix>-vnet-hub`
 2. Velg **"Peerings"** i venstremenyen
-3. Bekreft at alle seks oppføringer viser status **Connected**:
-   - `hub-to-spoke1` — Connected
+3. Bekreft at alle oppføringer viser status **Connected**:
    - `spoke1-to-hub` — Connected
-   - `hub-to-spoke2` — Connected
    - `spoke2-to-hub` — Connected
-   - `hub-to-spoke3` — Connected
    - `spoke3-to-hub` — Connected
 
 ### Steg 11.2: Verifiser peering-status fra spoke-siden
 
 1. Naviger til `<prefix>-vnet-infraitsec`
-2. Velg **"Peerings"** — du skal se én oppføring: `spoke1-to-hub` med status **Connected**
-3. Gjenta for `<prefix>-vnet-spoke2` — én oppføring: `spoke2-to-hub` — Connected
-4. Gjenta for `<prefix>-vnet-spoke3` — én oppføring: `spoke3-to-hub` — Connected
+2. Velg **"Peerings"** — du skal se en oppføring: `hub-to-spoke1` med status **Connected**
+3. Gjenta for `<prefix>-vnet-spoke2` — en oppføring: `hub-to-spoke2` — Connected
+4. Gjenta for `<prefix>-vnet-spoke3` — en oppføring: `hub-to-spoke3` — Connected
 
 ### Steg 11.3: Observer ikke-transitivitet
 
@@ -578,26 +583,6 @@ Du har nå transformert ett isolert segmentert nettverk til en hub-spoke-topolog
 `<prefix>-rt-spoke1`, `<prefix>-rt-spoke2` og `<prefix>-rt-spoke3` er User Defined Route-tabeller som overstyrer Azures standard systemruter. Uten dem ville peering-trafikk gå den korteste veien og aldri passere firewallen. Disse rutetabellene er det som gjør at firewallen faktisk er i dataflyten.
 
 VNET Peering med **Allow forwarded traffic** aktivert på begge sider er det som gjør det mulig for firewallen å fungere som et transitpunkt mellom spokes som ikke er direkte koblet til hverandre.
-
----
-
-## Opprydding
-
-> ⚠️ **Azure Firewall faktureres per time den eksisterer, uavhengig av om den prosesserer trafikk.** Slett ressursene i riktig rekkefølge så snart du er ferdig med å verifisere konfigurasjonen.
-
-Slett i denne rekkefølgen for å unngå avhengighetsfeil:
-
-1. `<prefix>-fw-hub` — firewallen stoppes og slettes (billing stopper umiddelbart)
-2. `<prefix>-fwpolicy-hub`
-3. `<prefix>-rt-spoke1`, `<prefix>-rt-spoke2`, `<prefix>-rt-spoke3`
-4. `<prefix>-vnet-spoke2`, `<prefix>-vnet-spoke3` (inkludert peering-forbindelsene)
-5. `<prefix>-vnet-hub`
-6. `<prefix>-pip-fw`
-7. `<prefix>-nsg-management`
-
-Du skal **ikke** slette `<prefix>-vnet-infraitsec` eller tilhørende ressurser — disse brukes videre i kommende øvelser.
-
-> **Tips:** I neste del av dette modulet gjennomgår vi et PowerShell-script som automatiserer både deployment og opprydding av hele hub-spoke-miljøet. Dette gjør det enkelt å bygge opp og rive ned topologien på nytt ved behov.
 
 ---
 
@@ -644,7 +629,7 @@ Du skal **ikke** slette `<prefix>-vnet-infraitsec` eller tilhørende ressurser �
 ## Neste steg
 
 Nå som hub-spoke-topologien er på plass, er naturlige neste steg:
-
+- Plasser ressurser i hver spoke for testing av trafikk mellom hub og spokes
 
 ---
 
