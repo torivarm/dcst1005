@@ -260,9 +260,9 @@ Set-AzContext -SubscriptionId 'yyyy-yyyy-yyyy-yyyy'
 
 ## Neste steg
 
-- **Fullstendig hub-spoke deployment-script** — ett script som bygger opp hele topologien fra forrige øvelse, og ett som river den ned
-- **Azure Monitor** — overvåking og logging av ressurser og nettverkstrafikk
-- **Microsoft Defender for Cloud** — sikkerhetsovervåking av miljøet
+Nå som VNET er på på plass, er neste steg:
+
+- **VNET Peering** — Sette opp peering mellom hub og spokes nettverkene
 
 ---
 

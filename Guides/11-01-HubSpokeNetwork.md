@@ -285,7 +285,9 @@ En viktig egenskap ved peering er at den er **ikke-transitiv**. Hvis hub er kobl
 
 Du oppretter nå alle tre peering-forbindelsene fra hub-siden. Portalen lar deg opprette begge retninger samtidig med **"Add remote peering"**-valget.
 
-### Steg 6.1: Opprett peering — Hub ↔ Spoke 1
+### Steg 6.1: Opprett peering — Hub ↔ Spoke 1 
+
+Peer med samme nettverk som opprettet i sist lab: `<prefix>-vnet-infraitsec`, om du har slettet det, kan du opprette et nytt nettverk som heter `<prefix>-vnet-spoke1`
 
 1. Naviger til `<prefix>-vnet-hub`
 2. Velg **"Peerings"** i venstremenyen
@@ -297,9 +299,13 @@ Du oppretter nå alle tre peering-forbindelsene fra hub-siden. Portalen lar deg 
    | Felt | Verdi |
    |---|---|
    | Peering link name | `hub-to-spoke1` |
-   | Traffic to remote virtual network | Allow |
-   | Traffic forwarded from remote virtual network | **Allow** |
-   | Virtual network gateway or Route Server | None |
+   | Allow `<prefix>-vnet-infraitsec` to access `<prefix>-vnet-hub` | Allow |
+   | Allow `<prefix>-vnet-infraitsec` to receive forwarded traffic from `<prefix>-vnet-hub` | **Allow** |
+   | Allow gateway or route server in `<prefix>-vnet-infraitsec` to forward traffic to `<prefix>-vnet-hub` | None |
+   | Enable `<prefix>-vnet-infraitsec` to use `<prefix>-vnet-hub` remote gateway or route server | None | 
+
+   **Merk: Noen innstillinger kan endres etter av vi har fått på plass Azure FireWall (Virtual Appliance)**
+   >**`<prefix>-vnet-hub` does not have a VPN gateway or route server. To enable this option, `<prefix>-vnet-hub` needs to have a VPN gateway or route server. Learn how to create a VPN gateway or Route Server**
 
    **Remote virtual network (spoke 1 → hub):**
 
@@ -307,48 +313,30 @@ Du oppretter nå alle tre peering-forbindelsene fra hub-siden. Portalen lar deg 
    |---|---|
    | Peering link name | `spoke1-to-hub` |
    | Virtual network | `<prefix>-vnet-infraitsec` |
-   | Traffic to remote virtual network | Allow |
-   | Traffic forwarded from remote virtual network | **Allow** |
-   | Virtual network gateway or Route Server | None |
+   | Allow `<prefix>-vnet-hub` to access `<prefix>-vnet-infraitsec` | Allow |
+   | Allow `<prefix>-vnet-hub` to receive forwarded traffic from `<prefix>-vnet-infraitsec` | **Allow** |
+   | Allow gateway or route server in `<prefix>-vnet-hub` to forward traffic to `<prefix>-vnet-infraitsec` | None |
+   | Enable `<prefix>-vnet-hub` to use `<prefix>-vnet-infraitsec` remote gateway or route server | None |
 
 5. Klikk **"Add"**
 
 **Hvorfor "Allow forwarded traffic" på begge sider?**
-Når firewallen mottar en pakke fra spoke 1 og skal sende den videre til spoke 2, videresender den pakken gjennom peering-forbindelsen til spoke 2. Men pakken kom ikke *opprinnelig* fra hub — den ble videresendt dit av firewallen. Hvis peering-forbindelsen ikke tillater videresendt trafikk, vil Azure stille og rolig droppe pakken. Dette er det vanligste punktet der hub-spoke-konfigurasjoner feiler.
+Når firewallen mottar en pakke fra spoke 1 og skal sende den videre til spoke 2, videresender den pakken gjennom peering-forbindelsen til spoke 2. Men pakken kom ikke *opprinnelig* fra hub — den ble videresendt dit av firewallen. Hvis peering-forbindelsen ikke tillater videresendt trafikk, vil Azure FireWall droppe pakken. Dette er det vanligste punktet der hub-spoke-konfigurasjoner feiler.
 
 ### Steg 6.2: Opprett peering — Hub ↔ Spoke 2
 
-1. Klikk **"+ Add"** igjen på Peerings-bladet til `<prefix>-vnet-hub`
-2. Fyll inn:
-
-   **This virtual network:**
-
-   | Felt | Verdi |
-   |---|---|
-   | Peering link name | `hub-to-spoke2` |
-   | Traffic forwarded from remote virtual network | Allow |
-
-   **Remote virtual network:**
-
-   | Felt | Verdi |
-   |---|---|
-   | Peering link name | `spoke2-to-hub` |
-   | Virtual network | `<prefix>-vnet-spoke2` |
-   | Traffic forwarded from remote virtual network | Allow |
-
-3. Klikk **"Add"**
+Gjenta for spoke 2
 
 ### Steg 6.3: Opprett peering — Hub ↔ Spoke 3
 
-Gjenta for spoke 3:
+Gjenta for spoke 3
 
-   **This virtual network:** `hub-to-spoke3` | Allow forwarded traffic
-
-   **Remote virtual network:** `spoke3-to-hub` | `<prefix>-vnet-spoke3` | Allow forwarded traffic
 
 ### Steg 6.4: Bekreft peering-status
 
-På Peerings-bladet til `<prefix>-vnet-hub` skal du nå se seks oppføringer — to retninger for hvert av de tre spoke-nettverkene. Alle skal ha status **Connected**.
+På Peerings-menyen til `<prefix>-vnet-hub` skal du nå se tre oppføringer — to retninger for hvert av de tre spoke-nettverkene. Alle skal ha status **Connected**.
+
+![alt text](hubpeering.png)
 
 ---
 
@@ -631,9 +619,6 @@ Du skal **ikke** slette `<prefix>-vnet-infraitsec` eller tilhørende ressurser �
 
 Nå som hub-spoke-topologien er på plass, er naturlige neste steg:
 
-- **PowerShell-automatisering** — script for å deploye og rive ned hele topologien med ett kall
-- **Azure Monitor og diagnostikklogger** — sette opp logging av firewall-trafikk for å se hvilke regler som treffer
-- **Microsoft Defender for Cloud** — sikkerhetsovervåking av miljøet
 
 ---
 
