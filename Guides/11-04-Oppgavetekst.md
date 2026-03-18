@@ -157,7 +157,7 @@ Verifiser at rutetabellene har effekt på trafikkveien. Naviger til én av VM-en
 Du skal vise frem følgende til læringsassistenten:
 
 **1. Topologioversikt**
-Vis Peerings-bladet på `<prefix>-vnet-hub` med alle seks peering-forbindelser i status Connected.
+Vis Peerings-bladet på `<prefix>-vnet-hub` med alle tre peering-forbindelser i status Connected.
 
 **2. Ikke-transitivitet**
 Vis Peerings-bladet på ett av spoke-nettverkene og pek på at det kun finnes én forbindelse — til hub.
