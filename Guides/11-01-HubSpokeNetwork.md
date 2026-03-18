@@ -286,6 +286,7 @@ Du oppretter nå de to nye spoke-nettverkene. Disse representerer separate milj�
      | Size | `/24` |
 
 4. Legg til tags og klikk **"Review + create"** → **"Create"**
+5. Opprett NSG til som hektes på subnet-workload. Tillat HTTP og SSH. Source kan være ANY siden maskinene skal ikke ha public IP, men all trafik skal gå via Azure Firewall.
 
 ### Steg 5.2: Opprett spoke 3
 
@@ -298,6 +299,8 @@ Gjenta prosessen for spoke 3:
 | Subnet name | `subnet-workload` |
 | Starting address | `10.2.0.0` |
 | Size | `/24` |
+
+Opprett NSG til som hektes på subnet-workload. Tillat HTTP og SSH. Source kan være ANY siden maskinene skal ikke ha public IP, men all trafik skal gå via Azure Firewall.
 
 ---
 

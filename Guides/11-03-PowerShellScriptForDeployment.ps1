@@ -23,11 +23,11 @@
 # VARIABLER — fyll inn dine egne verdier her
 ###############################################################################
 
-$prefix            = 'eg06'                              # Ditt tildelte prefix
-$location          = 'norwayeast'
+$prefix            = 'tim84'                              # Ditt tildelte prefix
+$location          = 'northeurope'                        # Azure-region for alle ressurser
 
 # Resource groups
-$networkingRG      = "$prefix-rg-infraitsec-networking"
+$networkingRG      = "$prefix-rg-infraitsec-network"
 $computeRG         = "$prefix-rg-infraitsec-compute"
 
 # Brukernavn og passord for VM-ene (samme for alle tre)
