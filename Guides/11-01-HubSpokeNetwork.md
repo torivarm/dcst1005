@@ -330,7 +330,7 @@ Peer med samme nettverk som opprettet i sist lab: `<prefix>-vnet-infraitsec`, om
    | Allow gateway or route server in `<prefix>-vnet-infraitsec` to forward traffic to `<prefix>-vnet-hub` | None |
    | Enable `<prefix>-vnet-infraitsec` to use `<prefix>-vnet-hub` remote gateway or route server | None | 
 
-   **Merk: Noen innstillinger kan endres etter av vi har fått på plass Azure FireWall (Virtual Appliance)**
+   **Merk: Noen innstillinger må endres om en skulle testet og benyttet VPN Gateway i dette oppsettet**
    >**`<prefix>-vnet-hub` does not have a VPN gateway or route server. To enable this option, `<prefix>-vnet-hub` needs to have a VPN gateway or route server. Learn how to create a VPN gateway or Route Server**
 
    **Remote virtual network (spoke 1 → hub):**
@@ -391,7 +391,7 @@ På Peerings-menyen til `<prefix>-vnet-hub` skal du nå se tre oppføringer — 
 
 4. Legg til tags og klikk **"Review + create"** → **"Create"**
 
-> ⏳ **Deploymentet tar omtrent 10 minutter.** Mens du venter, gå videre til Del 8 og noter firewall-IP-en så snart den er tilgjengelig.
+> ⏳ **Deploymentet tar omtrent 10 minutter.**
 
 ---
 
@@ -405,7 +405,7 @@ Før du konfigurerer rutetabellene trenger du den private IP-adressen som Azure 
 2. På **Overview**-siden, finn feltet **Private IP address**
 3. Adressen vil ligge i `10.100.1.0/26`-rommet — typisk `10.100.1.4`, siden Azure reserverer de fire første adressene i hvert subnet
 
-> 📋 **Skriv ned firewall private IP:** `__________________`
+> 📋 **Skriv ned firewall private IP**
 
 Du bruker denne adressen i alle rutetabellene i neste del.
 
