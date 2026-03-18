@@ -35,9 +35,9 @@ I denne øvelsen fokuserer vi primært på:
 
 ---
 
-## Del 0: Short cut
+## Del 0: Shortcut
 **Velg å slett hele resource group som inneholder alle VM-ene:
-`<prefix>-rg-infraitsec-compute` (MERK, det er mye nyttig info i stegene under)
+`<prefix>-rg-infraitsec-compute` (MERK, det er mye nyttig info i stegene under)**
 
 ## Del 1: Pre-Cleanup Assessment
 
