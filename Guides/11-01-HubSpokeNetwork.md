@@ -203,7 +203,7 @@ Azure Firewall krever en dedikert public IP-adresse av typen **Standard SKU**. D
    | Tier | Regional |
    | Routing preference | Microsoft Network |
    | Idle timeout (minutes) | 4 |
-   | DNS name label | <prefix>-infrait |
+   | DNS name label | `<prefix>-infrait` |
    | Domain name label scope (preview) | None |
 
 4. Legg til tags som tidligere og klikk **"Review + create"** → **"Create"**
