@@ -177,13 +177,7 @@ Azure Firewall Basic koster ca. 0,25 USD per time. Med ti studenter som kjører 
 **Gjør følgende umiddelbart etter presentasjon:**
 
 1. Slett `<prefix>-fw-hub` — dette stopper billing umiddelbart
-2. Slett `<prefix>-fwpolicy-hub`
-3. Slett `<prefix>-rt-spoke1`, `<prefix>-rt-spoke2`, `<prefix>-rt-spoke3`
-4. Slett `<prefix>-vnet-spoke2` og `<prefix>-vnet-spoke3`
-5. Slett `<prefix>-vnet-hub`
-6. Slett `<prefix>-pip-fw`
-7. Slett `<prefix>-nsg-management`
-8. Slett eller stopp VM-ene i `<prefix>-rg-infraitsec-compute`
+2. Slett eller stopp VM-ene i `<prefix>-rg-infraitsec-compute`
 
 Du skal **ikke** slette `<prefix>-vnet-infraitsec` eller tilhørende NSGer og subnets — disse brukes i kommende øvelser.
 
