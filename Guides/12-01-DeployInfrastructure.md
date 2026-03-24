@@ -30,6 +30,8 @@ Du trenger ditt **prefiks** — initialer pluss to sifre fra fødselsåret (f.ek
 
 Før du kjører scriptet er det nyttig å forstå hva det gjør og hvorfor det er bygget opp slik det er. Åpne `12-01-DeployInfrastructure.ps1` i VS Code og les gjennom de ulike seksjonene mens du leser forklaringene under.
 
+[PowerShell - Deploy infrastructure](12-01-DeployInfrastructure.ps1)
+
 ### Konfigurasjonsseksjonen
 
 Øverst i scriptet finner du to variabler du selv må fylle inn:
