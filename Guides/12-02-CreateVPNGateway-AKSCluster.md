@@ -753,7 +753,7 @@ Med VPN-tilkoblingen aktiv fra Del 6 og applikasjonen deployet i Del 8, kan du n
 
 Du skal se InfraIT.sec Employee Management-applikasjonen med testdataene du la inn i Del 7.
 
-![alt text](WebFrontMGMTHRApp.png)
+![alt text](webFrontHRApp.png)
 
 ### Steg 9.2 — Test applikasjonsfunksjonaliteten
 
