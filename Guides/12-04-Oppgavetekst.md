@@ -10,6 +10,8 @@ Ledelsen i InfraIT.sec har besluttet at systemet midlertidig skal migreres til A
 
 Du skal sette opp infrastrukturen som gjør dette mulig, deploye applikasjonen og dokumentere at tilgangskravene er oppfylt.
 
+Det er ingen krav til ekesisterende Resource Groups eller annen infrastruktur før denne øvingen, deployment script oppretter det som er nødvendig fra bunn. Dvs. en kan, om en vil, slette unna det en har fra før og begynne på et nytt oppsett uten noen eksisterende VNET, subnet eller NSG-er.
+
 Følg Lab 12-01 og Lab 12-02 for oppsett av infrastruktur, VPN Gateway og AKS-cluster med applikasjon.
 
 ## Dokumentasjonskrav
