@@ -14,7 +14,7 @@ Det er ingen krav til ekesisterende Resource Groups eller annen infrastruktur f�
 
 Følg Lab 12-01 og Lab 12-02 for oppsett av infrastruktur, VPN Gateway og AKS-cluster med applikasjon.
 
-## Dokumentasjonskrav
+## Presentere følgende til læringsassistent
 
 Du skal presentere følgende til læringsassistent:
 
