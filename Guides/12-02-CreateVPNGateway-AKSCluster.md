@@ -207,7 +207,7 @@ Velg **Save**. Lagringen tar 15–30 minutter.
 
 ---
 
-## Del 4 — Oppdater spoke-peering
+## Del 4 — Oppdater spoke-peering (Azure CloudShell Bash)
 
 Deployment-scriptet satte `UseRemoteGateways = false` på spoke-peeringen fordi VPN Gateway ikke eksisterte ennå. Nå som gateway-en er opprettet, må denne innstillingen aktiveres slik at trafikk fra VPN-klienter kan rutes gjennom hub-en og inn i spoke-en.
 
@@ -296,7 +296,7 @@ Test-NetConnection -ComputerName 10.1.0.1 -InformationLevel Detailed
 
 ---
 
-## Del 7 — Opprett Azure Table Storage og legg inn testdata
+## Del 7 — Opprett Azure Table Storage og legg inn testdata (Azure CloudShell Bash)
 
 Applikasjonen du deployer i Del 8 lagrer ansattdata i Azure Table Storage. Table Storage er en NoSQL nøkkel-verdi-tjeneste som er egnet for strukturerte data som ikke krever komplekse spørringer. Hvert objekt lagres som en entitet med en `PartitionKey` og `RowKey` som til sammen utgjør en unik identifikator.
 
