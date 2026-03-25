@@ -310,6 +310,8 @@ Klikk **Connect** og logg inn med testbrukeren du opprettet i Del 5.
 
 Når du velger å koble til, blir du bedt å om autentisere deg med en bruker. Benytt den brukeren som du gav tilgang til VPN Applikasjonen i tidligere steg.
 
+![alt text](ConnectVPNTestUser.png)
+
 Azure VPN Client skal vise **Connected** med en tildelt IP-adresse fra adressepoolen `172.16.0.0/24`.
 
 Verifiser ruting mot spoke-subnettet fra terminalen på din egen maskin:
