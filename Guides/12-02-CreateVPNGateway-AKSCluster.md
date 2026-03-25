@@ -314,6 +314,8 @@ Når du velger å koble til, blir du bedt å om autentisere deg med en bruker. B
 
 Azure VPN Client skal vise **Connected** med en tildelt IP-adresse fra adressepoolen `172.16.0.0/24`.
 
+![alt text](ConnectedIP.png)
+
 Verifiser ruting mot spoke-subnettet fra terminalen på din egen maskin:
 
 ```bash
