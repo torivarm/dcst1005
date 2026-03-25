@@ -759,6 +759,10 @@ Du skal se InfraIT.sec Employee Management-applikasjonen med testdataene du la i
 
 Legg til en ny ansatt via skjemaet og verifiser at den dukker opp i listen. Slett en ansatt og verifiser at den forsvinner. Dataene lagres i Azure Table Storage og persisterer selv om applikasjonen restartes.
 
+Visualisering av dagens lab:
+
+![alt text](network-flow-lab.png)
+
 ### Steg 9.3 — Verifiser at applikasjonen ikke er tilgjengelig uten VPN
 
 Koble fra VPN i Azure VPN Client og last inn siden på nytt. Du skal nå få timeout — siden er ikke nåbar fra internett.
