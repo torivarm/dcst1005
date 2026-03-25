@@ -771,7 +771,9 @@ Dette er kjernen av det du har bygget: en applikasjon som er tilgjengelig for au
 
 ---
 
-## Del 10 — Opprydding
+## Del 10 — Opprydding (IKKE GJØR FØR PRESENTERT ØVING TIL LÆRINGSASSISTENT)
+
+MERK! Siden dette er kostbare ressurser, bør de ikke bli opprettet og stå kjørende til neste uke eller neste lab før en viser at en har tilhørende øving.
 
 VPN Gateway, AKS-noder, ACR og Storage Account slettes ved labslutt. Nettverksressursene (VNET, subnett, peering, NSG) kan beholdes til neste lab.
 
