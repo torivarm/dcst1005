@@ -316,16 +316,6 @@ Azure VPN Client skal vise **Connected** med en tildelt IP-adresse fra adressepo
 
 ![alt text](ConnectedIP.png)
 
-Verifiser ruting mot spoke-subnettet fra terminalen på din egen maskin:
-
-```bash
-# macOS / Linux
-ping 10.1.0.1
-
-# Windows (PowerShell)
-Test-NetConnection -ComputerName 10.1.0.1 -InformationLevel Detailed
-```
-
 ---
 
 ## Del 7 — Opprett Azure Table Storage og legg inn testdata (Azure CloudShell Bash)
