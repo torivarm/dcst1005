@@ -294,13 +294,15 @@ På **Point-to-site configuration**-siden velger du **Download VPN client**. Du 
 
 For OpenVPN med Entra ID-autentisering bruker du **Azure VPN Client**, som lastes ned fra Microsoft Store (Windows) eller App Store (macOS). Konfigurasjonsfilen du trenger heter `azurevpnconfig.xml` og ligger i `AzureVPN`-mappen i ZIP-filen.
 
-![alt text](AzureVPNConfigFile.png)
-
 ### Steg 6.2 — Importer konfigurasjon og koble til
 
 Åpne Azure VPN Client og velg **+** → **Import**. Velg `azurevpnconfig.xml`.
 
 Klikk **Connect** og logg inn med testbrukeren du opprettet i Del 5.
+
+![alt text](AzureVPNConfigFile.png)
+
+![alt text](ImportAndSave.png)
 
 ### Steg 6.3 — Verifiser VPN-tilkobling
 
