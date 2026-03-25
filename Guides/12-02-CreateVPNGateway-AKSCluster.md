@@ -187,8 +187,6 @@ az role assignment create \
 
 **TIPS! Om AKS Cluster er ferdig før VPN Gateway, kan du gå til Del 7 og 8, og deretter komme tilbake til Del 3 etterpå**
 
-![alt text](aksvpnwait.png)
-
 ---
 
 ## Del 3 — Konfigurer Point-to-Site med OpenVPN og Entra ID
