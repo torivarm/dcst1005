@@ -163,7 +163,9 @@ az aks create \
 
 Provisjoneringen tar 15–20 minutter. La kommandoen kjøre og fortsett til Del 3.
 
-> **På dette tidspunktet provisjoneres både VPN Gateway og AKS parallelt.** Fortsett med Del når VPN er ferdig.
+> **På dette tidspunktet provisjoneres både VPN Gateway og AKS parallelt.** Fortsett med Del 3 når VPN er ferdig.
+
+**TIPS! Om AKS Cluster er ferdig før VPN Gateway, kan du gå til Del 7 og begynne på den og deretter komme tilbake til Del 3 etterpå**
 
 ![alt text](aksvpnwait.png)
 
