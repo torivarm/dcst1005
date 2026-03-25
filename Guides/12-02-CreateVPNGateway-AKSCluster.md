@@ -161,11 +161,31 @@ az aks create \
 
 `--attach-acr` gir AKS-clusteret tillatelse til å hente container images fra ACR-registeret ditt. Uten denne tillatelsen vil Kubernetes feile når det forsøker å starte applikasjonen. `--network-plugin kubenet` betyr at pods bruker et separat internt adresserom og ikke tar IP-adresser direkte fra spoke-subnettet.
 
-Provisjoneringen tar 15–20 minutter. La kommandoen kjøre og fortsett til Del 3.
+Provisjoneringen tar 15–20 minutter.
 
-> **På dette tidspunktet provisjoneres både VPN Gateway og AKS parallelt.** Fortsett med Del 3 når VPN er ferdig.
+> **På dette tidspunktet provisjoneres både VPN Gateway og AKS parallelt.** Når AKS er ferdig, fortsett med steg 2.6. Deretter kan du fortsett med Del 3 når VPN er ferdig.
 
-**TIPS! Om AKS Cluster er ferdig før VPN Gateway, kan du gå til Del 7 og begynne på den og deretter komme tilbake til Del 3 etterpå**
+### Steg 2.6 — Gi AKS tilgang til spoke-subnettet
+AKS trenger Network Contributor på subnettet for å kunne opprette den interne load balanceren i Del 8. Rolle-tildelingen gjøres nå slik at Azure RBAC rekker å propagere tilgangen innen den trengs.
+
+```bash
+# Hent control plane-identiteten (ikke kubelet)
+AKS_CONTROL_PLANE_IDENTITY=$(az aks show \
+    --resource-group $RG_COMPUTE \
+    --name $AKS_CLUSTER \
+    --query identity.principalId \
+    --output tsv)
+
+echo "Control plane identity: $AKS_CONTROL_PLANE_IDENTITY"
+
+# Gi Network Contributor til control plane-identiteten
+az role assignment create \
+    --assignee $AKS_CONTROL_PLANE_IDENTITY \
+    --role "Network Contributor" \
+    --scope $AKS_SUBNET_ID
+```
+
+**TIPS! Om AKS Cluster er ferdig før VPN Gateway, kan du gå til Del 7 og 8, og deretter komme tilbake til Del 3 etterpå**
 
 ![alt text](aksvpnwait.png)
 
