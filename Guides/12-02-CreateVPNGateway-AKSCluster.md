@@ -1,6 +1,6 @@
 # Lab 12-02: Point-to-Site VPN Gateway og intern AKS-applikasjon
 
-I denne labben skal du sette opp en sikker VPN-tilkobling fra din egen maskin inn til det private Azure-nettverket du opprettet i Lab 12-01. Når tilkoblingen er på plass, skal du nå en containerbasert webapplikasjon som kjører i Azure Kubernetes Service (AKS) og lagrer data i Azure Table Storage — uten en eneste public IP-adresse eksponert mot internett.
+I denne labben skal du sette opp en sikker VPN-tilkobling **fra din egen maskin** (ikke bruk MGR) inn til det private Azure-nettverket du opprettet i Lab 12-01. Når tilkoblingen er på plass, skal du nå en containerbasert webapplikasjon som kjører i Azure Kubernetes Service (AKS) og lagrer data i Azure Table Storage — uten en eneste public IP-adresse eksponert mot internett.
 
 Dette er det samme prinsippet NTNU bruker når du må være på NTNU VPN eller campusnett for å nå OpenStack-miljøet ditt på skyhigh.iik.ntnu.no. Ressursen eksisterer, men den er ikke tilgjengelig uten at du er autentisert og tilkoblet via en godkjent kanal.
 
