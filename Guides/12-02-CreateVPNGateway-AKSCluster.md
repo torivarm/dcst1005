@@ -266,13 +266,15 @@ Uten denne tildelingen vil brukeren ikke kunne autentisere mot VPN-en, selv om d
 
 ## Del 6 — Last ned VPN-klient og koble til
 
-P2S-konfigurasjonen skal nå være ferdig lagret. Sjekk at **Point-to-site configuration** i portalen ikke lenger viser en spinner.
+P2S-konfigurasjonen skal nå være ferdig lagret og ferdig konfigurert.
 
 ### Steg 6.1 — Last ned VPN-klienten
 
 På **Point-to-site configuration**-siden velger du **Download VPN client**. Du får en ZIP-fil som inneholder konfigurasjonsfiler for ulike operativsystemer.
 
 For OpenVPN med Entra ID-autentisering bruker du **Azure VPN Client**, som lastes ned fra Microsoft Store (Windows) eller App Store (macOS). Konfigurasjonsfilen du trenger heter `azurevpnconfig.xml` og ligger i `AzureVPN`-mappen i ZIP-filen.
+
+![alt text](AzureVPNConfigFile.png)
 
 ### Steg 6.2 — Importer konfigurasjon og koble til
 
