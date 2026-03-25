@@ -727,8 +727,10 @@ Annotasjonen `azure-load-balancer-internal: "true"` er det som gjør denne tjene
 ```bash
 kubectl get service infraitsec-employee-app --watch
 ```
+Trykk CTRL + C for å komme ut av --watch modus
 
 Vent til kolonnen `EXTERNAL-IP` viser en adresse i `10.1.x.x`-området. Dette er den private IP-adressen til den interne load balanceren i spoke-subnettet. Noter deg denne adressen — du trenger den i Del 9.
+
 
 Sjekk at applikasjonen kjører:
 
@@ -751,7 +753,7 @@ Med VPN-tilkoblingen aktiv fra Del 6 og applikasjonen deployet i Del 8, kan du n
 
 Du skal se InfraIT.sec Employee Management-applikasjonen med testdataene du la inn i Del 7.
 
-![alt text](mgmtAppWeb.png)
+![alt text](WebFrontMGMTHRApp.png)
 
 ### Steg 9.2 — Test applikasjonsfunksjonaliteten
 
