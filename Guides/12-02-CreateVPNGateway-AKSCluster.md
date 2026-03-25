@@ -751,6 +751,8 @@ Med VPN-tilkoblingen aktiv fra Del 6 og applikasjonen deployet i Del 8, kan du n
 
 Du skal se InfraIT.sec Employee Management-applikasjonen med testdataene du la inn i Del 7.
 
+![alt text](mgmtAppWeb.png)
+
 ### Steg 9.2 — Test applikasjonsfunksjonaliteten
 
 Legg til en ny ansatt via skjemaet og verifiser at den dukker opp i listen. Slett en ansatt og verifiser at den forsvinner. Dataene lagres i Azure Table Storage og persisterer selv om applikasjonen restartes.
