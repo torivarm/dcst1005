@@ -104,6 +104,8 @@ STORAGE_ACCOUNT="${PREFIX}stginfraisec"
 TABLE_NAME="employees"
 ```
 
+![alt text](variablerbashAKS.png)
+
 > **Merk:** Storage Account-navn kan kun inneholde små bokstaver og tall, og må være globalt unikt i Azure. Hvis navnet allerede er tatt, legg til et par ekstra tegn.
 
 ### Steg 2.3 — Hent AKS-subnettets resource ID
@@ -161,7 +163,9 @@ az aks create \
 
 Provisjoneringen tar 15–20 minutter. La kommandoen kjøre og fortsett til Del 3.
 
-> **På dette tidspunktet provisjoneres både VPN Gateway og AKS parallelt.** Fortsett til Del 3, 4 og 5 mens begge ferdigstilles.
+> **På dette tidspunktet provisjoneres både VPN Gateway og AKS parallelt.** Fortsett med Del når VPN er ferdig.
+
+![alt text](aksvpnwait.png)
 
 ---
 
