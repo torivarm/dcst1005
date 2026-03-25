@@ -260,9 +260,9 @@ Utdata skal vise `Connected` og `True`. Hvis du får feilmelding om at gateway i
 
 ## Del 5 — Opprett Entra ID-testbruker og gi VPN-tilgang
 
-I stedet for å bruke din egen `@stud.ntnu.no`-konto til VPN-tilkoblingen, oppretter du en dedikert testbruker. Dette gjenspeiler god praksis i virkeligheten, der VPN-tilgang styres per brukeridentitet og kan trekkes tilbake uten å påvirke andre kontoer.
+I stedet for å bruke din egen `@stud.ntnu.no`-konto til VPN-tilkoblingen, benytter du en egen dedikert testbruker. Om du ikke allerede har en eksisterende testbruker med ferdig konfigurert MFA, opprett en ny bruker, logg inn med denne brukeren mot https://portal.azure.com og konfigurer MFA. Dette gjenspeiler god praksis i virkeligheten, der VPN-tilgang styres per brukeridentitet og kan trekkes tilbake uten å påvirke andre kontoer.
 
-### Steg 5.1 — Opprett testbruker
+### Steg 5.1 — Opprett testbruker (KUN NØDVENDIG OM DU IKKE ALLEREDE HAR EN TESTBRUKER)
 
 Naviger til **Microsoft Entra ID → Users → New user → Create new user**.
 
@@ -304,7 +304,11 @@ Klikk **Connect** og logg inn med testbrukeren du opprettet i Del 5.
 
 ![alt text](ImportAndSave.png)
 
+![alt text](VPNConnect.png)
+
 ### Steg 6.3 — Verifiser VPN-tilkobling
+
+Når du velger å koble til, blir du bedt å om autentisere deg med en bruker. Benytt den brukeren som du gav tilgang til VPN Applikasjonen i tidligere steg.
 
 Azure VPN Client skal vise **Connected** med en tildelt IP-adresse fra adressepoolen `172.16.0.0/24`.
 
