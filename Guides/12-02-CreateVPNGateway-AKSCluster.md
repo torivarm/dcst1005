@@ -16,7 +16,7 @@ En VPN Gateway er Azure-siden av VPN-tilkoblingen. Den provisjoneres inn i `Gate
 
 Provisjonering av en VPN Gateway tar 30–45 minutter. Du starter derfor denne prosessen først, og bruker ventetiden til å sette opp AKS-clusteret i Del 2.
 
-### Steg 1.1 — Opprett 2 x Public IP-adresse
+### Steg 1.1 — Opprett Public IP-adresse
 
 Naviger til `<prefix>-rg-infraitsec-network` i Azure Portal og velg **Create**.
 
@@ -24,7 +24,7 @@ Søk etter **Public IP address** og opprett en ressurs med følgende konfigurasj
 
 | Felt | Verdi |
 |------|-------|
-| Name | `<prefix>-pip(1/2)-vpngw` |
+| Name | `<prefix>-pip-vpngw` |
 | Region | Norway East |
 | SKU | Standard |
 | IP version | IPv4 |
@@ -37,6 +37,8 @@ Static assignment er nødvendig fordi VPN Gateway-konfigurasjonen lagrer IP-adre
 
 Søk etter **Virtual network gateways** i Azure Portal og velg **Create**.
 
+![alt text](vpngatewaycreatew.png)
+
 Fyll inn følgende konfigurasjon:
 
 | Felt | Verdi |
@@ -44,15 +46,15 @@ Fyll inn følgende konfigurasjon:
 | Name | `<prefix>-vpngw-hub` |
 | Region | Norway East |
 | Gateway type | VPN |
-| SKU | VpnGw1 |
+| SKU | VpnGw2AZ |
 | Generation | Generation2 |
 | Virtual network | `<prefix>-vnet-hub` |
 | Gateway subnet address range | 10.0.0.0/27 (fylles automatisk) |
-| Public IP address | `<prefix>-pip-vpngw` |
+| Public IP address (use existing) | `<prefix>-pip-vpngw` |
 | Enable active-active mode | Disabled |
 | Configure BGP | Disabled |
 
-**Om SKU-valget:** Basic SKU er utgått (deprecated) og støtter ikke Entra ID-autentisering. VpnGw1 Generation2 er det laveste nivået som støtter OpenVPN med Entra ID, og er tilstrekkelig for lab-formål.
+**Om SKU-valget:** Basic SKU er utgått (deprecated) og støtter ikke Entra ID-autentisering. VpnGw2AZ Generation2 støtter OpenVPN med Entra ID, og er tilstrekkelig for lab-formål.
 
 **Om BGP:** Border Gateway Protocol brukes for dynamisk ruting i komplekse hybrid-nettverksoppsett med Site-to-Site VPN. Det er ikke relevant for Point-to-Site og kan med fordel nevnes som et eksempel på avansert funksjonalitet du ikke trenger å ta stilling til i denne labben.
 
