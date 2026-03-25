@@ -16,7 +16,7 @@ En VPN Gateway er Azure-siden av VPN-tilkoblingen. Den provisjoneres inn i `Gate
 
 Provisjonering av en VPN Gateway tar 30–45 minutter. Du starter derfor denne prosessen først, og bruker ventetiden til å sette opp AKS-clusteret i Del 2.
 
-### Steg 1.1 — Opprett Public IP-adresse
+### Steg 1.1 — Opprett 2 x Public IP-adresse
 
 Naviger til `<prefix>-rg-infraitsec-network` i Azure Portal og velg **Create**.
 
@@ -24,7 +24,7 @@ Søk etter **Public IP address** og opprett en ressurs med følgende konfigurasj
 
 | Felt | Verdi |
 |------|-------|
-| Name | `<prefix>-pip-vpngw` |
+| Name | `<prefix>-pip(1/2)-vpngw` |
 | Region | Norway East |
 | SKU | Standard |
 | IP version | IPv4 |
