@@ -59,7 +59,7 @@ Fyll inn følgende konfigurasjon:
 | Name | `<prefix>-vpngw-hub` |
 | Region | Norway East |
 | Gateway type | VPN |
-| SKU | VpnGwAZ2 |
+| SKU | VpnGw2AZ |
 | Generation | Generation2 |
 | Virtual network | `<prefix>-vnet-hub` |
 | Gateway subnet address range | 10.0.0.0/27 (fylles automatisk) |
