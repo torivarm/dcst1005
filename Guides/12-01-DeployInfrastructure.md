@@ -14,7 +14,7 @@ Scriptet er idempotent, noe som betyr at det kan kjøres flere ganger uten å fe
 
 Følgende må være på plass før du kjører scriptet:
 
-Du trenger PowerShell 7 og Az-modulen installert på MGR. Az-modulen ble installert i en tidligere lab. Verifiser at den er tilgjengelig ved å åpne VS Code på MGR og kjøre følgende i et PowerShell-terminalvindu:
+Du trenger PowerShell 7 og Az-modulen installert på lokal maskin. Az-modulen ble installert i en tidligere lab. Verifiser at den er tilgjengelig ved å åpne VS Code på lokal maskin og kjøre følgende i et PowerShell-terminalvindu:
 
 ```powershell
 Get-Module -Name Az -ListAvailable | Select-Object Name, Version
