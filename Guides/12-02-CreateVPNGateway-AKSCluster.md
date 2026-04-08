@@ -741,6 +741,8 @@ kubectl get pods
 
 Alle pods skal vise status `Running`.
 
+Hvis en får InvalidImage, prøv følgende feilsøking: [Invalid Image](12-05-InvalidImage.md)
+
 ---
 
 ## Del 9 — Verifiser applikasjonen via VPN
