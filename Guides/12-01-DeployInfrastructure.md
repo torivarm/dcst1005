@@ -112,7 +112,7 @@ Scriptet setter `UseRemoteGateways` til false (ved å utelate switch-parameteret
 
 ### Steg 2.1 — Åpne scriptet i VS Code
 
-Åpne `12-01-DeployInfrastructure.ps1` i VS Code på MGR. Finn de to variablene øverst i scriptet og erstatt plassholderverdiene:
+Åpne `12-01-DeployInfrastructure.ps1` i VS Code på lokal maskin. Finn de to variablene øverst i scriptet og erstatt plassholderverdiene:
 
 ```powershell
 $prefix   = "on03"                                  # Ditt eget prefiks
