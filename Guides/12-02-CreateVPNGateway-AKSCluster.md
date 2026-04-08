@@ -50,7 +50,7 @@ Static assignment er nødvendig fordi VPN Gateway-konfigurasjonen lagrer IP-adre
 
 ### Steg 1.2 — Opprett VPN Gateway
 
-Søk etter **Virtual network gateways** i Azure Portal og velg **Create**.
+Søk etter **Virtual network gateways** i Azure Portal og velg **Create** under VPN Gateways.
 
 Fyll inn følgende konfigurasjon:
 

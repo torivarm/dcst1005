@@ -35,7 +35,7 @@ $location = "norwayeast"
 
 Write-Host "`n[1/8] Autentiserer mot Azure..." -ForegroundColor Cyan
 
-# Connect-AzAccount -Tenant $tenantId
+Connect-AzAccount -Tenant $tenantId
 
 Write-Host "Autentisering vellykket." -ForegroundColor Green
 
