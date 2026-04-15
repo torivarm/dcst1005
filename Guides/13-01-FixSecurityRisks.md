@@ -138,35 +138,9 @@ PowerShell-scriptet opprettet App Service med riktig runtime, men uten innhold. 
 
 Naviger til [portal.azure.com](https://portal.azure.com) og klikk på Cloud Shell-ikonet øverst i navigasjonsfeltet. Velg **Bash** hvis du får valget.
 
-### Steg 3.2 — Last opp Bash-scriptet
+### Steg 3.2 — Lim inn Bash-scriptet
 
-Klikk på opplastingsikonet i Cloud Shell-verktøylinjen (ser ut som en mappe med pil opp) og velg `Deploy-AppService-Portal.sh` fra din lokale maskin.
-
-Alternativt kan du laste opp via Cloud Shell's filoverføringsfunksjon:
-
-```bash
-# Verifiser at filen er lastet opp
-ls ~/ | grep Deploy
-```
-
-Du skal se `Deploy-AppService-Portal.sh` i output.
-
-### Steg 3.3 — Gi scriptet kjøretillatelse og kjør det
-
-```bash
-chmod +x ~/Deploy-AppService-Portal.sh
-bash ~/Deploy-AppService-Portal.sh
-```
-
-### Steg 3.4 — Skriv inn prefiks
-
-Scriptet spør etter ditt prefiks:
-
-```
-Skriv inn ditt prefiks (f.eks. on03): on03
-```
-
-Skriv inn det samme prefikset du brukte i Del 2.
+Rediger scriptet med korrekt prefix og lim det inn i cloud shell
 
 ### Steg 3.5 — Vent på deployment
 
