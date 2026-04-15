@@ -32,10 +32,10 @@ Hvis noen av disse mangler, installer dem fra tidligere lab-instruksjoner før d
 
 ### Steg 1.1 — Last ned scriptfilene
 
-Last ned følgende to filer fra Blackboard og lagre dem i en mappe du husker, for eksempel `C:\scripts\lab13\` på Windows eller `~/scripts/lab13/` på Mac:
+Last ned følgende to filer fra Github og lagre dem i en mappe du benytter til script for DCST1005
 
-- `Deploy-InfraITsec-SecurityLab.ps1`
-- `Deploy-AppService-Portal.sh`
+- [Deploy infrastructure, security lab](13-00-Deploy-InfraITsec-SecurityLab.ps1)
+- [Deploy App Service Cloud Shell Portal](13-00-Deploy-AppService-Portal.sh)
 
 ### Steg 1.2 — Åpne mappen i VS Code
 
