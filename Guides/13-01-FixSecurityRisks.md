@@ -66,13 +66,12 @@ I VS Code velger du **Terminal → New Terminal**. Kontroller at terminalen bruk
 Naviger til mappen der scriptet ligger og kjør det:
 
 ```powershell
-# Windows
-cd C:\scripts\lab13
-.\Deploy-InfraITsec-SecurityLab.ps1
+.\13-00-Deploy-InfraITsec-SecurityLab.ps1
+```
 
+```powershell
 # Mac / Linux
-cd ~/scripts/lab13
-pwsh Deploy-InfraITsec-SecurityLab.ps1
+./13-00-Deploy-InfraITsec-SecurityLab.ps1
 ```
 
 ### Steg 2.3 — Skriv inn prefiks og Tenant ID
