@@ -15,6 +15,7 @@ Du har blitt engasjert som ekstern sikkerhetsrådgiver for å gjennomgå infrast
 Infrastrukturen inneholder **8 sikkerhetsmessige svakheter** fordelt på nettverkssikkerhet, identitet og tilgang, og ressurskonfigurasjon. Din oppgave er å finne dem, utbedre dem og verifisere at utbedringen er korrekt gjennomført.
 
 **Sett opp infrastrukturen** ved å følge Lab 13-01 før du begynner.
+- [Deploy Fix Secyrity Risks lab](13-01-FixSecurityRisks.md)
 
 ---
 
