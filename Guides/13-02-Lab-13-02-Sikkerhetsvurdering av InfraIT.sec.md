@@ -63,7 +63,7 @@ OK:   [beskrivelse av hva som er korrekt konfigurert]
 
 ## Trenger du hjelp?
 
-Hint-systemet på **[[URL]](https://torivarm.github.io/hintdemo/)** gir deg veiledning til hvert funn. Det er to nivåer: en forklaring av hva du bør se etter, og et verifiseringsscript. Prøv alltid å finne svakheten selv før du åpner et hint — hint-bruk registreres og synliggjøres for faglærer.
+Hint-systemet på **[Hint system](https://torivarm.github.io/hintdemo/)** gir deg veiledning til hvert funn. Det er to nivåer: en forklaring av hva du bør se etter, og et verifiseringsscript. Prøv alltid å finne svakheten selv før du åpner et hint — hint-bruk registreres (for egen testing, ingen påvirkning av øvingsvurdering).
 
 ---
 
