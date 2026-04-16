@@ -26,15 +26,13 @@ Infrastrukturen inneholder **8 sikkerhetsmessige svakheter** fordelt på nettver
 OK:   [beskrivelse av hva som er korrekt konfigurert]
 ```
 
-Ta skjermbilde av terminalen med `OK`-status synlig for hvert funn.
-
 **Trenger du hjelp?** Hint-systemet på **https://torivarm.github.io/hintdemo/** gir deg veiledning til hvert funn. Hint-bruk registreres (testing, ingen påvirkning av vurdering) og synliggjøres for faglærer.
 
 ---
 
 ## Leveranse
 
-Vis skjermbildene dine til læringsassistent på lab. For hvert funn skal skjermbildet vise `OK`-output i Azure Cloud Shell med ressursnavnet med ditt prefiks synlig.
+Presenter hvert funn. Vis output fra scriptet, `OK`-output, i Azure Cloud Shell med ressursnavnet med ditt prefiks synlig.
 
 ---
 

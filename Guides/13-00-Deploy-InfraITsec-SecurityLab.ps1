@@ -69,10 +69,20 @@ function Set-VnetPeering {
 
 # --- Autentiser ---
 Write-Step "1/11" "Autentiserer mot Azure"
+
+# Az PowerShell-autentisering
 Connect-AzAccount -Tenant $tenantId
-$ctx         = Get-AzContext
-$currentUser = $ctx.Account.Id
-Write-Host "  Innlogget: $currentUser" -ForegroundColor Gray
+$ctx            = Get-AzContext
+$currentUser    = $ctx.Account.Id
+$subscriptionId = $ctx.Subscription.Id
+Write-Host "  Innlogget (PowerShell): $currentUser" -ForegroundColor Gray
+
+# Az CLI-autentisering (brukes for App Service-opprettelse med Python-runtime)
+# Az CLI og Az PowerShell er separate verktøy med separate innlogginger.
+Write-Host "  Logger inn med Az CLI..." -ForegroundColor Gray
+az login --tenant $tenantId --output none
+az account set --subscription $subscriptionId
+Write-Host "  Innlogget (Az CLI): $currentUser" -ForegroundColor Gray
 
 # --- Navnekonvensjon ---
 $rgHub      = "$prefix-rg-infraitsec-hub"
