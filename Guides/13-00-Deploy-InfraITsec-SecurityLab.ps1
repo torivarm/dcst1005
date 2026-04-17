@@ -19,7 +19,7 @@
 
 param(
     [string]$Prefix   = "tim84",
-    [string]$TenantId = "ec25d615-a67b-411a-9073-de7880b3b8a3"
+    [string]$TenantId = "xxxx-xxxxx-xxxxx-xxxxx-xxxxxx"
 )
 
 if (-not $Prefix)   { $Prefix   = Read-Host "Skriv inn prefiks (f.eks. on03)" }
