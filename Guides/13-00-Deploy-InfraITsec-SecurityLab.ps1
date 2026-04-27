@@ -19,7 +19,7 @@
 
 param(
     [string]$Prefix   = "tim84",
-    [string]$TenantId = "xxxx-xxxxx-xxxxx-xxxxx-xxxxxx"
+    [string]$TenantId = "ec25d615-a67b-411a-9073-de7880b3b8a3"
 )
 
 if (-not $Prefix)   { $Prefix   = Read-Host "Skriv inn prefiks (f.eks. on03)" }
@@ -231,8 +231,7 @@ if (-not (Get-AzWebApp -Name $appSvcName -ResourceGroupName $rgFrontend -ErrorAc
 
     az webapp update `
         --name $appSvcName `
-        --resource-group $rgFrontend `
-        --tags "Environment=SecurityLab" "Owner=$prefix" "Course=DCST1005" | Out-Null
+        --resource-group $rgFrontend | Out-Null
 
     Write-Status "$appSvcName" "Created"
     Write-Host "    URL: https://$appSvcName.azurewebsites.net" -ForegroundColor Gray
@@ -309,11 +308,16 @@ if (-not $kv) {
         -Location $location -Tag $tags
 
     $deployerOid = (Get-AzADUser -UserPrincipalName $currentUser -ErrorAction SilentlyContinue)?.Id
-    if ($deployerOid) {
-        Set-AzKeyVaultAccessPolicy `
-            -VaultName $keyVaultName -ObjectId $deployerOid `
-            -PermissionsToSecrets get,list,set,delete | Out-Null
-    }
+        if ($deployerOid) {
+            New-AzRoleAssignment `
+                -ObjectId $deployerOid `
+                -RoleDefinitionName "Key Vault Secrets Officer" `
+                -Scope $kv.ResourceId | Out-Null
+
+            # RBAC-tildelinger trenger litt tid til å propagere
+            Write-Host "  Venter på RBAC-propagering (30 sek)..." -ForegroundColor Gray
+            Start-Sleep -Seconds 30
+        }
 
     $storageKey = (Get-AzStorageAccountKey -ResourceGroupName $rgBackend -Name $storageName)[0].Value
     Set-AzKeyVaultSecret -VaultName $keyVaultName -Name "StorageAccountKey" `
