@@ -695,20 +695,21 @@ Set-RouteTable `
 Write-Step "[10/12] Firewall Policy nettverksregler..."
 
 $fwPolicy = Get-AzFirewallPolicy -Name $fwPolicyName -ResourceGroupName $networkingRG
+$subId    = (Get-AzContext).Subscription.Id
+$apiVer   = '2024-01-01'
 
-$existingNetGroup = Get-AzFirewallPolicyRuleCollectionGroup `
-    -Name 'DefaultNetworkRuleCollectionGroup' `
-    -FirewallPolicy $fwPolicy `
-    -ErrorAction SilentlyContinue
+$netGroupUri  = "/subscriptions/$subId/resourceGroups/$networkingRG/providers/Microsoft.Network/firewallPolicies/$fwPolicyName/ruleCollectionGroups/DefaultNetworkRuleCollectionGroup?api-version=$apiVer"
+$netGroupResp = Invoke-AzRestMethod -Method GET -Path $netGroupUri
 
-$networkRuleExists = $false
-if ($existingNetGroup) {
-    $networkRuleExists = $existingNetGroup.Properties.RuleCollection |
-        Where-Object { $_.Name -eq 'allow-inter-spoke' }
-}
-
-if ($networkRuleExists) {
-    Write-Skip "Nettverksregel 'allow-inter-spoke' finnes allerede."
+if ($netGroupResp.StatusCode -eq 200) {
+    $netGroupBody = $netGroupResp.Content | ConvertFrom-Json
+    $networkRuleExists = $netGroupBody.properties.ruleCollections |
+        Where-Object { $_.name -eq 'allow-inter-spoke' }
+    if ($networkRuleExists) {
+        Write-Skip "Nettverksregel 'allow-inter-spoke' finnes allerede."
+    } else {
+        Write-Skip "DefaultNetworkRuleCollectionGroup finnes, men uten allow-inter-spoke — legg til manuelt i portalen om nødvendig."
+    }
 } else {
     Write-Doing "Oppretter nettverksregel allow-inter-spoke..."
 
@@ -725,17 +726,12 @@ if ($networkRuleExists) {
         -Rule $netRule `
         -ActionType 'Allow'
 
-    if ($existingNetGroup) {
-        $existingNetGroup.Properties.RuleCollection.Add($netCollection)
-        $existingNetGroup | Set-AzFirewallPolicyRuleCollectionGroup `
-            -FirewallPolicyObject $fwPolicy | Out-Null
-    } else {
-        New-AzFirewallPolicyRuleCollectionGroup `
-            -Name 'DefaultNetworkRuleCollectionGroup' `
-            -Priority 200 `
-            -RuleCollection $netCollection `
-            -FirewallPolicyObject $fwPolicy | Out-Null
-    }
+    New-AzFirewallPolicyRuleCollectionGroup `
+        -Name 'DefaultNetworkRuleCollectionGroup' `
+        -Priority 200 `
+        -RuleCollection $netCollection `
+        -FirewallPolicyObject $fwPolicy | Out-Null
+
     Write-Ok "Nettverksregel allow-inter-spoke konfigurert."
 }
 
@@ -897,13 +893,13 @@ foreach ($def in $vmDefs) {
 Write-Step "[12/12] DNAT-regler..."
 
 $fwPolicy = Get-AzFirewallPolicy -Name $fwPolicyName -ResourceGroupName $networkingRG
+$subId    = (Get-AzContext).Subscription.Id
+$apiVer   = '2024-01-01'
 
-$existingDnatGroup = Get-AzFirewallPolicyRuleCollectionGroup `
-    -Name 'DnatRuleCollectionGroup' `
-    -FirewallPolicy $fwPolicy `
-    -ErrorAction SilentlyContinue
+$dnatGroupUri  = "/subscriptions/$subId/resourceGroups/$networkingRG/providers/Microsoft.Network/firewallPolicies/$fwPolicyName/ruleCollectionGroups/DnatRuleCollectionGroup?api-version=$apiVer"
+$dnatGroupResp = Invoke-AzRestMethod -Method GET -Path $dnatGroupUri
 
-if ($existingDnatGroup) {
+if ($dnatGroupResp.StatusCode -eq 200) {
     Write-Skip "DnatRuleCollectionGroup eksisterer allerede — hopper over DNAT-konfigurasjon."
     Write-Warn "  Slett 'DnatRuleCollectionGroup' manuelt i portalen og kjør scriptet på nytt for å rekonfigurere."
 } else {
