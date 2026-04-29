@@ -698,8 +698,7 @@ $fwPolicy = Get-AzFirewallPolicy -Name $fwPolicyName -ResourceGroupName $network
 
 $existingNetGroup = Get-AzFirewallPolicyRuleCollectionGroup `
     -Name 'DefaultNetworkRuleCollectionGroup' `
-    -FirewallPolicyName $fwPolicyName `
-    -ResourceGroupName $networkingRG `
+    -FirewallPolicy $fwPolicy `
     -ErrorAction SilentlyContinue
 
 $networkRuleExists = $false
@@ -727,7 +726,6 @@ if ($networkRuleExists) {
         -ActionType 'Allow'
 
     if ($existingNetGroup) {
-        # Gruppen finnes — legg til rule collection i eksisterende gruppe
         $existingNetGroup.Properties.RuleCollection.Add($netCollection)
         $existingNetGroup | Set-AzFirewallPolicyRuleCollectionGroup `
             -FirewallPolicyObject $fwPolicy | Out-Null
@@ -902,8 +900,7 @@ $fwPolicy = Get-AzFirewallPolicy -Name $fwPolicyName -ResourceGroupName $network
 
 $existingDnatGroup = Get-AzFirewallPolicyRuleCollectionGroup `
     -Name 'DnatRuleCollectionGroup' `
-    -FirewallPolicyName $fwPolicyName `
-    -ResourceGroupName $networkingRG `
+    -FirewallPolicy $fwPolicy `
     -ErrorAction SilentlyContinue
 
 if ($existingDnatGroup) {
@@ -912,31 +909,31 @@ if ($existingDnatGroup) {
 } else {
     Write-Doing "Oppretter DNAT-regler..."
 
-    $dnatRules = @(
-        New-AzFirewallPolicyNatRule -Name 'dnat-http-spoke1' -Protocol 'TCP' `
-            -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
-            -DestinationPort $httpPortSpoke1 -TranslatedAddress $spoke1VmIp -TranslatedPort '80',
-        New-AzFirewallPolicyNatRule -Name 'dnat-http-spoke2' -Protocol 'TCP' `
-            -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
-            -DestinationPort $httpPortSpoke2 -TranslatedAddress $spoke2VmIp -TranslatedPort '80',
-        New-AzFirewallPolicyNatRule -Name 'dnat-http-spoke3' -Protocol 'TCP' `
-            -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
-            -DestinationPort $httpPortSpoke3 -TranslatedAddress $spoke3VmIp -TranslatedPort '80',
-        New-AzFirewallPolicyNatRule -Name 'dnat-ssh-spoke1' -Protocol 'TCP' `
-            -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
-            -DestinationPort $sshPortSpoke1 -TranslatedAddress $spoke1VmIp -TranslatedPort '22',
-        New-AzFirewallPolicyNatRule -Name 'dnat-ssh-spoke2' -Protocol 'TCP' `
-            -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
-            -DestinationPort $sshPortSpoke2 -TranslatedAddress $spoke2VmIp -TranslatedPort '22',
-        New-AzFirewallPolicyNatRule -Name 'dnat-ssh-spoke3' -Protocol 'TCP' `
-            -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
-            -DestinationPort $sshPortSpoke3 -TranslatedAddress $spoke3VmIp -TranslatedPort '22'
-    )
+    # Reglene opprettes enkeltvis for å unngå at PowerShells array-komma
+    # feiltolkes som del av -TranslatedPort-parameteren
+    $r1 = New-AzFirewallPolicyNatRule -Name 'dnat-http-spoke1' -Protocol 'TCP' `
+        -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
+        -DestinationPort $httpPortSpoke1 -TranslatedAddress $spoke1VmIp -TranslatedPort '80'
+    $r2 = New-AzFirewallPolicyNatRule -Name 'dnat-http-spoke2' -Protocol 'TCP' `
+        -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
+        -DestinationPort $httpPortSpoke2 -TranslatedAddress $spoke2VmIp -TranslatedPort '80'
+    $r3 = New-AzFirewallPolicyNatRule -Name 'dnat-http-spoke3' -Protocol 'TCP' `
+        -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
+        -DestinationPort $httpPortSpoke3 -TranslatedAddress $spoke3VmIp -TranslatedPort '80'
+    $r4 = New-AzFirewallPolicyNatRule -Name 'dnat-ssh-spoke1' -Protocol 'TCP' `
+        -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
+        -DestinationPort $sshPortSpoke1 -TranslatedAddress $spoke1VmIp -TranslatedPort '22'
+    $r5 = New-AzFirewallPolicyNatRule -Name 'dnat-ssh-spoke2' -Protocol 'TCP' `
+        -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
+        -DestinationPort $sshPortSpoke2 -TranslatedAddress $spoke2VmIp -TranslatedPort '22'
+    $r6 = New-AzFirewallPolicyNatRule -Name 'dnat-ssh-spoke3' -Protocol 'TCP' `
+        -SourceAddress '*' -DestinationAddress $fwPublicIpAddr `
+        -DestinationPort $sshPortSpoke3 -TranslatedAddress $spoke3VmIp -TranslatedPort '22'
 
     $dnatCollection = New-AzFirewallPolicyNatRuleCollection `
         -Name 'dnat-spoke-vms' `
         -Priority 100 `
-        -Rule $dnatRules `
+        -Rule @($r1, $r2, $r3, $r4, $r5, $r6) `
         -ActionType 'Dnat'
 
     New-AzFirewallPolicyRuleCollectionGroup `
